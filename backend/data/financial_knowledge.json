@@ -1,0 +1,172 @@
+{
+  "knowledgeBase": [
+    {
+      "id": "emi_basics",
+      "title": "EMI (Equated Monthly Installment) Basics",
+      "content": "EMI stands for Equated Monthly Installment. It is a fixed payment amount made by a borrower to a lender at a specified date each calendar month. EMIs are used to pay off both interest and principal each month, so that over a specified number of years, the loan is paid off in full. The EMI formula is: EMI = [P x R x (1+R)^N]/[(1+R)^N-1], where P is principal loan amount, R is monthly interest rate, and N is loan tenure in months. For example, a ₹10 lakh loan at 10% annual interest for 5 years would have an EMI of approximately ₹21,247.",
+      "tags": ["loan", "emi", "repayment", "interest", "personal-finance"],
+      "category": "loans",
+      "importance": "high"
+    },
+    {
+      "id": "fd_rates",
+      "title": "Fixed Deposit (FD) Interest Rates in India",
+      "content": "Fixed Deposits (FDs) are one of the safest investment options in India. As of 2024, major banks offer FD interest rates ranging from 3% to 7.5% per annum depending on tenure. SBI offers 6.5-7% for 1-5 year FDs, HDFC offers 7-7.25%, and ICICI offers 7-7.5%. Senior citizens typically get an additional 0.5% interest. FDs are insured up to ₹5 lakh by DICGC. Tax is applicable under Section 80C for tax-saving FDs (5-year lock-in). Interest earned is taxable as per your income tax slab. FDs offer guaranteed returns with no market risk.",
+      "tags": ["investment", "fd", "fixed-deposit", "interest-rates", "banking"],
+      "category": "investments",
+      "importance": "high"
+    },
+    {
+      "id": "upi_transactions",
+      "title": "UPI (Unified Payments Interface) Transaction Limits",
+      "content": "UPI is India's real-time payment system developed by NPCI. Standard UPI transaction limit is ₹1 lakh per transaction for most apps like Google Pay, PhonePe, Paytm. However, for specific categories: (1) IPO applications: ₹5 lakh, (2) Capital markets, insurance, FASTag: ₹2 lakh, (3) Healthcare, education: ₹5 lakh, (4) BHIM app: ₹25,000 per transaction. Daily limit is typically 10-20 transactions depending on the bank. UPI is free for person-to-person transfers. No charges for UPI transactions below ₹2,000. Merchants may face MDR charges.",
+      "tags": ["upi", "payments", "digital-banking", "transaction-limits", "npci"],
+      "category": "digital-payments",
+      "importance": "high"
+    },
+    {
+      "id": "credit_score",
+      "title": "CIBIL Score and Credit Rating in India",
+      "content": "CIBIL score is a 3-digit number (300-900) that represents your creditworthiness. Score range: 300-549 (Poor), 550-649 (Average), 650-749 (Good), 750-900 (Excellent). Banks prefer scores above 750 for loan approvals. Factors affecting score: Payment history (35%), Credit utilization (30%), Credit history length (15%), Credit mix (10%), New credit inquiries (10%). To improve score: Pay bills on time, keep credit utilization below 30%, maintain old credit accounts, avoid multiple loan applications. Check free CIBIL score once a year at www.cibil.com. Errors can be disputed online.",
+      "tags": ["credit-score", "cibil", "loan-approval", "creditworthiness"],
+      "category": "credit",
+      "importance": "high"
+    },
+    {
+      "id": "mutual_funds_sip",
+      "title": "Mutual Funds and SIP Investment Strategy",
+      "content": "SIP (Systematic Investment Plan) allows investing fixed amounts regularly in mutual funds. Benefits: Rupee cost averaging, power of compounding, disciplined investing, low minimum investment (₹500). Types of mutual funds: Equity (high risk, high returns 12-15%), Debt (low risk, 6-8% returns), Hybrid (balanced, 8-10%). Popular SIP funds: SBI Bluechip, HDFC Top 100, Axis Long Term Equity. Ideal SIP duration: 5+ years for equity, 3+ years for hybrid. Tax: LTCG above ₹1 lakh taxed at 10%, STCG at 15% for equity funds. Start SIP early to leverage compounding.",
+      "tags": ["mutual-funds", "sip", "investment", "equity", "wealth-creation"],
+      "category": "investments",
+      "importance": "high"
+    },
+    {
+      "id": "home_loan_eligibility",
+      "title": "Home Loan Eligibility and Documentation",
+      "content": "Home loan eligibility in India depends on: Age (21-65 years), Income (minimum ₹25,000/month for most banks), Credit score (750+), Employment stability (2+ years). Loan amount: Typically 80-90% of property value (LTV ratio). Documents required: Identity proof (Aadhaar, PAN), Address proof, Salary slips (3-6 months), Bank statements (6 months), Property documents, Form 16. Interest rates: 8-9.5% per annum (varies by bank and credit score). Tax benefits: ₹1.5 lakh on principal under Section 80C, ₹2 lakh on interest under Section 24(b). Processing fees: 0.5-1% of loan amount.",
+      "tags": ["home-loan", "property", "eligibility", "documentation", "tax-benefits"],
+      "category": "loans",
+      "importance": "high"
+    },
+    {
+      "id": "tax_saving_80c",
+      "title": "Section 80C Tax Saving Investment Options",
+      "content": "Section 80C allows tax deduction up to ₹1.5 lakh per year. Investment options: (1) ELSS mutual funds - 3 year lock-in, market-linked returns, (2) PPF - 15 year lock-in, 7.1% interest, government-backed, (3) EPF/VPF - retirement savings, employer contribution, (4) NSC - 5 year lock-in, 7% interest, (5) Tax-saving FD - 5 year lock-in, 6-7% interest, (6) Life insurance premium, (7) Home loan principal repayment, (8) Sukanya Samriddhi Yojana - for girl child, 8% interest. ELSS offers best returns but carries market risk. PPF is safest option.",
+      "tags": ["tax-saving", "80c", "deductions", "investments", "income-tax"],
+      "category": "tax-planning",
+      "importance": "high"
+    },
+    {
+      "id": "credit_card_types",
+      "title": "Types of Credit Cards and Best Practices",
+      "content": "Credit card types in India: (1) Cashback cards - 1-5% cashback on purchases, (2) Rewards cards - earn points for travel/shopping, (3) Travel cards - lounge access, air miles, (4) Fuel cards - surcharge waiver on fuel, (5) Premium cards - luxury benefits, high annual fee. Best practices: Pay full bill by due date to avoid 36-42% interest, keep credit utilization below 30%, avoid cash withdrawals (high fees), don't share CVV/OTP, check statements regularly. Benefits: Interest-free credit (45-50 days), reward points, insurance coverage, EMI conversion. Popular cards: HDFC Regalia, SBI SimplyCLICK, ICICI Amazon Pay.",
+      "tags": ["credit-card", "rewards", "cashback", "financial-discipline"],
+      "category": "banking",
+      "importance": "medium"
+    },
+    {
+      "id": "emergency_fund",
+      "title": "Building an Emergency Fund",
+      "content": "Emergency fund is money set aside for unexpected expenses like medical emergencies, job loss, urgent repairs. Ideal size: 6-12 months of monthly expenses. For example, if monthly expenses are ₹50,000, aim for ₹3-6 lakh emergency fund. Where to keep: Savings account (instant access), liquid mutual funds (1-2 days access), sweep-in FD (instant access with FD rates). Don't invest emergency funds in equity, real estate, or locked investments. Start small: Save 10-20% of income monthly. Build emergency fund BEFORE investing in stocks/MFs. Keep it separate from regular savings. Review quarterly and adjust for inflation.",
+      "tags": ["emergency-fund", "financial-planning", "savings", "risk-management"],
+      "category": "financial-planning",
+      "importance": "high"
+    },
+    {
+      "id": "insurance_types",
+      "title": "Types of Insurance in India - Life, Health, Vehicle",
+      "content": "Essential insurance types: (1) Term Life Insurance - pure protection, cheapest, coverage 10-15x annual income recommended, premiums: ₹500-2000/month for ₹1 crore cover, (2) Health Insurance - minimum ₹5 lakh cover per person, family floater option available, premiums: ₹5,000-25,000/year, covers hospitalization and pre/post expenses, (3) Vehicle Insurance - mandatory by law, third-party minimum, comprehensive recommended, add-ons: zero depreciation, engine protection, (4) Personal Accident - optional but recommended, covers disability/death. Buy term life + health before 30 for lower premiums. Avoid ULIPs and endowment plans.",
+      "tags": ["insurance", "life-insurance", "health-insurance", "risk-coverage"],
+      "category": "insurance",
+      "importance": "high"
+    },
+    {
+      "id": "retirement_planning",
+      "title": "Retirement Planning and Corpus Calculation",
+      "content": "Retirement planning ensures financial independence in old age. Calculate retirement corpus: If current monthly expense is ₹50,000, considering 6% inflation for 30 years, you'll need ₹3 crore at retirement. Investment vehicles: (1) EPF - mandatory for salaried, 8.25% interest, (2) NPS - market-linked, tax benefits under 80CCD(1B), (3) PPF - safe, 7.1% interest, (4) Mutual funds - equity SIP for long-term, (5) Real estate - rental income. Start early: ₹5,000 SIP at 25 years = ₹3 crore at 60 (12% returns). Diversify across equity, debt, real estate. Review annually and increase SIP by 10%.",
+      "tags": ["retirement", "corpus", "financial-independence", "pension", "nps"],
+      "category": "financial-planning",
+      "importance": "high"
+    },
+    {
+      "id": "gst_basics",
+      "title": "GST (Goods and Services Tax) Overview",
+      "content": "GST is an indirect tax on supply of goods and services in India. GST rates: 0% (essential items), 5% (household goods), 12% (processed food), 18% (most goods), 28% (luxury items). GST registration mandatory if turnover exceeds ₹40 lakh for goods, ₹20 lakh for services. Types: CGST (Central), SGST (State), IGST (Interstate). Input tax credit available - set off tax paid on inputs against output tax. File returns: GSTR-1 (monthly sales), GSTR-3B (monthly summary). Composition scheme available for small businesses (turnover < ₹1.5 crore) - flat 1% tax, quarterly returns.",
+      "tags": ["gst", "taxation", "business", "compliance", "indirect-tax"],
+      "category": "taxation",
+      "importance": "medium"
+    },
+    {
+      "id": "stock_market_basics",
+      "title": "Stock Market Basics - NSE, BSE, Trading",
+      "content": "Indian stock market has two major exchanges: NSE (National Stock Exchange) and BSE (Bombay Stock Exchange). Key indices: Nifty 50 (NSE top 50 companies), Sensex (BSE top 30). How to start: Open demat + trading account with broker (Zerodha, Groww, Upstox), complete KYC. Types of trading: Delivery (buy and hold), Intraday (same-day buy-sell), F&O (futures and options - high risk). Investment approaches: Fundamental analysis (company financials), Technical analysis (charts, patterns). Tips for beginners: Start with blue-chip stocks, diversify portfolio, invest surplus funds only, avoid leverage initially. STT, brokerage, GST applicable on trades.",
+      "tags": ["stocks", "equity", "nse", "bse", "trading", "investment"],
+      "category": "investments",
+      "importance": "medium"
+    },
+    {
+      "id": "personal_loan",
+      "title": "Personal Loan - Interest Rates, Eligibility, Processing",
+      "content": "Personal loans are unsecured loans for any purpose - medical, travel, wedding, debt consolidation. Interest rates: 10-24% per annum depending on credit score and income. Loan amount: ₹50,000 to ₹40 lakh. Tenure: 1-5 years typically. Eligibility: Salaried (min ₹20,000/month, 2 years job), Self-employed (min ₹3 lakh annual income, 3 years business). Documents: PAN, Aadhaar, salary slips, bank statements, employment proof. Processing time: 24-48 hours for digital loans. Charges: Processing fee 1-3%, prepayment charges 2-5%. Compare offers: Use CRED, BankBazaar, Paisa Bazaar. Avoid multiple applications (affects credit score).",
+      "tags": ["personal-loan", "unsecured-loan", "interest-rates", "quick-loan"],
+      "category": "loans",
+      "importance": "medium"
+    },
+    {
+      "id": "gold_investment",
+      "title": "Gold Investment Options in India",
+      "content": "Gold investment options: (1) Physical gold - jewelry, coins, bars - making charges high, storage concern, (2) Digital gold - buy from PayTM, PhonePe, Google Pay - min ₹1, stored in secure vault, can convert to physical, (3) Gold ETF - traded on stock market, expense ratio 0.5-1%, demat account needed, (4) Sovereign Gold Bonds (SGB) - issued by RBI, 2.5% annual interest, 5-8 year tenure, capital gains tax exempt if held till maturity, (5) Gold mutual funds - invest in gold ETFs, SIP option available. SGBs offer best returns. Physical gold loses value due to making charges (8-25%). Allocation: 5-10% of portfolio in gold for diversification.",
+      "tags": ["gold", "investment", "sovereign-gold-bonds", "etf", "precious-metals"],
+      "category": "investments",
+      "importance": "medium"
+    },
+    {
+      "id": "budget_planning",
+      "title": "Personal Budget Planning - 50/30/20 Rule",
+      "content": "Budget planning helps manage income and expenses effectively. Popular 50/30/20 rule: (1) 50% Needs - rent, utilities, groceries, EMIs, insurance, (2) 30% Wants - dining out, entertainment, shopping, hobbies, (3) 20% Savings/Investments - emergency fund, SIP, FD, retirement. Example for ₹50,000 income: ₹25,000 needs, ₹15,000 wants, ₹10,000 savings. Track expenses using apps: Money Manager, Wallet, ET Money. Monthly budget process: List all income sources, categorize expenses, identify overspending areas, set realistic limits, review weekly. Pay yourself first - transfer savings on salary day. Avoid lifestyle inflation when income increases.",
+      "tags": ["budgeting", "financial-planning", "savings", "expense-management"],
+      "category": "financial-planning",
+      "importance": "high"
+    },
+    {
+      "id": "ppf_account",
+      "title": "Public Provident Fund (PPF) Account Benefits",
+      "content": "PPF is a government-backed long-term savings scheme. Interest rate: 7.1% per annum (revised quarterly). Tenure: 15 years (extendable in 5-year blocks). Investment: Minimum ₹500/year, Maximum ₹1.5 lakh/year. Tax benefits: Triple E status - Exempt on investment (80C), Exempt on interest, Exempt on maturity. Partial withdrawal allowed after 5 years. Loan facility available from 3rd to 6th year. Open PPF at: Post office, SBI, ICICI, HDFC, PNB. Can be opened for minor child. Ideal for: Risk-averse investors, long-term goals, retirement planning. Automatic extension with or without contribution option available after 15 years.",
+      "tags": ["ppf", "public-provident-fund", "tax-free", "long-term", "government-scheme"],
+      "category": "investments",
+      "importance": "high"
+    },
+    {
+      "id": "aadhaar_pan_linking",
+      "title": "Aadhaar-PAN Linking Mandate and Process",
+      "content": "Aadhaar-PAN linking is mandatory as per Income Tax Act. Deadline: Extended multiple times by government. Penalty: ₹1,000 for late linking. PAN becomes inoperative if not linked - can't file ITR, TDS deducted at higher rate. Linking process: (1) SMS: Send to 567678 or 56161 - 'UIDPAN<12-digit Aadhaar><10-digit PAN>', (2) Online: Visit www.incometax.gov.in, click 'Link Aadhaar', enter details, submit OTP, (3) Offline: Visit nearest PAN center. Verification: Check status on e-filing portal. Required: Aadhaar and PAN should have exact same name, DOB. Name mismatch: Update Aadhaar/PAN first before linking.",
+      "tags": ["aadhaar", "pan", "kyc", "compliance", "income-tax"],
+      "category": "compliance",
+      "importance": "high"
+    },
+    {
+      "id": "nps_pension",
+      "title": "National Pension System (NPS) - Retirement Savings",
+      "content": "NPS is a government pension scheme for retirement. Two types: NPS Tier-I (lock-in till 60 years, tax benefits), NPS Tier-II (no lock-in, no tax benefits). Investment allocation: Equity (E), Corporate bonds (C), Government securities (G), Alternative investments (A). Auto/Active choice available. Returns: 9-12% historically (market-linked). Tax benefits: ₹1.5 lakh under 80C + additional ₹50,000 under 80CCD(1B). At retirement: 60% withdrawn (40% tax-free + 20% taxable), 40% annuity purchase mandatory. Minimum investment: ₹500/month. Low charges: 0.009% of assets. Ideal for: Long-term retirement planning, salaried employees, self-employed.",
+      "tags": ["nps", "pension", "retirement", "tax-saving", "80ccd"],
+      "category": "retirement",
+      "importance": "high"
+    },
+    {
+      "id": "education_loan",
+      "title": "Education Loan for Higher Studies in India/Abroad",
+      "content": "Education loans cover tuition fees, books, accommodation, travel. Loan amount: Up to ₹20 lakh for India, up to ₹50 lakh for abroad. Interest rates: 9-15% per annum (lower for premier institutions). Collateral: Not required for loans up to ₹7.5 lakh, required above. Repayment: Starts after course completion + 1 year grace period. Tax benefit: Interest paid on education loan is fully deductible under Section 80E for 8 years. Top lenders: SBI, Canara Bank, Bank of Baroda, Axis Bank, HDFC Credila. Documents: Admission letter, fee structure, academic records, income proof of co-borrower. Co-borrower mandatory (parent/guardian).",
+      "tags": ["education-loan", "higher-studies", "tax-benefit", "80e", "student-loan"],
+      "category": "loans",
+      "importance": "medium"
+    },
+    {
+      "id": "real_estate_investment",
+      "title": "Real Estate Investment - Residential vs Commercial",
+      "content": "Real estate investment types: (1) Residential - apartments, villas, plots for rental income or capital appreciation, (2) Commercial - offices, shops, warehouses for higher rental yield (7-9% vs 2-3% residential). Key factors: Location (connectivity, infrastructure), Builder reputation (RERA registered), Legal clearance (title deed, NOC, approvals), Budget (20-30% down payment, rest home loan). ROI timeline: 5-10 years minimum. Hidden costs: Registration (5-7%), brokerage (1-2%), maintenance, property tax. Liquidity issue: Takes months to sell. Tax: Capital gains - LTCG 20% with indexation after 2 years, STCG as per slab. Prefer REITs for smaller investment (₹10,000+).",
+      "tags": ["real-estate", "property", "investment", "rental-income", "capital-gains"],
+      "category": "investments",
+      "importance": "medium"
+    }
+  ]
+}
