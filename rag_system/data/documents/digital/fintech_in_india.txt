@@ -1,0 +1,9 @@
+Title: FinTech and Digital Finance in India
+
+FinTech stands for Financial Technology. It refers to the use of technology to provide faster and more efficient financial services.
+
+Examples include UPI payments, online lending, neobanks, robo-advisors, and digital insurance.
+
+India’s FinTech revolution has increased financial inclusion by allowing even small merchants and rural users to access banking digitally.
+
+Key regulators such as RBI, SEBI, and NPCI ensure security and compliance in FinTech operations.

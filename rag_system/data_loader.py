@@ -210,10 +210,10 @@ class DocumentLoader:
         all_documents = []
         supported_extensions = ['.txt', '.pdf', '.docx']
         
-        # Find all supported files
-        files = [f for f in directory.iterdir() if f.suffix.lower() in supported_extensions]
+        # Find all supported files (recursively search subdirectories)
+        files = [f for f in directory.rglob('*') if f.is_file() and f.suffix.lower() in supported_extensions]
         
-        logger.info(f"📂 Found {len(files)} documents in {directory}")
+        logger.info(f"📂 Found {len(files)} documents in {directory} (including subdirectories)")
         
         # Process each file
         for file_path in files:

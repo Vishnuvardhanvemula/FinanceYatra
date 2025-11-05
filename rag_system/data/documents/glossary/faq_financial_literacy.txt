@@ -1,0 +1,16 @@
+Title: Financial Literacy FAQ
+
+Q: Why should I save money?
+A: Savings protect you during emergencies and help achieve goals.
+
+Q: What is a good credit score?
+A: 750 or above is considered good in India.
+
+Q: How can I avoid online fraud?
+A: Never share OTP or banking details. Verify payment links and report fraud to your bank.
+
+Q: What is the benefit of insurance?
+A: It provides financial protection against risks like illness, accidents, or death.
+
+Q: How do mutual funds work?
+A: They collect money from many investors and invest in various securities to generate returns.

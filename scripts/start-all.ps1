@@ -53,7 +53,7 @@ Write-Host "Starting Node.js Backend (port 5000)..." -ForegroundColor Yellow
 Write-Host "   Opening new terminal for Node.js..." -ForegroundColor Gray
 
 $backendPath = Join-Path $projectRoot "backend"
-$backendCommand = "cd '$backendPath'; Write-Host '==========================================' -ForegroundColor Blue; Write-Host '  Node.js Backend Starting...' -ForegroundColor Blue; Write-Host '==========================================' -ForegroundColor Blue; npm run dev"
+$backendCommand = "cd '$backendPath'; `$env:USE_PYTHON_RAG='true'; `$env:PYTHON_RAG_URL='http://localhost:8000'; Write-Host '==========================================' -ForegroundColor Blue; Write-Host '  Node.js Backend Starting...' -ForegroundColor Blue; Write-Host '==========================================' -ForegroundColor Blue; npm run dev"
 
 Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCommand
 
