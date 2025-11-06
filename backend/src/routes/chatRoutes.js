@@ -4,6 +4,9 @@ import translationService from '../services/translationService.js';
 import llmService from '../services/llmService.js';
 import { v4 as uuidv4 } from 'uuid';
 import mongoose from 'mongoose';
+import { optionalAuth } from '../middleware/authMiddleware.js';
+import proficiencyService from '../services/proficiencyService.js';
+import User from '../models/User.js';
 
 const router = express.Router();
 
@@ -16,7 +19,7 @@ function isMongoConnected() {
  * POST /api/chat/message
  * Send a message and get AI response
  */
-router.post('/message', async (req, res) => {
+router.post('/message', optionalAuth, async (req, res) => {
   try {
     const { message, sessionId, language } = req.body;
 
@@ -87,6 +90,41 @@ router.post('/message', async (req, res) => {
       });
 
       await session.save();
+    }
+
+    // Step 5: Track user progress and assess proficiency (if authenticated)
+    if (req.user && isMongoConnected()) {
+      try {
+        const user = await User.findById(req.userId);
+        if (user) {
+          // Track this question
+          await user.trackQuestion('general'); // You can extract topic from message later
+          
+          // Check if we should assess proficiency
+          if (proficiencyService.shouldReassess(user)) {
+            console.log('🔍 Assessing user proficiency...');
+            
+            // Get recent questions from session
+            const recentQuestions = session ? 
+              session.messages
+                .filter(msg => msg.role === 'user')
+                .slice(-10)
+                .map(msg => msg.content) 
+              : [message];
+            
+            // Detect proficiency
+            const analysis = await proficiencyService.detectProficiency(recentQuestions);
+            
+            // Update user profile
+            await user.updateProficiency(analysis.level, analysis.score);
+            
+            console.log(`✅ Proficiency updated: ${analysis.level} (score: ${analysis.score})`);
+          }
+        }
+      } catch (error) {
+        console.error('⚠️ Proficiency tracking error:', error.message);
+        // Don't fail the chat request if proficiency tracking fails
+      }
     }
 
     // Return response

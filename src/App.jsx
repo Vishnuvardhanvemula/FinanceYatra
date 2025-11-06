@@ -1,43 +1,73 @@
-import { useState } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ChatPage from './pages/ChatPage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import OnboardingPage from './pages/OnboardingPage';
 
-function Navbar({ onNavigate, currentPage }) {
+function Navbar() {
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
   return (
     <nav className="bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center cursor-pointer" onClick={() => onNavigate('home')}>
+          <Link to="/" className="flex items-center">
             <h1 className="text-xl font-bold text-indigo-600">financeYatra</h1>
-          </div>
+          </Link>
           <div className="hidden md:flex space-x-8">
-            <button 
-              onClick={() => onNavigate('home')}
-              className={`${currentPage === 'home' ? 'text-indigo-600' : 'text-gray-700'} hover:text-indigo-600 transition`}
-            >
+            <Link to="/" className="text-gray-700 hover:text-indigo-600 transition">
               Home
-            </button>
-            <button 
-              onClick={() => onNavigate('chat')}
-              className={`${currentPage === 'chat' ? 'text-indigo-600' : 'text-gray-700'} hover:text-indigo-600 transition`}
-            >
+            </Link>
+            <Link to="/chat" className="text-gray-700 hover:text-indigo-600 transition">
               Chat Assistant
-            </button>
+            </Link>
             <a href="#" className="text-gray-700 hover:text-indigo-600 transition">About</a>
             <a href="#" className="text-gray-700 hover:text-indigo-600 transition">Contact</a>
           </div>
           <div className="flex items-center space-x-4">
-            <button className="text-gray-700 hover:text-indigo-600 transition">Sign In</button>
-            <button 
-              onClick={() => onNavigate('chat')}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
-            >
-              Start Chatting
-            </button>
+            {isAuthenticated ? (
+              <>
+                <span className="text-sm text-gray-700">
+                  Hi, {user?.name}
+                  {user?.proficiencyLevel && user.proficiencyLevel !== 'unknown' && (
+                    <span className="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">
+                      {user.proficiencyLevel}
+                    </span>
+                  )}
+                </span>
+                <button 
+                  onClick={handleLogout}
+                  className="text-gray-700 hover:text-indigo-600 transition"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="text-gray-700 hover:text-indigo-600 transition">
+                  Sign In
+                </Link>
+                <Link 
+                  to="/signup"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
     </nav>
-  )
+  );
 }
 
 function Footer() {
@@ -87,22 +117,12 @@ function Footer() {
   )
 }
 
-export default function App() {
-  const [currentPage, setCurrentPage] = useState('home');
+function HomePage() {
+  const navigate = useNavigate();
 
-  const handleNavigate = (page) => {
-    setCurrentPage(page);
-  };
-
-  // If on chat page, show full-screen chat
-  if (currentPage === 'chat') {
-    return <ChatPage />;
-  }
-
-  // Otherwise show home page
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar onNavigate={handleNavigate} currentPage={currentPage} />
+      <Navbar />
       
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -150,7 +170,7 @@ export default function App() {
 
           <div className="text-center mt-12">
             <button 
-              onClick={() => handleNavigate('chat')}
+              onClick={() => navigate('/chat')}
               className="px-8 py-3 bg-indigo-600 text-white text-lg rounded-md hover:bg-indigo-700 transition shadow-md"
             >
               Start Learning Today
@@ -161,5 +181,21 @@ export default function App() {
 
       <Footer />
     </div>
-  )
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
+          <Route path="/chat" element={<ChatPage />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
+  );
 }

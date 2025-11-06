@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import MessageList from '../components/MessageList';
 import MessageInput from '../components/MessageInput';
 import LanguageSelector from '../components/LanguageSelector';
 import chatService from '../services/chatService';
 
 export default function ChatPage() {
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout, refreshUser } = useAuth();
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -62,6 +66,13 @@ export default function ChatPage() {
       };
       
       setMessages(prev => [...prev, assistantMessage]);
+      
+      // Refresh user profile to get updated proficiency (if authenticated)
+      if (isAuthenticated) {
+        setTimeout(() => {
+          refreshUser();
+        }, 1000); // Delay to allow backend to update
+      }
     } catch (error) {
       setError(error.message);
       console.error('Send message error:', error);
@@ -98,37 +109,96 @@ export default function ChatPage() {
     }
   };
 
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
+  const getProficiencyBadge = () => {
+    if (!user || !user.proficiencyLevel || user.proficiencyLevel === 'unknown') {
+      return null;
+    }
+
+    const badges = {
+      beginner: { text: 'Beginner', color: 'bg-green-100 text-green-700' },
+      intermediate: { text: 'Intermediate', color: 'bg-yellow-100 text-yellow-700' },
+      expert: { text: 'Expert', color: 'bg-red-100 text-red-700' }
+    };
+
+    const badge = badges[user.proficiencyLevel];
+    return badge ? (
+      <span className={`text-xs px-2 py-1 rounded ${badge.color}`}>
+        {badge.text}
+      </span>
+    ) : null;
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-indigo-600">financeYatra</h1>
-            <p className="text-sm text-gray-600">Your Multilingual Financial Learning Assistant 🦙</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <LanguageSelector 
-              selectedLanguage={selectedLanguage}
-              onLanguageChange={handleLanguageChange}
-            />
-            <button
-              onClick={toggleAutoSpeak}
-              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
-                autoSpeak 
-                  ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-              title={autoSpeak ? 'Auto-speak ON' : 'Auto-speak OFF'}
-            >
-              {autoSpeak ? '🔊 Auto-speak' : '🔇 Auto-speak'}
-            </button>
-            <button
-              onClick={handleNewChat}
-              className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              🔄 New Chat
-            </button>
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/')}
+                className="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
+              >
+                financeYatra
+              </button>
+              <p className="text-sm text-gray-600 hidden md:block">
+                Your Multilingual Financial Learning Assistant 🦙
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              {/* User Info */}
+              {isAuthenticated && user ? (
+                <div className="flex items-center gap-2 mr-2">
+                  <span className="text-sm text-gray-700">
+                    Hi, {user.name}
+                  </span>
+                  {getProficiencyBadge()}
+                </div>
+              ) : (
+                <button
+                  onClick={() => navigate('/login')}
+                  className="text-sm text-gray-600 hover:text-indigo-600 transition-colors"
+                >
+                  Sign In
+                </button>
+              )}
+              
+              <LanguageSelector 
+                selectedLanguage={selectedLanguage}
+                onLanguageChange={handleLanguageChange}
+              />
+              <button
+                onClick={toggleAutoSpeak}
+                className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+                  autoSpeak 
+                    ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+                title={autoSpeak ? 'Auto-speak ON' : 'Auto-speak OFF'}
+              >
+                {autoSpeak ? '🔊' : '🔇'}
+              </button>
+              <button
+                onClick={handleNewChat}
+                className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                🔄 New
+              </button>
+              {isAuthenticated && (
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-gray-700"
+                >
+                  Logout
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

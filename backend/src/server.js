@@ -4,7 +4,9 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import chatRoutes from './routes/chatRoutes.js';
 import ttsRoutes from './routes/ttsRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import llmService from './services/llmService.js';
+import pythonRagService from './services/pythonRagService.js';
 
 // Load environment variables
 dotenv.config();
@@ -29,6 +31,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/chat', chatRoutes);
 app.use('/api/tts', ttsRoutes);
+app.use('/api/auth', authRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -65,20 +68,15 @@ app.use((err, req, res, next) => {
 // Database connection
 async function connectDatabase() {
   try {
-    const mongoUri = process.env.MONGODB_URI;
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/financeyatra';
     
-    if (!mongoUri || mongoUri === 'mongodb://localhost:27017/financeyatra') {
-      console.warn('⚠️  MongoDB URI not configured. Running without database.');
-      console.warn('   Chat history will not be persisted.');
-      return false;
-    }
-
     await mongoose.connect(mongoUri);
     console.log('✅ Connected to MongoDB');
+    console.log(`📊 Database: ${mongoUri}`);
     return true;
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
-    console.warn('   Continuing without database. Chat history will not be persisted.');
+    console.warn('⚠️  Continuing without database. User authentication disabled.');
     return false;
   }
 }
@@ -87,6 +85,9 @@ async function connectDatabase() {
 async function startServer() {
   // Connect to database (optional)
   await connectDatabase();
+
+  // Initialize Python RAG service
+  await pythonRagService.initialize();
 
   // Initialize LLM service
   llmService.initialize();
