@@ -42,7 +42,8 @@ class QueryRequest(BaseModel):
     """Request model for chat query"""
     query: str = Field(..., description="User's question", min_length=1)
     language: Optional[str] = Field(None, description="Target language code (en, hi, te, etc.)")
-    k: Optional[int] = Field(3, description="Number of context documents to retrieve", ge=1, le=10)
+    proficiency_level: Optional[str] = Field(None, description="User proficiency level: beginner, intermediate, expert")
+    k: Optional[int] = Field(2, description="Number of context documents to retrieve", ge=1, le=10)
     return_sources: Optional[bool] = Field(True, description="Include source documents in response")
     metadata_filter: Optional[Dict[str, Any]] = Field(None, description="Filter for vector search")
 
@@ -134,13 +135,14 @@ async def chat_query(request: QueryRequest):
         if rag_pipeline is None:
             raise HTTPException(status_code=503, detail="RAG pipeline not initialized")
         
-        logger.info(f"📝 Received query: '{request.query[:50]}...'")
+        logger.info(f"📝 Received query: '{request.query[:50]}...' [Level: {request.proficiency_level or 'unknown'}]")
         
         # Process query through RAG pipeline
         result = rag_pipeline.query(
             user_query=request.query,
             k=request.k,
             language=request.language,
+            proficiency_level=request.proficiency_level,
             metadata_filter=request.metadata_filter,
             return_sources=request.return_sources
         )
@@ -205,10 +207,15 @@ if __name__ == "__main__":
     ╚══════════════════════════════════════════════════════╝
     """)
     
+    # Check if running in production (set ENVIRONMENT=production in .env)
+    import os
+    is_production = os.getenv("ENVIRONMENT", "development") == "production"
+    
     uvicorn.run(
         "app:app",
         host=config.API_HOST,
         port=config.API_PORT,
-        reload=True,  # Auto-reload on code changes
-        log_level="info"
+        reload=not is_production,  # Auto-reload only in development
+        log_level="info",
+        access_log=False  # Reduce log noise
     )

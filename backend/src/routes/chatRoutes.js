@@ -4,7 +4,7 @@ import translationService from '../services/translationService.js';
 import llmService from '../services/llmService.js';
 import { v4 as uuidv4 } from 'uuid';
 import mongoose from 'mongoose';
-import { optionalAuth } from '../middleware/authMiddleware.js';
+import { optionalAuth, authenticate } from '../middleware/authMiddleware.js';
 import proficiencyService from '../services/proficiencyService.js';
 import User from '../models/User.js';
 
@@ -27,29 +27,51 @@ router.post('/message', optionalAuth, async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    // Get or create session (only if MongoDB is connected)
+    // Get or create session (only if user is authenticated and MongoDB is connected)
     let session = null;
     let messageHistory = [];
     
-    if (isMongoConnected() && sessionId) {
-      session = await ChatSession.findOne({ sessionId });
+    if (req.user && isMongoConnected() && sessionId) {
+      session = await ChatSession.findOne({ sessionId, userId: req.userId });
       if (session) {
         messageHistory = session.messages;
       }
     }
     
-    if (!session && isMongoConnected()) {
+    if (!session && req.user && isMongoConnected()) {
       const newSessionId = sessionId || uuidv4();
       session = new ChatSession({
         sessionId: newSessionId,
+        userId: req.userId,
         preferredLanguage: language || 'en',
         messages: []
       });
     }
 
     const currentSessionId = sessionId || uuidv4();
+    
+    // Log chat mode
+    if (req.user) {
+      console.log(`💬 Authenticated chat - User: ${req.userId}, Session will be saved`);
+    } else {
+      console.log(`💬 Guest chat - Session will NOT be saved`);
+    }
 
-    // Step 1: Detect language and translate to English if needed
+    // Step 1: Get user proficiency level (if authenticated)
+    let userProficiencyLevel = null;
+    if (req.user && isMongoConnected()) {
+      try {
+        const user = await User.findById(req.userId);
+        if (user && user.proficiencyLevel !== 'unknown') {
+          userProficiencyLevel = user.proficiencyLevel;
+          console.log(`👤 User proficiency: ${userProficiencyLevel}`);
+        }
+      } catch (error) {
+        console.warn('⚠️ Could not fetch user proficiency:', error.message);
+      }
+    }
+
+    // Step 2: Detect language and translate to English if needed
     const { text: translatedMessage, detectedLanguage } = 
       await translationService.translateToEnglish(message, language);
 
@@ -59,22 +81,23 @@ router.post('/message', optionalAuth, async (req, res) => {
       session.preferredLanguage = preferredLanguage;
     }
 
-    // Step 2: Get response from LLM
+    // Step 3: Get response from LLM with proficiency level
     // Pass the target language to Python RAG - it will handle translation
     const targetLang = language || preferredLanguage || 'en';
     const response = await llmService.getResponse(
       translatedMessage,
       messageHistory,
-      targetLang  // Python RAG will translate to this language
+      targetLang,  // Python RAG will translate to this language
+      userProficiencyLevel  // Pass user's proficiency level
     );
 
-    // Step 3: Check if we need additional translation
+    // Step 4: Check if we need additional translation
     // Python RAG returns translated response based on the 'language' parameter
     // So we use the response directly
     const translatedResponse = response;
 
-    // Step 4: Save messages to database (only if MongoDB is connected)
-    if (session && isMongoConnected()) {
+    // Step 5: Save messages to database (only if user is authenticated and MongoDB is connected)
+    if (req.user && session && isMongoConnected()) {
       session.messages.push({
         role: 'user',
         content: message,
@@ -90,9 +113,12 @@ router.post('/message', optionalAuth, async (req, res) => {
       });
 
       await session.save();
+      console.log(`💾 Chat saved to database - Session: ${session.sessionId}`);
+    } else if (!req.user) {
+      console.log(`⚠️ Guest user - Chat NOT saved to database`);
     }
 
-    // Step 5: Track user progress and assess proficiency (if authenticated)
+    // Step 6: Track user progress and assess proficiency (if authenticated)
     if (req.user && isMongoConnected()) {
       try {
         const user = await User.findById(req.userId);
@@ -148,9 +174,9 @@ router.post('/message', optionalAuth, async (req, res) => {
 
 /**
  * GET /api/chat/history/:sessionId
- * Get chat history for a session
+ * Get chat history for a session (requires authentication)
  */
-router.get('/history/:sessionId', async (req, res) => {
+router.get('/history/:sessionId', authenticate, async (req, res) => {
   try {
     const { sessionId } = req.params;
     
@@ -161,11 +187,15 @@ router.get('/history/:sessionId', async (req, res) => {
       });
     }
     
-    const session = await ChatSession.findOne({ sessionId });
+    // IMPORTANT: Verify session belongs to authenticated user
+    const session = await ChatSession.findOne({ sessionId, userId: req.userId });
     
     if (!session) {
+      console.log(`❌ Unauthorized access attempt - User: ${req.userId}, Session: ${sessionId}`);
       return res.status(404).json({ error: 'Session not found' });
     }
+
+    console.log(`📜 Chat history retrieved - User: ${req.userId}, Session: ${sessionId}`);
 
     res.json({
       sessionId: session.sessionId,
@@ -182,33 +212,39 @@ router.get('/history/:sessionId', async (req, res) => {
 
 /**
  * POST /api/chat/session
- * Create a new chat session
+ * Create a new chat session (requires authentication to save to database)
  */
-router.post('/session', async (req, res) => {
+router.post('/session', optionalAuth, async (req, res) => {
   try {
     const { language } = req.body;
     const sessionId = uuidv4();
 
-    if (!isMongoConnected()) {
-      // Return session info without saving to database
+    // For guest users or when database is not available
+    if (!req.user || !isMongoConnected()) {
       return res.json({
         sessionId,
         preferredLanguage: language || 'en',
-        note: 'Session created in-memory (database not available)'
+        saved: false,
+        note: req.user ? 'Database not available' : 'Guest session - not saved to database'
       });
     }
 
+    // For authenticated users - save to database
     const session = new ChatSession({
       sessionId,
+      userId: req.userId,
       preferredLanguage: language || 'en',
       messages: []
     });
 
     await session.save();
 
+    console.log(`📝 New session created - User: ${req.userId}, Session: ${sessionId}`);
+
     res.json({
       sessionId: session.sessionId,
-      preferredLanguage: session.preferredLanguage
+      preferredLanguage: session.preferredLanguage,
+      saved: true
     });
 
   } catch (error) {
@@ -219,9 +255,9 @@ router.post('/session', async (req, res) => {
 
 /**
  * DELETE /api/chat/session/:sessionId
- * Delete a chat session
+ * Delete a chat session (requires authentication)
  */
-router.delete('/session/:sessionId', async (req, res) => {
+router.delete('/session/:sessionId', authenticate, async (req, res) => {
   try {
     const { sessionId } = req.params;
     
@@ -232,17 +268,57 @@ router.delete('/session/:sessionId', async (req, res) => {
       });
     }
     
-    const result = await ChatSession.deleteOne({ sessionId });
+    // IMPORTANT: Only delete if session belongs to authenticated user
+    const result = await ChatSession.deleteOne({ sessionId, userId: req.userId });
     
     if (result.deletedCount === 0) {
+      console.log(`❌ Unauthorized delete attempt - User: ${req.userId}, Session: ${sessionId}`);
       return res.status(404).json({ error: 'Session not found' });
     }
+
+    console.log(`🗑️ Session deleted - User: ${req.userId}, Session: ${sessionId}`);
 
     res.json({ message: 'Session deleted successfully' });
 
   } catch (error) {
     console.error('Delete session error:', error);
     res.status(500).json({ error: 'Failed to delete session' });
+  }
+});
+
+/**
+ * GET /api/chat/sessions
+ * Get all sessions for authenticated user
+ */
+router.get('/sessions', authenticate, async (req, res) => {
+  try {
+    if (!isMongoConnected()) {
+      return res.status(503).json({ 
+        error: 'Database not available',
+        message: 'Session list not available without MongoDB connection'
+      });
+    }
+
+    // Get all sessions for this user
+    const sessions = await ChatSession.find({ userId: req.userId })
+      .select('sessionId preferredLanguage createdAt updatedAt')
+      .sort({ updatedAt: -1 })
+      .limit(50);
+
+    console.log(`📋 Sessions list retrieved - User: ${req.userId}, Count: ${sessions.length}`);
+
+    res.json({
+      sessions: sessions.map(s => ({
+        sessionId: s.sessionId,
+        preferredLanguage: s.preferredLanguage,
+        createdAt: s.createdAt,
+        updatedAt: s.updatedAt
+      }))
+    });
+
+  } catch (error) {
+    console.error('Sessions list error:', error);
+    res.status(500).json({ error: 'Failed to fetch sessions' });
   }
 });
 

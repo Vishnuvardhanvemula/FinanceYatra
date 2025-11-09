@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 
 export default function MessageInput({ onSend, disabled, selectedLanguage = 'en' }) {
   const [message, setMessage] = useState('');
@@ -54,9 +55,9 @@ export default function MessageInput({ onSend, disabled, selectedLanguage = 'en'
       setIsListening(false);
       
       if (event.error === 'no-speech') {
-        alert('No speech detected. Please try again.');
+        toast.error('No speech detected. Please try again.', { duration: 3000 });
       } else if (event.error === 'not-allowed') {
-        alert('Microphone access denied. Please allow microphone access in your browser settings.');
+        toast.error('Microphone access denied. Please allow microphone access in your browser settings.', { duration: 5000 });
       }
     };
 
@@ -75,7 +76,7 @@ export default function MessageInput({ onSend, disabled, selectedLanguage = 'en'
 
   const handleVoiceInput = () => {
     if (!isSupported) {
-      alert('Voice input is not supported in your browser. Please use Chrome, Edge, or Safari.');
+      toast.error('Voice input is not supported in your browser. Please use Chrome, Edge, or Safari.', { duration: 4000 });
       return;
     }
 
@@ -106,7 +107,7 @@ export default function MessageInput({ onSend, disabled, selectedLanguage = 'en'
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t bg-white p-4">
+    <form onSubmit={handleSubmit} className="border-t bg-white dark:bg-gray-800 dark:border-gray-700 p-4">
       <div className="flex gap-2 max-w-4xl mx-auto">
         <input
           type="text"
@@ -115,7 +116,7 @@ export default function MessageInput({ onSend, disabled, selectedLanguage = 'en'
           onKeyPress={handleKeyPress}
           placeholder={isListening ? "Listening..." : "Ask me anything about finance... (type or speak in any language)"}
           disabled={disabled}
-          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+          className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 dark:focus:ring-teal-400 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
         />
         
         {/* Voice Input Button */}
@@ -127,8 +128,8 @@ export default function MessageInput({ onSend, disabled, selectedLanguage = 'en'
             className={`px-4 py-3 rounded-lg transition-all font-medium ${
               isListening 
                 ? 'bg-red-500 text-white hover:bg-red-600 animate-pulse' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            } disabled:bg-gray-300 disabled:cursor-not-allowed`}
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            } disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed`}
             title={isListening ? "Stop recording" : "Click to speak"}
           >
             {isListening ? (
@@ -147,7 +148,7 @@ export default function MessageInput({ onSend, disabled, selectedLanguage = 'en'
         <button
           type="submit"
           disabled={!message.trim() || disabled}
-          className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
+          className="px-6 py-3 bg-teal-600 dark:bg-teal-700 text-white rounded-lg hover:bg-teal-700 dark:hover:bg-teal-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors font-medium"
         >
           {disabled ? (
             <span className="flex items-center gap-2">
@@ -165,7 +166,7 @@ export default function MessageInput({ onSend, disabled, selectedLanguage = 'en'
       {/* Voice Input Instructions */}
       {isSupported && (
         <div className="max-w-4xl mx-auto mt-2">
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
             🎤 Click the microphone to speak • Supports {languageMap[selectedLanguage] ? 'your selected language' : 'English'}
           </p>
         </div>

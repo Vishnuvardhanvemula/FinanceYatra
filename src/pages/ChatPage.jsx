@@ -15,6 +15,13 @@ export default function ChatPage() {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [autoSpeak, setAutoSpeak] = useState(false); // Disabled by default to avoid autoplay issues
 
+  // Initialize session when user changes
+  useEffect(() => {
+    if (user?._id) {
+      chatService.initializeUserSession(user._id);
+    }
+  }, [user?._id]);
+
   // Load chat history on mount
   useEffect(() => {
     loadHistory();
@@ -28,11 +35,12 @@ export default function ChatPage() {
     if (savedAutoSpeak !== null) {
       setAutoSpeak(savedAutoSpeak === 'true');
     }
-  }, []);
+  }, [user?._id]);
 
   const loadHistory = async () => {
     try {
-      const data = await chatService.getHistory();
+      const userId = user?._id || null;
+      const data = await chatService.getHistory(userId);
       if (data.messages && data.messages.length > 0) {
         setMessages(data.messages);
       }
@@ -55,8 +63,9 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      // Send to backend with language preference
-      const response = await chatService.sendMessage(content, selectedLanguage);
+      // Send to backend with language preference and userId
+      const userId = user?._id || null;
+      const response = await chatService.sendMessage(content, selectedLanguage, userId);
       
       // Add assistant response
       const assistantMessage = {
@@ -103,13 +112,18 @@ export default function ChatPage() {
 
   const handleNewChat = () => {
     if (window.confirm('Start a new conversation? Current chat will be saved.')) {
-      chatService.clearSession();
+      const userId = user?._id || null;
+      chatService.clearSession(userId);
       setMessages([]);
       setError(null);
     }
   };
 
   const handleLogout = async () => {
+    // Clear chat sessions before logout for security
+    if (user?._id) {
+      chatService.clearAllUserSessions(user._id);
+    }
     await logout();
     navigate('/');
   };
@@ -134,86 +148,74 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b shadow-sm">
+    <div className="flex flex-col bg-gradient-to-br from-gray-50 via-teal-50/20 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" style={{ height: 'calc(100vh - 64px)' }}>
+      {/* Clean Chat Controls Bar */}
+      <div className="navbar-blur border-b border-gray-200/50 dark:border-gray-700/50">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center flex-wrap gap-4">
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate('/')}
-                className="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
-              >
-                financeYatra
-              </button>
-              <p className="text-sm text-gray-600 hidden md:block">
-                Your Multilingual Financial Learning Assistant 🦙
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              {/* User Info */}
-              {isAuthenticated && user ? (
-                <div className="flex items-center gap-2 mr-2">
-                  <span className="text-sm text-gray-700">
-                    Hi, {user.name}
-                  </span>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-teal-500 rounded-xl flex items-center justify-center shadow-md">
+                  <span className="text-xl">🤖</span>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    AI Financial Assistant
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Powered by Ollama LLM
+                  </p>
+                </div>
+              </div>
+              {isAuthenticated && user && (
+                <div className="hidden sm:block">
                   {getProficiencyBadge()}
                 </div>
-              ) : (
-                <button
-                  onClick={() => navigate('/login')}
-                  className="text-sm text-gray-600 hover:text-indigo-600 transition-colors"
-                >
-                  Sign In
-                </button>
               )}
-              
+            </div>
+            
+            <div className="flex items-center gap-2">
               <LanguageSelector 
                 selectedLanguage={selectedLanguage}
                 onLanguageChange={handleLanguageChange}
               />
               <button
                 onClick={toggleAutoSpeak}
-                className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+                className={`px-4 py-2.5 text-sm rounded-xl font-medium transition-all duration-200 shadow-sm ${
                   autoSpeak 
-                    ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-teal-500 text-white hover:bg-teal-600' 
+                    : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
                 }`}
                 title={autoSpeak ? 'Auto-speak ON' : 'Auto-speak OFF'}
               >
-                {autoSpeak ? '🔊' : '🔇'}
+                {autoSpeak ? '🔊 Auto' : '🔇 Manual'}
               </button>
               <button
                 onClick={handleNewChat}
-                className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                className="px-4 py-2.5 text-sm bg-white dark:bg-gray-700 hover:bg-teal-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl transition-all duration-200 font-medium border border-gray-200 dark:border-gray-600 shadow-sm"
               >
                 🔄 New
               </button>
-              {isAuthenticated && (
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-gray-700"
-                >
-                  Logout
-                </button>
-              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Error Banner */}
+      {/* Error Banner - Clean */}
       {error && (
-        <div className="bg-red-50 border-b border-red-200 px-4 py-3">
-          <div className="max-w-4xl mx-auto flex items-center gap-2 text-red-800">
-            <span>⚠️</span>
-            <span className="text-sm">{error}</span>
+        <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 px-4 py-3 animate-fadeIn">
+          <div className="max-w-4xl mx-auto flex items-center gap-3">
+            <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-sm">⚠️</span>
+            </div>
+            <span className="text-sm text-red-800 dark:text-red-200 flex-1">{error}</span>
             <button 
               onClick={() => setError(null)}
-              className="ml-auto text-red-600 hover:text-red-800"
+              className="ml-auto text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg p-1.5 transition-colors"
             >
-              ✕
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
         </div>
@@ -233,20 +235,6 @@ export default function ChatPage() {
         disabled={isLoading} 
         selectedLanguage={selectedLanguage}
       />
-
-      {/* Footer info */}
-      <div className="bg-white border-t px-4 py-2 text-center text-xs text-gray-500">
-        <div className="mb-1">
-          Supports: English, हिंदी, தமிழ், తెలుగు, বাংলা, ಕನ್ನಡ, മലയാളം, मराठी, ગુજરાતી, ਪੰਜਾਬੀ | Powered by Ollama 🦙
-        </div>
-        <div className={autoSpeak ? "text-indigo-600" : "text-amber-600"}>
-          {autoSpeak ? (
-            <>🔊 Auto-speak ON | Click speaker icons to replay</>
-          ) : (
-            <>💡 <strong>Tip:</strong> Click speaker icons (🔊) next to responses to hear them spoken in your language!</>
-          )}
-        </div>
-      </div>
     </div>
   );
 }

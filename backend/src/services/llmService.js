@@ -62,13 +62,20 @@ Always be encouraging and supportive of their financial learning journey.`;
    * @param {string} userMessage - User's message (already translated to English)
    * @param {Array} chatHistory - Previous messages
    * @param {string} targetLanguage - Target language for response
+   * @param {string} proficiencyLevel - User proficiency level (beginner/intermediate/expert)
    */
-  async getResponse(userMessage, chatHistory = [], targetLanguage = 'en') {
+  async getResponse(userMessage, chatHistory = [], targetLanguage = 'en', proficiencyLevel = null) {
     // Priority 1: Use Python RAG if available (primary system)
     if (this.usePythonRAG && this.pythonRag.isAvailable()) {
       try {
-        console.log('🐍 Using Python RAG system with Ollama...');
-        const ragResponse = await this.pythonRag.query(userMessage, targetLanguage, 3, true);
+        console.log(`🐍 Using Python RAG system with Ollama [Level: ${proficiencyLevel || 'unknown'}]...`);
+        const ragResponse = await this.pythonRag.query(
+          userMessage, 
+          targetLanguage, 
+          proficiencyLevel,
+          3, 
+          true
+        );
         
         // Python RAG handles translation internally, return the answer directly
         return ragResponse.answer;

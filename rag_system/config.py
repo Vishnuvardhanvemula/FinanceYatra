@@ -30,6 +30,10 @@ class Config:
         "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     )
     
+    # GPU Configuration
+    USE_GPU = os.getenv("USE_GPU", "false").lower() == "true"
+    GPU_DEVICE = int(os.getenv("GPU_DEVICE", "0"))
+    
     # Document Processing
     CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "250"))  # words per chunk
     CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "50"))  # overlap between chunks

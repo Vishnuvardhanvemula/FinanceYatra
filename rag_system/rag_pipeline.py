@@ -11,6 +11,7 @@ from langchain.schema import Document
 from vector_store import get_vector_store
 from llm_handler import get_llm
 from translation_service import get_translator
+from prompt_templates import get_system_prompt
 from config import config
 
 # Setup logging
@@ -58,26 +59,14 @@ class RAGPipeline:
             else config.ENABLE_TRANSLATION
         )
         
-        # System prompt for financial advisor
-        self.system_prompt = """You are FinanceYatra, a helpful and friendly financial literacy assistant for India.
-
-Your role:
-- Explain financial concepts in simple, easy-to-understand language
-- Use examples relevant to Indian context (₹ amounts, Indian banks, UPI, etc.)
-- Be accurate and base your answers on the provided context
-- If the context doesn't have enough information, be honest and say so
-- Keep responses concise (2-3 paragraphs maximum)
-- Use bullet points when listing multiple items
-
-Remember: You're helping people learn about money management, savings, loans, investments, and digital payments in India."""
-        
         logger.info("✅ RAG Pipeline ready")
     
     def query(
         self,
         user_query: str,
-        k: int = 3,
+        k: int = 2,
         language: Optional[str] = None,
+        proficiency_level: Optional[str] = None,
         metadata_filter: Optional[Dict[str, Any]] = None,
         return_sources: bool = True
     ) -> Dict[str, Any]:
@@ -88,6 +77,7 @@ Remember: You're helping people learn about money management, savings, loans, in
             user_query: User's question (any language)
             k: Number of context documents to retrieve
             language: Target language for response (auto-detect if None)
+            proficiency_level: User proficiency level (beginner/intermediate/expert)
             metadata_filter: Optional filter for vector search
             return_sources: Include source documents in response
             
@@ -98,7 +88,7 @@ Remember: You're helping people learn about money management, savings, loans, in
                 - query_language: Detected query language
                 - translation_used: Boolean indicating if translation was used
         """
-        logger.info(f"📝 Processing query: '{user_query[:50]}...'")
+        logger.info(f"📝 Processing query: '{user_query[:50]}...' [Level: {proficiency_level or 'unknown'}]")
         
         try:
             # Step 1: Detect query language
@@ -111,7 +101,7 @@ Remember: You're helping people learn about money management, savings, loans, in
                 english_query = self.translator.translate_to_english(user_query)
                 logger.info(f"🔄 Translated query: {english_query}")
             
-            # Step 3: Retrieve relevant context
+            # Step 3: Retrieve relevant context (retrieve more, filter by relevance)
             logger.info(f"🔍 Retrieving {k} relevant documents...")
             results = self.vector_store.similarity_search_with_score(
                 english_query,
@@ -119,8 +109,12 @@ Remember: You're helping people learn about money management, savings, loans, in
                 filter=metadata_filter
             )
             
+            # Filter by relevance threshold (only keep highly relevant documents)
+            relevance_threshold = 0.7  # Only use documents with similarity > 0.7
+            results = [(doc, score) for doc, score in results if score >= relevance_threshold]
+            
             if not results:
-                logger.warning("⚠️ No relevant documents found")
+                logger.warning("⚠️ No relevant documents found (below threshold)")
                 fallback_message = "I don't have enough information to answer that question. Please ask about financial topics like EMI, UPI, savings, loans, or investments."
                 
                 # Translate fallback message if needed
@@ -145,16 +139,20 @@ Remember: You're helping people learn about money management, savings, loans, in
             
             logger.info(f"✅ Retrieved {len(documents)} documents (avg score: {sum(scores)/len(scores):.3f})")
             
-            # Step 4: Generate answer using LLM + context
-            logger.info("🤖 Generating answer...")
+            # Step 4: Get level-specific system prompt
+            system_prompt = get_system_prompt(proficiency_level)
+            
+            # Step 5: Generate answer using LLM + context
+            logger.info(f"🤖 Generating answer [Level: {proficiency_level or 'unknown'}]...")
             english_answer = self.llm.generate_with_context(
                 query=english_query,
                 context_documents=context_texts,
-                system_prompt=self.system_prompt,
-                temperature=0.7
+                system_prompt=system_prompt,
+                temperature=0.7,
+                proficiency_level=proficiency_level
             )
             
-            # Step 5: Translate answer back to user's language
+            # Step 6: Translate answer back to user's language
             final_answer = english_answer
             translation_used = False
             
@@ -169,7 +167,7 @@ Remember: You're helping people learn about money management, savings, loans, in
                 )
                 translation_used = True
             
-            # Step 6: Prepare response
+            # Step 7: Prepare response
             response = {
                 "answer": final_answer,
                 "query_language": query_language,

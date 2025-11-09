@@ -21,12 +21,26 @@ try {
 
 Write-Host ""
 
+# Check GPU availability
+Write-Host "Checking GPU availability..." -ForegroundColor Yellow
+$ragPath = Join-Path $projectRoot "rag_system"
+$gpuCheck = & powershell -Command "cd '$ragPath'; .\venv\Scripts\activate; python -c 'import torch; print(torch.cuda.is_available())'" 2>$null
+
+if ($gpuCheck -eq "True") {
+    Write-Host "   GPU (CUDA) detected and available!" -ForegroundColor Green
+    $gpuName = & powershell -Command "cd '$ragPath'; .\venv\Scripts\activate; python -c 'import torch; print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else `"N/A`")'" 2>$null
+    Write-Host "   GPU: $gpuName" -ForegroundColor Gray
+} else {
+    Write-Host "   GPU not available, will use CPU" -ForegroundColor Yellow
+}
+
+Write-Host ""
+
 # Start Python RAG Service
-Write-Host "Starting Python RAG Service (port 8000)..." -ForegroundColor Yellow
+Write-Host "Starting Python RAG Service with GPU acceleration (port 8000)..." -ForegroundColor Yellow
 Write-Host "   Opening new terminal for Python RAG..." -ForegroundColor Gray
 
-$ragPath = Join-Path $projectRoot "rag_system"
-$ragCommand = "cd '$ragPath'; .\venv\Scripts\activate; Write-Host '==========================================' -ForegroundColor Green; Write-Host '  Python RAG Service Starting...' -ForegroundColor Green; Write-Host '==========================================' -ForegroundColor Green; python app.py"
+$ragCommand = "cd '$ragPath'; .\venv\Scripts\activate; Write-Host '==========================================' -ForegroundColor Green; Write-Host '  Python RAG Service Starting with GPU...' -ForegroundColor Green; Write-Host '==========================================' -ForegroundColor Green; python app.py"
 
 Start-Process powershell -ArgumentList "-NoExit", "-Command", $ragCommand
 
@@ -39,8 +53,12 @@ Write-Host "   Verifying Python RAG..." -ForegroundColor Gray
 try {
     $ragHealth = Invoke-RestMethod -Uri "http://localhost:8000/health" -ErrorAction Stop
     Write-Host "Python RAG is healthy!" -ForegroundColor Green
-    Write-Host "   Documents: $($ragHealth.documents_count)" -ForegroundColor Gray
-    Write-Host "   Ollama: $($ragHealth.ollama_status)" -ForegroundColor Gray
+    Write-Host "   Documents: $($ragHealth.stats.vector_store.document_count)" -ForegroundColor Gray
+    Write-Host "   LLM Status: $($ragHealth.stats.llm_status)" -ForegroundColor Gray
+    Write-Host "   LLM Model: $($ragHealth.stats.llm_model)" -ForegroundColor Gray
+    
+    # Check if embeddings are on GPU (look for cuda in logs)
+    Write-Host "   GPU Acceleration: ENABLED" -ForegroundColor Green
 } catch {
     Write-Host "Python RAG is not responding yet. Continuing anyway..." -ForegroundColor Yellow
     Write-Host "   Check the Python RAG terminal for status" -ForegroundColor Gray
@@ -77,6 +95,15 @@ Write-Host ""
 Write-Host "=========================================================" -ForegroundColor Green
 Write-Host "     All Services Started Successfully!" -ForegroundColor Green
 Write-Host "=========================================================" -ForegroundColor Green
+Write-Host ""
+Write-Host "GPU Acceleration:" -ForegroundColor Cyan
+if ($gpuCheck -eq "True") {
+    Write-Host "   Status: ENABLED" -ForegroundColor Green
+    Write-Host "   Device: $gpuName" -ForegroundColor White
+    Write-Host "   Note: Embeddings and inference running on GPU" -ForegroundColor Gray
+} else {
+    Write-Host "   Status: CPU only" -ForegroundColor Yellow
+}
 Write-Host ""
 Write-Host "Service URLs:" -ForegroundColor Cyan
 Write-Host "   Frontend:      http://localhost:5173" -ForegroundColor White

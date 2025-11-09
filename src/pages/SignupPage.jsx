@@ -77,34 +77,52 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-teal-50/20 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Subtle Background Elements */}
+      <div className="absolute inset-0 opacity-30 dark:opacity-20">
+        <div className="absolute top-20 right-10 w-72 h-72 bg-teal-400 dark:bg-teal-600 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl animate-pulse-slow"></div>
+        <div className="absolute bottom-20 left-10 w-72 h-72 bg-teal-500 dark:bg-teal-700 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl animate-pulse-slow" style={{animationDelay: '2s'}}></div>
+        <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-teal-400 dark:bg-teal-600 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl animate-pulse-slow" style={{animationDelay: '4s'}}></div>
+      </div>
+
+      <div className="max-w-md w-full relative z-10">
         {/* Logo/Brand */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-indigo-600 mb-2">
-            financeYatra
-          </h1>
-          <p className="text-gray-600">
+        <div className="text-center mb-8 animate-fadeIn">
+          <div className="inline-flex items-center gap-3 mb-3">
+            <div className="w-14 h-14 bg-gradient-to-br from-teal-500 to-teal-600 dark:from-teal-600 dark:to-teal-700 rounded-2xl flex items-center justify-center shadow-lg hover:scale-105 transition-transform duration-300">
+              <span className="text-white text-2xl font-bold">₹</span>
+            </div>
+            <h1 className="text-4xl font-extrabold text-teal-600 dark:text-teal-400">
+              financeYatra
+            </h1>
+          </div>
+          <p className="text-gray-600 dark:text-gray-300 font-medium">
             Start Your Financial Literacy Journey
           </p>
         </div>
 
         {/* Signup Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            Create Account
-          </h2>
+        <div className="card-glass p-8 animate-fadeIn" style={{animationDelay: '100ms'}}>
+          <div className="mb-6">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              Create Account
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 text-sm">
+              Join thousands learning finance in their language
+            </p>
+          </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-              {error}
+            <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 dark:border-red-700 text-red-700 dark:text-red-300 rounded-lg text-sm flex items-center gap-3 animate-fadeIn">
+              <span className="text-xl">⚠️</span>
+              <span>{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Full Name
               </label>
               <input
@@ -113,15 +131,15 @@ const SignupPage = () => {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="input-modern"
                 placeholder="Raj Kumar"
               />
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Email Address
               </label>
               <input
                 type="email"
@@ -129,14 +147,14 @@ const SignupPage = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="input-modern"
                 placeholder="you@example.com"
               />
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Password
               </label>
               <input
@@ -146,17 +164,17 @@ const SignupPage = () => {
                 onChange={handleChange}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="input-modern"
                 placeholder="••••••••"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                 At least 6 characters
               </p>
             </div>
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Confirm Password
               </label>
               <input
@@ -165,21 +183,21 @@ const SignupPage = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="input-modern"
                 placeholder="••••••••"
               />
             </div>
 
             {/* Preferred Language */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Preferred Language
               </label>
               <select
                 name="preferredLanguage"
                 value={formData.preferredLanguage}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="input-modern"
               >
                 {LANGUAGES.map(lang => (
                   <option key={lang.code} value={lang.code}>
@@ -193,25 +211,57 @@ const SignupPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-gradient w-full text-lg mt-6"
             >
-              {loading ? 'Creating Account...' : 'Sign Up'}
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-5 h-5 spinner"></div>
+                  Creating Account...
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  Create Account
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </span>
+              )}
             </button>
           </form>
 
           {/* Login Link */}
-          <p className="mt-6 text-center text-sm text-gray-600">
+          <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-300">
             Already have an account?{' '}
-            <Link to="/login" className="text-indigo-600 font-semibold hover:text-indigo-700">
-              Log in
+            <Link to="/login" className="text-teal-600 dark:text-teal-400 font-bold hover:text-teal-700 dark:hover:text-teal-300 hover:underline">
+              Log in →
             </Link>
+          </p>
+
+          {/* Terms */}
+          <p className="mt-4 text-center text-xs text-gray-500 dark:text-gray-400">
+            By signing up, you agree to our{' '}
+            <a href="#" className="text-teal-600 dark:text-teal-400 hover:underline">Terms</a>
+            {' '}and{' '}
+            <a href="#" className="text-teal-600 dark:text-teal-400 hover:underline">Privacy Policy</a>
           </p>
         </div>
 
         {/* Features */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500">
-            🔒 Secure • 🌍 11 Languages • 🎤 Voice Enabled
+        <div className="mt-8 text-center animate-fadeIn" style={{animationDelay: '200ms'}}>
+          <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
+            <span className="flex items-center gap-1.5 bg-white/80 dark:bg-gray-800/80 px-4 py-2 rounded-full shadow-sm">
+              <span>✨</span>
+              <span className="font-medium text-gray-700 dark:text-gray-300">Free Forever</span>
+            </span>
+            <span className="flex items-center gap-1.5 bg-white/80 dark:bg-gray-800/80 px-4 py-2 rounded-full shadow-sm">
+              <span>🌍</span>
+              <span className="font-medium text-gray-700 dark:text-gray-300">11 Languages</span>
+            </span>
+            <span className="flex items-center gap-1.5 bg-white/80 dark:bg-gray-800/80 px-4 py-2 rounded-full shadow-sm">
+              <span>🤖</span>
+              <span className="font-medium text-gray-700 dark:text-gray-300">AI Powered</span>
+            </span>
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+            Secure • 11 Languages • Voice Enabled
           </p>
         </div>
       </div>

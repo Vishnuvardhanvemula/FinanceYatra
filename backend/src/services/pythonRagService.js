@@ -57,11 +57,12 @@ class PythonRAGService {
    * Query the Python RAG system
    * @param {string} query - User query
    * @param {string} language - Target language code (optional)
+   * @param {string} proficiencyLevel - User proficiency level (beginner/intermediate/expert)
    * @param {number} k - Number of context documents to retrieve
    * @param {boolean} returnSources - Include source documents
    * @returns {Promise<Object>} RAG response with answer and metadata
    */
-  async query(query, language = null, k = 3, returnSources = true) {
+  async query(query, language = null, proficiencyLevel = null, k = 3, returnSources = true) {
     if (!this.enabled || !this.isHealthy) {
       throw new Error('Python RAG service is not available');
     }
@@ -72,6 +73,7 @@ class PythonRAGService {
         {
           query: query,
           language: language,
+          proficiency_level: proficiencyLevel,
           k: k,
           return_sources: returnSources
         },

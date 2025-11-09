@@ -81,14 +81,20 @@ class OllamaLLM:
             else:
                 full_prompt = prompt
             
-            # Prepare request payload
+            # Prepare request payload with optimized settings for speed
             payload = {
                 "model": self.model,
                 "prompt": full_prompt,
                 "stream": False,
                 "options": {
                     "temperature": temperature,
-                    "num_predict": max_tokens
+                    "num_predict": max_tokens,
+                    "top_p": 0.9,            # Good quality sampling
+                    "top_k": 30,             # Balance quality and speed
+                    "repeat_penalty": 1.1,   # Prevent repetition (optimal for RAG)
+                    "num_ctx": 8192,         # Large context window to prevent document truncation
+                    "num_batch": 256,        # Larger batch for better GPU utilization
+                    "num_gpu": 1             # Use GPU
                 }
             }
             
@@ -120,7 +126,8 @@ class OllamaLLM:
         query: str,
         context_documents: List[str],
         system_prompt: Optional[str] = None,
-        temperature: float = 0.7
+        temperature: float = 0.7,
+        proficiency_level: Optional[str] = None
     ) -> str:
         """
         Generate response using retrieved context (RAG)
@@ -130,34 +137,41 @@ class OllamaLLM:
             context_documents: List of relevant document texts
             system_prompt: Optional system instructions
             temperature: Sampling temperature
+            proficiency_level: User level (beginner/intermediate/expert) for token limits
             
         Returns:
             Generated response grounded in context
         """
-        # Build context section
+        # Set max tokens based on proficiency level (reduced for conciseness)
+        max_tokens_map = {
+            'beginner': 200,      # ~140-150 words (concise)
+            'intermediate': 250,  # ~170-190 words
+            'expert': 300,        # ~200-230 words
+            'unknown': 200        # Default - shorter
+        }
+        max_tokens = max_tokens_map.get(proficiency_level, 200)
+        
+        # Build context section - use ONLY most relevant context
         context_text = "\n\n".join([
-            f"[Context {i+1}]\n{doc}" 
-            for i, doc in enumerate(context_documents)
+            f"[Context {i+1}]\n{doc[:500]}"  # Limit each context to 500 chars for focus
+            for i, doc in enumerate(context_documents[:1])  # Use ONLY top 1 most relevant
         ])
         
-        # Build RAG prompt
-        rag_prompt = f"""Context Information:
+        # Build focused RAG prompt
+        rag_prompt = f"""Context:
 {context_text}
 
-Based on the above context, please answer the following question. If the context doesn't contain enough information, say so clearly.
-
 Question: {query}
+
+Instructions: Answer ONLY the specific question asked. Stay focused and concise. Do not provide additional information about related topics unless directly asked.
 
 Answer:"""
         
         # Use system prompt if provided
         if not system_prompt:
-            system_prompt = """You are a helpful financial literacy assistant for India. 
-Your role is to explain financial concepts in simple, easy-to-understand language.
-Always provide accurate information based on the given context.
-If you're unsure or the context doesn't provide enough information, be honest about it."""
+            system_prompt = "You are a focused financial assistant. Answer ONLY what is asked, nothing more."
         
-        return self.generate(rag_prompt, system_prompt, temperature)
+        return self.generate(rag_prompt, system_prompt, temperature, max_tokens)
 
 
 def get_llm(model: str = None) -> OllamaLLM:

@@ -32,18 +32,35 @@ class MultilingualEmbeddings:
         
         logger.info(f"🔄 Loading embedding model: {self.model_name}")
         
+        # Determine device (GPU or CPU)
+        device = 'cpu'
+        if config.USE_GPU:
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    device = f'cuda:{config.GPU_DEVICE}'
+                    logger.info(f"🚀 GPU detected! Using device: {device}")
+                    logger.info(f"   GPU Name: {torch.cuda.get_device_name(config.GPU_DEVICE)}")
+                    logger.info(f"   GPU Memory: {torch.cuda.get_device_properties(config.GPU_DEVICE).total_memory / 1e9:.2f} GB")
+                else:
+                    logger.warning("⚠️  GPU requested but CUDA not available. Falling back to CPU.")
+            except ImportError:
+                logger.warning("⚠️  PyTorch not found. Falling back to CPU.")
+        else:
+            logger.info("💻 Using CPU for embeddings")
+        
         # Load HuggingFace embeddings
         # This will download the model on first run (~100-500MB depending on model)
         self.embeddings = HuggingFaceEmbeddings(
             model_name=self.model_name,
-            model_kwargs={'device': 'cpu'},  # Use 'cuda' if you have GPU
+            model_kwargs={'device': device},  # Use GPU if available
             encode_kwargs={
                 'normalize_embeddings': True,  # Normalize for cosine similarity
-                'batch_size': 32  # Process in batches for efficiency
+                'batch_size': 64 if device.startswith('cuda') else 32  # Larger batches on GPU
             }
         )
         
-        logger.info(f"✅ Embedding model loaded successfully")
+        logger.info(f"✅ Embedding model loaded successfully on {device}")
     
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
         """

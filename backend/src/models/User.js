@@ -86,6 +86,29 @@ const userSchema = new mongoose.Schema({
     type: Date
   },
   
+  // Learning Modules Progress
+  moduleProgress: [{
+    moduleId: {
+      type: String,
+      required: true
+    },
+    completedLessons: [{
+      type: Number
+    }],
+    startedAt: {
+      type: Date,
+      default: Date.now
+    },
+    completedAt: {
+      type: Date
+    },
+    quizScore: {
+      type: Number,
+      min: 0,
+      max: 100
+    }
+  }],
+  
   // Gamification
   achievements: [{
     id: String,
@@ -93,6 +116,26 @@ const userSchema = new mongoose.Schema({
     unlockedAt: Date
   }],
   totalPoints: {
+    type: Number,
+    default: 0
+  },
+  
+  // Analytics & Activity Tracking
+  activityLog: [{
+    type: Date
+  }],
+  proficiencyHistory: [{
+    level: {
+      type: String,
+      enum: ['beginner', 'intermediate', 'expert']
+    },
+    score: Number,
+    assessedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  chatCount: {
     type: Number,
     default: 0
   },
@@ -169,6 +212,75 @@ userSchema.methods.trackQuestion = function(topic) {
   
   this.lastActiveDate = new Date();
   return this.save();
+};
+
+// Method to start a module
+userSchema.methods.startModule = function(moduleId) {
+  const existing = this.moduleProgress.find(m => m.moduleId === moduleId);
+  if (!existing) {
+    this.moduleProgress.push({
+      moduleId,
+      completedLessons: [],
+      startedAt: new Date()
+    });
+  }
+  return this.save();
+};
+
+// Method to complete a lesson
+userSchema.methods.completeLesson = function(moduleId, lessonIndex) {
+  let moduleProgress = this.moduleProgress.find(m => m.moduleId === moduleId);
+  
+  if (!moduleProgress) {
+    // Start module if not started
+    this.moduleProgress.push({
+      moduleId,
+      completedLessons: [lessonIndex],
+      startedAt: new Date()
+    });
+  } else {
+    // Add lesson if not already completed
+    if (!moduleProgress.completedLessons.includes(lessonIndex)) {
+      moduleProgress.completedLessons.push(lessonIndex);
+    }
+  }
+  
+  return this.save();
+};
+
+// Method to uncomplete a lesson
+userSchema.methods.uncompleteLesson = function(moduleId, lessonIndex) {
+  const moduleProgress = this.moduleProgress.find(m => m.moduleId === moduleId);
+  
+  if (moduleProgress) {
+    moduleProgress.completedLessons = moduleProgress.completedLessons.filter(
+      l => l !== lessonIndex
+    );
+  }
+  
+  return this.save();
+};
+
+// Method to complete a module
+userSchema.methods.completeModule = function(moduleId, quizScore = null) {
+  const moduleProgress = this.moduleProgress.find(m => m.moduleId === moduleId);
+  
+  if (moduleProgress) {
+    moduleProgress.completedAt = new Date();
+    if (quizScore !== null) {
+      moduleProgress.quizScore = quizScore;
+    }
+    
+    // Award points
+    this.totalPoints += 100; // Base points for completing a module
+  }
+  
+  return this.save();
+};
+
+// Method to get module progress
+userSchema.methods.getModuleProgress = function(moduleId) {
+  return this.moduleProgress.find(m => m.moduleId === moduleId);
 };
 
 const User = mongoose.model('User', userSchema);

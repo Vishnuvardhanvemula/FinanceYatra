@@ -104,6 +104,14 @@ export const AuthProvider = ({ children }) => {
   // Logout user
   const logout = async () => {
     try {
+      // Clear user-specific chat sessions before logout
+      if (user?._id) {
+        const userId = user._id;
+        // Clear user-specific chat session from localStorage
+        localStorage.removeItem(`chatSessionId_${userId}`);
+        console.log(`🔐 Cleared chat session for user: ${userId}`);
+      }
+      
       if (token) {
         await axios.post(`${API_URL}/auth/logout`);
       }
@@ -113,6 +121,7 @@ export const AuthProvider = ({ children }) => {
       setToken(null);
       setUser(null);
       localStorage.removeItem('authToken');
+      localStorage.removeItem('token'); // Also remove 'token' key if used
       delete axios.defaults.headers.common['Authorization'];
     }
   };

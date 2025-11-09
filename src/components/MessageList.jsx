@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
 
 export default function MessageList({ messages, isLoading, selectedLanguage = 'en', autoSpeak = true }) {
   const messagesEndRef = useRef(null);
@@ -6,6 +7,8 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
   const [isSpeechSupported, setIsSpeechSupported] = useState(false);
   const synthesisRef = useRef(null);
   const [availableVoices, setAvailableVoices] = useState([]);
+  const currentAudioRef = useRef(null);
+  const isStoppingRef = useRef(false);
 
   // Language code mapping for Text-to-Speech
   const ttsLanguageMap = {
@@ -63,6 +66,10 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
     return () => {
       if (synthesisRef.current) {
         synthesisRef.current.cancel();
+      }
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current = null;
       }
     };
   }, []);
@@ -223,6 +230,13 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
   // Helper: Play audio chunks one after another
   const playChunksSequentially = async (chunks, language, index) => {
     for (let i = 0; i < chunks.length; i++) {
+      // Check if user requested stop
+      if (isStoppingRef.current) {
+        console.log('⏹️ Playback stopped by user');
+        setSpeakingIndex(null);
+        return;
+      }
+      
       const chunk = chunks[i];
       console.log(`🔊 Playing chunk ${i + 1}/${chunks.length} (${chunk.length} chars)`);
       
@@ -250,21 +264,31 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
         // Play audio and wait for it to finish
         await new Promise((resolve, reject) => {
           const audio = new Audio(audioUrl);
+          currentAudioRef.current = audio;
           
           audio.onended = () => {
             console.log(`✅ Chunk ${i + 1} finished`);
             URL.revokeObjectURL(audioUrl);
+            currentAudioRef.current = null;
             resolve();
           };
           
           audio.onerror = (error) => {
             console.error(`❌ Chunk ${i + 1} playback error:`, error);
             URL.revokeObjectURL(audioUrl);
+            currentAudioRef.current = null;
             reject(error);
           };
           
           audio.play().catch(reject);
         });
+        
+        // Check again after each chunk
+        if (isStoppingRef.current) {
+          console.log('⏹️ Playback stopped by user');
+          setSpeakingIndex(null);
+          return;
+        }
         
       } catch (error) {
         console.error(`❌ Error playing chunk ${i + 1}:`, error);
@@ -281,7 +305,9 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
     if (!synthesisRef.current) {
       setSpeakingIndex(null);
       console.error('❌ Speech synthesis not available');
-      alert(`⚠️ Cannot play audio in ${language}.\n\nYour browser may not support text-to-speech for this language.\nPlease enable auto-speak and click speaker icons manually.`);
+      toast.error(`Cannot play audio in ${language}. Your browser may not support text-to-speech for this language.`, {
+        duration: 5000,
+      });
       return;
     }
     
@@ -331,11 +357,17 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
       setSpeakingIndex(null);
       
       if (event.error === 'not-allowed') {
-        alert(`⚠️ Speech blocked by browser.\n\nPlease:\n1. Allow audio playback\n2. Click the speaker icon manually instead of auto-play`);
+        toast.error('Speech blocked by browser. Please allow audio playback and try clicking the speaker icon manually.', {
+          duration: 5000,
+        });
       } else if (event.error === 'network') {
-        alert(`⚠️ Network error. Please check your internet connection.`);
+        toast.error('Network error. Please check your internet connection.', {
+          duration: 4000,
+        });
       } else {
-        alert(`⚠️ Cannot speak in ${language}.\n\nTo hear responses:\n1. Turn OFF auto-speak\n2. Click speaker icons manually after responses appear`);
+        toast.error(`Cannot speak in ${language}. Try turning OFF auto-speak and click speaker icons manually.`, {
+          duration: 5000,
+        });
       }
     };
     
@@ -343,10 +375,26 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
   };
 
   const stopSpeaking = () => {
+    isStoppingRef.current = true;
+    
+    // Stop Web Speech API
     if (synthesisRef.current) {
       synthesisRef.current.cancel();
-      setSpeakingIndex(null);
     }
+    
+    // Stop audio playback (Google TTS)
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.currentTime = 0;
+      currentAudioRef.current = null;
+    }
+    
+    setSpeakingIndex(null);
+    
+    // Reset the stopping flag after a short delay
+    setTimeout(() => {
+      isStoppingRef.current = false;
+    }, 100);
   };
 
   const toggleSpeak = (text, index) => {
@@ -358,7 +406,13 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest'
+      });
+    }
   };
 
   useEffect(() => {
@@ -370,19 +424,19 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">💬</div>
-          <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+          <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
             Welcome to financeYatra!
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-600 dark:text-gray-300 mb-4">
             I'm your financial learning assistant. Ask me anything about:
           </p>
           <div className="grid grid-cols-2 gap-2 text-sm text-left">
-            <div className="bg-indigo-50 p-3 rounded">💰 EMI & Loans</div>
-            <div className="bg-indigo-50 p-3 rounded">📱 UPI & Payments</div>
-            <div className="bg-indigo-50 p-3 rounded">📈 Investments</div>
-            <div className="bg-indigo-50 p-3 rounded">💵 Savings</div>
+            <div className="bg-indigo-50 dark:bg-gray-700 dark:text-gray-200 p-3 rounded">💰 EMI & Loans</div>
+            <div className="bg-indigo-50 dark:bg-gray-700 dark:text-gray-200 p-3 rounded">📱 UPI & Payments</div>
+            <div className="bg-indigo-50 dark:bg-gray-700 dark:text-gray-200 p-3 rounded">📈 Investments</div>
+            <div className="bg-indigo-50 dark:bg-gray-700 dark:text-gray-200 p-3 rounded">💵 Savings</div>
           </div>
-          <p className="text-sm text-gray-500 mt-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
             🌍 Type in any language - I understand Hindi, Tamil, Telugu, Bengali, and more!
           </p>
         </div>
@@ -401,8 +455,8 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
             <div
               className={`max-w-[80%] rounded-lg px-4 py-3 ${
                 msg.role === 'user'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-100 text-gray-800'
+                  ? 'bg-teal-600 dark:bg-teal-700 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
               }`}
             >
               <div className="flex items-start gap-2">
@@ -411,7 +465,7 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
                   {msg.timestamp && (
                     <div
                       className={`text-xs mt-1 ${
-                        msg.role === 'user' ? 'text-indigo-200' : 'text-gray-500'
+                        msg.role === 'user' ? 'text-teal-200 dark:text-teal-300' : 'text-gray-500 dark:text-gray-400'
                       }`}
                     >
                       {new Date(msg.timestamp).toLocaleTimeString()}
@@ -425,16 +479,18 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
                     onClick={() => toggleSpeak(msg.content, index)}
                     className={`flex-shrink-0 p-1.5 rounded-full transition-all ${
                       speakingIndex === index
-                        ? 'bg-indigo-500 text-white animate-pulse'
-                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        ? 'bg-red-500 text-white hover:bg-red-600'
+                        : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
                     }`}
-                    title={speakingIndex === index ? 'Stop speaking' : 'Read aloud'}
+                    title={speakingIndex === index ? 'Stop speaking (click to stop)' : 'Read aloud'}
                   >
                     {speakingIndex === index ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      // Stop icon (square)
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="6" width="12" height="12" rx="2" />
                       </svg>
                     ) : (
+                      // Speaker icon
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                       </svg>
@@ -448,14 +504,14 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
         
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 rounded-lg px-4 py-3">
+            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-3">
               <div className="flex items-center gap-2">
                 <div className="flex gap-1">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                  <span className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                  <span className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                  <span className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                 </div>
-                <span className="text-sm text-gray-600">Thinking...</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Thinking...</span>
               </div>
             </div>
           </div>

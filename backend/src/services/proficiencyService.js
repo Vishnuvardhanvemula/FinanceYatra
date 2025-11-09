@@ -50,8 +50,8 @@ Assessment:`;
       console.log('🔍 Analyzing user proficiency...');
       
       // Use Python RAG service to call Ollama
-      // Parameters: query, language, k (documents), returnSources
-      const response = await pythonRagService.query(analysisPrompt, 'en', 1, false);
+      // Parameters: query, language, proficiencyLevel, k (documents), returnSources
+      const response = await pythonRagService.query(analysisPrompt, 'en', null, 1, false);
       
       if (!response || !response.answer) {
         throw new Error('Failed to get LLM response for proficiency analysis');
