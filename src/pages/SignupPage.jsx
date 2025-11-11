@@ -221,7 +221,9 @@ const SignupPage = () => {
               ) : (
                 <span className="flex items-center justify-center gap-2">
                   Create Account
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
                 </span>
               )}
             </button>
@@ -230,8 +232,11 @@ const SignupPage = () => {
           {/* Login Link */}
           <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-300">
             Already have an account?{' '}
-            <Link to="/login" className="text-teal-600 dark:text-teal-400 font-bold hover:text-teal-700 dark:hover:text-teal-300 hover:underline">
-              Log in →
+            <Link to="/login" className="text-teal-600 dark:text-teal-400 font-bold hover:text-teal-700 dark:hover:text-teal-300 hover:underline inline-flex items-center gap-1">
+              <span>Log in</span>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
             </Link>
           </p>
 

@@ -6,6 +6,7 @@
 import express from 'express';
 import { authenticate } from '../middleware/authMiddleware.js';
 import User from '../models/User.js';
+import { learningModules } from '../data/learningModules.js';
 
 const router = express.Router();
 
@@ -104,9 +105,33 @@ router.post('/:moduleId/lessons/:lessonIndex/complete', authenticate, async (req
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Store current achievements before completing lesson
+    const currentAchievements = [...user.achievements];
+
     await user.completeLesson(moduleId, parseInt(lessonIndex));
     
     console.log(`✅ User ${user.name} completed lesson ${lessonIndex} in module ${moduleId}`);
+    
+    // Check for newly unlocked achievements - pass learningModules data
+    const { checkUnlockedAchievements, getNewAchievements, ACHIEVEMENTS } = await import('../services/achievementService.js');
+    const allUnlockedIds = checkUnlockedAchievements(user, learningModules);
+    const currentAchievementIds = currentAchievements.map(a => a.id);
+    const newlyUnlockedAchievements = getNewAchievements(currentAchievementIds, allUnlockedIds);
+    
+    // Update user achievements if there are new ones
+    if (newlyUnlockedAchievements.length > 0) {
+      // Add new achievements to existing ones
+      newlyUnlockedAchievements.forEach(achievement => {
+        user.achievements.push({
+          id: achievement.id,
+          name: achievement.title,
+          unlockedAt: new Date()
+        });
+      });
+      await user.save();
+      console.log(`🏆 User ${user.name} unlocked ${newlyUnlockedAchievements.length} achievement(s) after completing lesson ${lessonIndex}`);
+      console.log(`🏆 Achievement details:`, newlyUnlockedAchievements.map(a => ({ id: a.id, name: a.title })));
+    }
     
     const moduleProgress = user.getModuleProgress(moduleId);
     
@@ -115,7 +140,8 @@ router.post('/:moduleId/lessons/:lessonIndex/complete', authenticate, async (req
       message: 'Lesson marked as complete',
       moduleId,
       lessonIndex: parseInt(lessonIndex),
-      completedLessons: moduleProgress.completedLessons
+      completedLessons: moduleProgress.completedLessons,
+      newAchievements: newlyUnlockedAchievements
     });
   } catch (error) {
     console.error('Error completing lesson:', error);
@@ -170,7 +196,36 @@ router.post('/:moduleId/complete', authenticate, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Store current achievements before completing module
+    const currentAchievements = [...user.achievements];
+
     await user.completeModule(moduleId, quizScore);
+    
+    // Import achievement service dynamically
+    const { checkUnlockedAchievements, getNewAchievements, ACHIEVEMENTS } = await import('../services/achievementService.js');
+    
+    // Check for newly unlocked achievements - pass learningModules data
+    const allUnlockedIds = checkUnlockedAchievements(user, learningModules);
+    const currentAchievementIds = currentAchievements.map(a => a.id);
+    const newlyUnlocked = getNewAchievements(currentAchievementIds, allUnlockedIds);
+    
+    // Update user achievements if there are new ones
+    if (newlyUnlocked.length > 0) {
+      // Add new achievements to existing ones
+      newlyUnlocked.forEach(achievement => {
+        user.achievements.push({
+          id: achievement.id,
+          name: achievement.title,
+          unlockedAt: new Date()
+        });
+      });
+      await user.save();
+      console.log(`🏆 New achievements unlocked: ${newlyUnlocked.map(a => a.title).join(', ')}`);
+      console.log(`🏆 Achievement details:`, newlyUnlocked.map(a => ({ id: a.id, name: a.title })));
+    } else {
+      // Still need to save the module completion even if no new achievements
+      await user.save();
+    }
     
     console.log(`🎉 User ${user.name} completed module: ${moduleId}`);
     
@@ -183,7 +238,8 @@ router.post('/:moduleId/complete', authenticate, async (req, res) => {
       completedAt: moduleProgress.completedAt,
       quizScore: moduleProgress.quizScore,
       pointsEarned: 100,
-      totalPoints: user.totalPoints
+      totalPoints: user.totalPoints,
+      newAchievements: newlyUnlocked
     });
   } catch (error) {
     console.error('Error completing module:', error);

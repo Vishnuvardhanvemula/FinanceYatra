@@ -3,7 +3,7 @@
  * Displays all financial literacy modules with filtering and progress tracking
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,17 +21,35 @@ const ModulesPage = () => {
   const [completedModules, setCompletedModules] = useState([]);
   const [stats, setStats] = useState(null);
 
+  // Memoize the stringified moduleProgress to detect deep changes
+  const moduleProgressKey = useMemo(() => 
+    JSON.stringify(user?.moduleProgress || []),
+    [user?.moduleProgress]
+  );
+
   useEffect(() => {
     // Fetch user's completed modules if authenticated
     if (isAuthenticated && user) {
-      // TODO: Fetch from backend API
-      const completed = user.moduleProgress?.map(m => m.moduleId) || [];
+      console.log('ModulesPage - User data:', user);
+      console.log('ModulesPage - Module progress:', user.moduleProgress);
+      
+      // Get completed modules (those with completedAt date)
+      const completed = user.moduleProgress
+        ?.filter(m => {
+          console.log('Checking module:', m);
+          return m.completedAt;
+        })
+        ?.map(m => m.moduleId) || [];
+      
+      console.log('ModulesPage - Completed modules:', completed);
       setCompletedModules(completed);
-      setStats(getModuleStats(completed));
+      
+      // Pass both completed modules and full progress to get accurate stats
+      setStats(getModuleStats(completed, user.moduleProgress));
     } else {
-      setStats(getModuleStats([]));
+      setStats(getModuleStats([], []));
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, moduleProgressKey]);
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
@@ -74,6 +92,24 @@ const ModulesPage = () => {
     return completedModules.includes(moduleId);
   };
 
+  const isModuleInProgress = (moduleId) => {
+    if (!isAuthenticated || !user?.moduleProgress) return false;
+    const progress = user.moduleProgress.find(p => p.moduleId === moduleId);
+    return progress && progress.startedAt && !progress.completedAt;
+  };
+
+  const getModuleProgress = (moduleId) => {
+    if (!isAuthenticated || !user?.moduleProgress) return 0;
+    const progress = user.moduleProgress.find(p => p.moduleId === moduleId);
+    if (!progress) return 0;
+    
+    const module = learningModules.find(m => m.id === moduleId);
+    if (!module) return 0;
+    
+    const completedLessons = progress.completedLessons?.length || 0;
+    return Math.round((completedLessons / module.lessons) * 100);
+  };
+
   const filteredModules = selectedDifficulty === 'all'
     ? learningModules
     : getModulesByDifficulty(selectedDifficulty);
@@ -95,13 +131,19 @@ const ModulesPage = () => {
             <div>
               <button
                 onClick={() => navigate('/')}
-                className="text-indigo-600 dark:text-teal-400 hover:text-indigo-700 dark:hover:text-teal-300 mb-2 flex items-center gap-2"
+                className="text-indigo-600 dark:text-teal-400 hover:text-indigo-700 dark:hover:text-teal-300 mb-2 flex items-center gap-2 group"
               >
-                ← Back to Home
+                <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                <span>Back to Home</span>
               </button>
               <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Learning Modules</h1>
+              <p className="text-lg font-semibold text-teal-600 dark:text-teal-400 mt-2">
+                Interactive Learning. Real-Life Finance.
+              </p>
               <p className="text-gray-600 dark:text-gray-300 mt-1">
-                Master financial literacy with our structured learning path
+                Master financial literacy with our structured learning path powered by AI
               </p>
             </div>
             
@@ -199,37 +241,90 @@ const ModulesPage = () => {
           {filteredModules.map((module) => {
             const locked = isModuleLocked(module);
             const completed = isModuleCompleted(module.id);
+            const inProgress = isModuleInProgress(module.id);
+            const progressPercentage = getModuleProgress(module.id);
 
             return (
               <div
                 key={module.id}
                 onClick={() => handleModuleClick(module)}
-                className={`bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all cursor-pointer border-2 ${
+                className={`bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all cursor-pointer border-2 relative overflow-hidden ${
                   locked 
                     ? 'border-gray-300 dark:border-gray-600 opacity-60' 
                     : completed
-                    ? 'border-green-400 dark:border-green-600'
+                    ? 'border-green-500 dark:border-green-600 bg-green-50/50 dark:bg-green-900/10'
+                    : inProgress
+                    ? 'border-blue-500 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-900/10'
                     : 'border-transparent hover:border-indigo-300 dark:hover:border-teal-500'
                 }`}
               >
+                {/* Completion Badge Overlay */}
+                {completed && (
+                  <div className="absolute top-0 right-0 bg-gradient-to-br from-green-500 to-green-600 text-white px-3 py-1.5 text-xs font-bold rounded-bl-xl shadow-lg flex items-center gap-1 z-10">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    <span>COMPLETED</span>
+                  </div>
+                )}
+
+                {/* In Progress Badge Overlay */}
+                {!completed && inProgress && (
+                  <div className="absolute top-0 right-0 bg-gradient-to-br from-blue-500 to-blue-600 text-white px-3 py-1.5 text-xs font-bold rounded-bl-xl shadow-lg flex items-center gap-1 z-10">
+                    <svg className="w-3 h-3 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                    </svg>
+                    <span>IN PROGRESS {progressPercentage}%</span>
+                  </div>
+                )}
+
+                {/* Lock Overlay for Locked Modules */}
+                {locked && (
+                  <div className="absolute top-0 left-0 right-0 bottom-0 bg-gray-900/10 dark:bg-gray-900/30 flex items-center justify-center backdrop-blur-[1px] z-10">
+                    <div className="bg-white dark:bg-gray-800 rounded-full p-4 shadow-xl">
+                      <span className="text-4xl">🔒</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Progress Bar for In-Progress Modules */}
+                {!completed && inProgress && progressPercentage > 0 && (
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700">
+                    <div 
+                      className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
+                      style={{ width: `${progressPercentage}%` }}
+                    ></div>
+                  </div>
+                )}
+
                 {/* Module Header */}
-                <div className="p-6">
+                <div className={`p-6 ${completed || inProgress ? 'pt-12' : ''}`}>
                   <div className="flex items-start justify-between mb-3">
                     <div className="text-4xl">{module.icon}</div>
                     <div className="flex flex-col gap-2 items-end">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getDifficultyColor(module.difficulty)}`}>
                         {getDifficultyIcon(module.difficulty)} {module.difficulty.charAt(0).toUpperCase() + module.difficulty.slice(1)}
                       </span>
-                      {locked && (
-                        <span className="text-2xl">🔒</span>
-                      )}
-                      {completed && (
-                        <span className="text-2xl">✅</span>
-                      )}
                     </div>
                   </div>
 
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+                  <h3 className={`text-xl font-bold mb-2 flex items-center gap-2 ${
+                    completed 
+                      ? 'text-green-700 dark:text-green-400'
+                      : inProgress
+                      ? 'text-blue-700 dark:text-blue-400'
+                      : 'text-gray-800 dark:text-gray-100'
+                  }`}>
+                    {completed && (
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                    {!completed && inProgress && (
+                      <svg className="w-6 h-6 animate-spin" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                      </svg>
+                    )}
                     {module.title}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
@@ -302,15 +397,39 @@ const ModulesPage = () => {
                     ? 'bg-gray-50 dark:bg-gray-700' 
                     : completed
                     ? 'bg-green-50 dark:bg-green-900/20'
+                    : inProgress
+                    ? 'bg-blue-50 dark:bg-blue-900/20'
                     : 'bg-indigo-50 dark:bg-teal-900/20'
                 }`}>
                   <div className="text-center font-semibold text-sm">
                     {locked ? (
-                      <span className="text-gray-600 dark:text-gray-400">🔒 Complete Prerequisites First</span>
+                      <span className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                        </svg>
+                        Complete Prerequisites First
+                      </span>
                     ) : completed ? (
-                      <span className="text-green-700 dark:text-green-400">✅ Completed - Review Anytime</span>
+                      <span className="flex items-center justify-center gap-2 text-green-700 dark:text-green-400">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Completed - Review Anytime
+                      </span>
+                    ) : inProgress ? (
+                      <span className="flex items-center justify-center gap-2 text-blue-700 dark:text-blue-400">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        </svg>
+                        Continue Learning ({progressPercentage}% Complete)
+                      </span>
                     ) : (
-                      <span className="text-indigo-700 dark:text-teal-400">Start Learning →</span>
+                      <span className="flex items-center gap-2 text-indigo-700 dark:text-teal-400">
+                        <span>Start Learning</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                      </span>
                     )}
                   </div>
                 </div>

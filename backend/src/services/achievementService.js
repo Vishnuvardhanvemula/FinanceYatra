@@ -335,6 +335,40 @@ export function checkUnlockedAchievements(user, allModules) {
     if (avgScore >= 90) unlocked.push('quiz-master');
   }
 
+  // Special Achievements - Early Bird (completed module before 9 AM)
+  const hasEarlyBird = user.moduleProgress?.some(mp => {
+    if (mp.completedAt) {
+      const completedHour = new Date(mp.completedAt).getHours();
+      return completedHour < 9;
+    }
+    return false;
+  });
+  if (hasEarlyBird) unlocked.push('early-bird');
+
+  // Special Achievements - Night Owl (completed module after 10 PM)
+  const hasNightOwl = user.moduleProgress?.some(mp => {
+    if (mp.completedAt) {
+      const completedHour = new Date(mp.completedAt).getHours();
+      return completedHour >= 22; // 10 PM = 22:00
+    }
+    return false;
+  });
+  if (hasNightOwl) unlocked.push('night-owl');
+
+  // Special Achievements - Speed Learner (3 modules in one day)
+  if (user.moduleProgress && user.moduleProgress.length > 0) {
+    const completedByDate = {};
+    user.moduleProgress
+      .filter(mp => mp.completedAt)
+      .forEach(mp => {
+        const dateKey = new Date(mp.completedAt).toDateString();
+        completedByDate[dateKey] = (completedByDate[dateKey] || 0) + 1;
+      });
+    
+    const hasSpeedLearner = Object.values(completedByDate).some(count => count >= 3);
+    if (hasSpeedLearner) unlocked.push('speed-learner');
+  }
+
   return unlocked;
 }
 

@@ -275,11 +275,22 @@ export const getAccessibleModules = (completedModuleIds = []) => {
 
 /**
  * Get user's module progress statistics
+ * @param {Array} completedModuleIds - Array of completed module IDs
+ * @param {Array} moduleProgress - Array of module progress objects from user
+ * @returns {Object} Statistics about module completion
  */
-export const getModuleStats = (completedModuleIds = []) => {
+export const getModuleStats = (completedModuleIds = [], moduleProgress = []) => {
   const total = learningModules.length;
   const completed = completedModuleIds.length;
-  const inProgress = 0; // Will be calculated based on lessons completed
+  
+  // Calculate in-progress modules (started but not completed)
+  let inProgress = 0;
+  if (moduleProgress && moduleProgress.length > 0) {
+    inProgress = moduleProgress.filter(progress => {
+      // Module is in progress if it has started but not completed
+      return progress.startedAt && !progress.completedAt;
+    }).length;
+  }
   
   const byDifficulty = {
     beginner: learningModules.filter(m => m.difficulty === 'beginner').length,
@@ -306,7 +317,7 @@ export const getModuleStats = (completedModuleIds = []) => {
     total,
     completed,
     inProgress,
-    remaining: total - completed,
+    remaining: total - completed - inProgress,
     completionPercentage: Math.round((completed / total) * 100),
     byDifficulty,
     completedByDifficulty

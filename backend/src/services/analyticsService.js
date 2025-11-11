@@ -194,7 +194,6 @@ export function getRecentActivity(moduleProgress, allModules, limit = 5) {
         moduleId: progress.moduleId,
         moduleTitle: module.title,
         timestamp: progress.completedAt,
-        icon: '✅',
         description: `Completed ${module.title}`,
         points: 100,
       });
@@ -206,7 +205,6 @@ export function getRecentActivity(moduleProgress, allModules, limit = 5) {
         moduleId: progress.moduleId,
         moduleTitle: module.title,
         timestamp: progress.startedAt,
-        icon: '🚀',
         description: `Started ${module.title}`,
       });
     }

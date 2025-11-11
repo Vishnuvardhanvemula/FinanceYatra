@@ -1,9 +1,18 @@
 import axios from 'axios';
+import https from 'https';
 
 class TranslationService {
   constructor() {
     this.myMemoryBaseUrl = 'https://api.mymemory.translated.net/get';
     this.maxChunkLength = 400; // MyMemory limit is 500, use 400 for safety
+    
+    // Create axios instance with SSL verification disabled for MyMemory API
+    // This is needed because MyMemory has certificate issues
+    this.axiosInstance = axios.create({
+      httpsAgent: new https.Agent({  
+        rejectUnauthorized: false
+      })
+    });
     
     // Supported languages with their names
     this.supportedLanguages = {
@@ -128,7 +137,7 @@ class TranslationService {
       
       // If only one chunk, translate directly
       if (chunks.length === 1) {
-        const response = await axios.get(this.myMemoryBaseUrl, {
+        const response = await this.axiosInstance.get(this.myMemoryBaseUrl, {
           params: {
             q: chunks[0],
             langpair: `${sourceLang}|${targetLang}`
@@ -145,7 +154,7 @@ class TranslationService {
       const translatedChunks = [];
       for (const chunk of chunks) {
         try {
-          const response = await axios.get(this.myMemoryBaseUrl, {
+          const response = await this.axiosInstance.get(this.myMemoryBaseUrl, {
             params: {
               q: chunk,
               langpair: `${sourceLang}|${targetLang}`

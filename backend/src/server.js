@@ -102,11 +102,9 @@ async function startServer() {
     console.log('\n🚀 financeYatra Backend Server');
     console.log(`📡 Server running on: http://localhost:${PORT}`);
     console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
-    console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}\n`);
-    
-    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'your_openai_api_key_here') {
-      console.log('ℹ️  Note: Using mock AI responses. Set OPENAI_API_KEY for real GPT responses.\n');
-    }
+    console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🦙 AI Model: Ollama (llama3.2:1b)`);
+    console.log(`🐍 RAG System: Python FastAPI on http://localhost:8000\n`);
   });
 }
 

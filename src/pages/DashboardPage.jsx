@@ -1,23 +1,100 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
+// Helper function to render achievement icons as SVG
+const AchievementIcon = ({ icon }) => {
+  const iconMap = {
+    '🎉': { color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-100 dark:bg-purple-900/30', path: <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /> },
+    '💬': { color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-100 dark:bg-blue-900/30', path: <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" /> },
+    '📚': { color: 'text-green-600 dark:text-green-400', bg: 'bg-green-100 dark:bg-green-900/30', path: <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" /> },
+    '🎓': { color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-100 dark:bg-indigo-900/30', path: <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" /> },
+    '⭐': { color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-100 dark:bg-yellow-900/30', path: <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /> },
+    '🌟': { color: 'text-yellow-500 dark:text-yellow-300', bg: 'bg-yellow-100 dark:bg-yellow-900/30', path: <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /> },
+    '🏆': { color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-100 dark:bg-yellow-900/30', path: <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" /> },
+    '🟢': { color: 'text-green-600 dark:text-green-400', bg: 'bg-green-100 dark:bg-green-900/30', path: <circle cx="10" cy="10" r="6" /> },
+    '🟡': { color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-100 dark:bg-yellow-900/30', path: <circle cx="10" cy="10" r="6" /> },
+    '🔴': { color: 'text-red-600 dark:text-red-400', bg: 'bg-red-100 dark:bg-red-900/30', path: <circle cx="10" cy="10" r="6" /> },
+    '🔥': { color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-100 dark:bg-orange-900/30', path: <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" /> },
+    '💎': { color: 'text-cyan-600 dark:text-cyan-400', bg: 'bg-cyan-100 dark:bg-cyan-900/30', path: <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />, path2: <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" /> },
+    '📈': { color: 'text-green-600 dark:text-green-400', bg: 'bg-green-100 dark:bg-green-900/30', path: <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" /> },
+    '🎯': { color: 'text-red-600 dark:text-red-400', bg: 'bg-red-100 dark:bg-red-900/30', path: <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" /> },
+  };
+
+  // Handle multiple fire emojis for streaks
+  if (icon.includes('🔥')) {
+    const fireCount = (icon.match(/🔥/g) || []).length;
+    const fireIcon = iconMap['🔥'];
+    return (
+      <div className={`w-12 h-12 ${fireIcon.bg} rounded-full flex items-center justify-center relative`}>
+        <svg className={`w-7 h-7 ${fireIcon.color}`} fill="currentColor" viewBox="0 0 20 20">
+          {fireIcon.path}
+        </svg>
+        {fireCount > 1 && (
+          <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+            {fireCount}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  // Handle multiple diamond emojis
+  if (icon.includes('💎')) {
+    const diamondCount = (icon.match(/💎/g) || []).length;
+    const diamondIcon = iconMap['💎'];
+    return (
+      <div className={`w-12 h-12 ${diamondIcon.bg} rounded-full flex items-center justify-center relative`}>
+        <svg className={`w-7 h-7 ${diamondIcon.color}`} fill="currentColor" viewBox="0 0 20 20">
+          {diamondIcon.path}
+          {diamondIcon.path2}
+        </svg>
+        {diamondCount > 1 && (
+          <span className="absolute -top-1 -right-1 bg-cyan-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+            {diamondCount}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  const iconData = iconMap[icon] || iconMap['⭐']; // Default to star
+
+  return (
+    <div className={`w-12 h-12 ${iconData.bg} rounded-full flex items-center justify-center`}>
+      <svg className={`w-7 h-7 ${iconData.color}`} fill="currentColor" viewBox="0 0 20 20">
+        {iconData.path}
+        {iconData.path2}
+      </svg>
+    </div>
+  );
+};
+
 const DashboardPage = () => {
-  const { user, token } = useAuth();
+  const { user, token, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState(null);
   const [achievements, setAchievements] = useState(null);
   const [stats, setStats] = useState(null);
 
+  // Memoize user progress to detect changes
+  const userProgressKey = useMemo(() => 
+    JSON.stringify(user?.moduleProgress || []),
+    [user?.moduleProgress]
+  );
+
   useEffect(() => {
+    // Wait for auth to finish loading before checking
+    if (authLoading) return;
+    
     if (!user || !token) {
       navigate('/login');
       return;
     }
 
     fetchDashboardData();
-  }, [user, token, navigate]);
+  }, [user, token, authLoading, navigate, userProgressKey]);
 
   const fetchDashboardData = async () => {
     try {
@@ -69,11 +146,17 @@ const DashboardPage = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Welcome back, {user?.name}! 👋
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-3">
+            Welcome back, {user?.name}!
+            <svg className="w-10 h-10 text-yellow-500 dark:text-yellow-400 inline-block animate-wave" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
+            </svg>
           </h1>
+          <p className="text-lg font-semibold text-teal-600 dark:text-teal-400 mb-1">
+            Empowering You to Master Money
+          </p>
           <p className="text-gray-600 dark:text-gray-300">
-            Here's your learning progress and achievements
+            Track your progress, celebrate achievements, and continue your financial learning journey
           </p>
         </div>
 
@@ -90,7 +173,10 @@ const DashboardPage = () => {
                   </p>
                 </div>
                 <div className="bg-yellow-100 dark:bg-yellow-900/30 rounded-full p-3">
-                  <span className="text-3xl">💎</span>
+                  <svg className="w-8 h-8 text-yellow-600 dark:text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                  </svg>
                 </div>
               </div>
             </div>
@@ -105,7 +191,9 @@ const DashboardPage = () => {
                   </p>
                 </div>
                 <div className="bg-orange-100 dark:bg-orange-900/30 rounded-full p-3">
-                  <span className="text-3xl">🔥</span>
+                  <svg className="w-8 h-8 text-orange-600 dark:text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
+                  </svg>
                 </div>
               </div>
             </div>
@@ -120,7 +208,9 @@ const DashboardPage = () => {
                   </p>
                 </div>
                 <div className="bg-green-100 dark:bg-green-900/30 rounded-full p-3">
-                  <span className="text-3xl">📚</span>
+                  <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                  </svg>
                 </div>
               </div>
             </div>
@@ -135,7 +225,9 @@ const DashboardPage = () => {
                   </p>
                 </div>
                 <div className="bg-purple-100 dark:bg-purple-900/30 rounded-full p-3">
-                  <span className="text-3xl">🏆</span>
+                  <svg className="w-8 h-8 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+                  </svg>
                 </div>
               </div>
             </div>
@@ -196,7 +288,12 @@ const DashboardPage = () => {
                   {/* Beginner */}
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">🟢 Beginner</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                          <circle cx="10" cy="10" r="8" />
+                        </svg>
+                        Beginner
+                      </span>
                       <span className="text-sm font-medium dark:text-gray-300">
                         {analytics.modules.completedByDifficulty.beginner}/{analytics.modules.totalByDifficulty.beginner}
                       </span>
@@ -214,7 +311,12 @@ const DashboardPage = () => {
                   {/* Intermediate */}
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">🟡 Intermediate</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                          <circle cx="10" cy="10" r="8" />
+                        </svg>
+                        Intermediate
+                      </span>
                       <span className="text-sm font-medium dark:text-gray-300">
                         {analytics.modules.completedByDifficulty.intermediate}/{analytics.modules.totalByDifficulty.intermediate}
                       </span>
@@ -232,7 +334,12 @@ const DashboardPage = () => {
                   {/* Expert */}
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">🔴 Expert</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                        <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                          <circle cx="10" cy="10" r="8" />
+                        </svg>
+                        Expert
+                      </span>
                       <span className="text-sm font-medium dark:text-gray-300">
                         {analytics.modules.completedByDifficulty.expert}/{analytics.modules.totalByDifficulty.expert}
                       </span>
@@ -287,7 +394,27 @@ const DashboardPage = () => {
                       key={index}
                       className="flex items-start space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition"
                     >
-                      <div className="text-3xl">{activity.icon}</div>
+                      <div className="flex-shrink-0">
+                        {activity.type === 'module_completed' ? (
+                          <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                            <svg className="w-7 h-7 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        ) : activity.type === 'module_started' ? (
+                          <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                            <svg className="w-7 h-7 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-100 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                            <svg className="w-7 h-7 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
                       <div className="flex-1">
                         <p className="font-medium text-gray-900 dark:text-gray-100">{activity.description}</p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -320,7 +447,9 @@ const DashboardPage = () => {
               <div className="bg-gradient-to-br from-blue-600 to-indigo-700 dark:from-teal-600 dark:to-teal-800 rounded-xl shadow-md p-6 text-white">
                 <div className="text-center mb-4">
                   <div className="w-20 h-20 bg-white dark:bg-gray-800 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <span className="text-4xl">👤</span>
+                    <svg className="w-12 h-12 text-blue-600 dark:text-teal-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
                   </div>
                   <h3 className="text-xl font-bold">{user?.name}</h3>
                   <p className="text-blue-200 dark:text-teal-200 text-sm">{user?.email}</p>
@@ -359,9 +488,12 @@ const DashboardPage = () => {
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Achievements</h2>
                   <button
                     onClick={() => navigate('/achievements')}
-                    className="text-blue-600 dark:text-teal-400 hover:text-blue-700 dark:hover:text-teal-300 text-sm font-medium"
+                    className="text-blue-600 dark:text-teal-400 hover:text-blue-700 dark:hover:text-teal-300 text-sm font-medium flex items-center gap-1 group"
                   >
-                    View All →
+                    <span>View All</span>
+                    <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
                   </button>
                 </div>
 
@@ -397,7 +529,7 @@ const DashboardPage = () => {
                         key={achievement.id}
                         className="flex items-center space-x-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800"
                       >
-                        <span className="text-3xl">{achievement.icon}</span>
+                        <AchievementIcon icon={achievement.icon} />
                         <div className="flex-1">
                           <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
                             {achievement.title}
@@ -415,7 +547,9 @@ const DashboardPage = () => {
 
                 {achievements.achievements.filter(a => a.isUnlocked).length === 0 && (
                   <div className="text-center py-6">
-                    <span className="text-4xl">🎯</span>
+                    <svg className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                    </svg>
                     <p className="text-gray-500 dark:text-gray-400 mt-2">Start learning to unlock achievements!</p>
                   </div>
                 )}

@@ -34,7 +34,7 @@ const LoginPage = () => {
     const result = await login(formData.email, formData.password);
 
     if (result.success) {
-      navigate('/chat');
+      navigate('/');
     } else {
       setError(result.message);
     }
@@ -137,7 +137,9 @@ const LoginPage = () => {
               ) : (
                 <span className="flex items-center justify-center gap-2">
                   Log In
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
                 </span>
               )}
             </button>
@@ -161,8 +163,11 @@ const LoginPage = () => {
           {/* Sign Up Link */}
           <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-300">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-teal-600 dark:text-teal-400 font-bold hover:text-teal-700 dark:hover:text-teal-300 hover:underline">
-              Sign up free →
+            <Link to="/signup" className="text-teal-600 dark:text-teal-400 font-bold hover:text-teal-700 dark:hover:text-teal-300 hover:underline inline-flex items-center gap-1">
+              <span>Sign up free</span>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
             </Link>
           </p>
         </div>

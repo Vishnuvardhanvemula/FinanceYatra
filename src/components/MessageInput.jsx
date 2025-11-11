@@ -166,8 +166,11 @@ export default function MessageInput({ onSend, disabled, selectedLanguage = 'en'
       {/* Voice Input Instructions */}
       {isSupported && (
         <div className="max-w-4xl mx-auto mt-2">
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-            🎤 Click the microphone to speak • Supports {languageMap[selectedLanguage] ? 'your selected language' : 'English'}
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center flex items-center justify-center gap-1.5">
+            <svg className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+            </svg>
+            Click the microphone to speak • Supports {languageMap[selectedLanguage] ? 'your selected language' : 'English'}
           </p>
         </div>
       )}
