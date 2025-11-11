@@ -76,6 +76,23 @@ const ModuleDetailPage = () => {
     }
   }, [module?.difficulty]);
 
+  const logDailyActivity = async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
+    
+    try {
+      await fetch('http://localhost:5000/api/dashboard/log-activity', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (error) {
+      console.error('❌ Error logging activity:', error);
+    }
+  };
+
   const handleLessonComplete = useCallback(async (lessonIndex, skipScroll = false) => {
     if (!isAuthenticated) {
       toast.error('Sign in to track your progress!', { duration: 3000 });
@@ -104,6 +121,9 @@ const ModuleDetailPage = () => {
       if (isCompleting) {
         setCompletedLessons([...completedLessons, lessonIndex]);
         toast.success('Lesson completed! 🎉', { duration: 2000 });
+        
+        // Log daily activity when lesson is completed
+        await logDailyActivity();
       } else {
         setCompletedLessons(completedLessons.filter(l => l !== lessonIndex));
         toast.success('Lesson unmarked', { duration: 2000 });

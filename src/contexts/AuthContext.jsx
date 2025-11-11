@@ -6,6 +6,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { useTheme } from './ThemeContext';
 
 const AuthContext = createContext(null);
 
@@ -26,6 +27,38 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
+  // Access theme setter from ThemeContext to apply server preference on login/load
+  const { setTheme, theme: currentTheme } = useTheme();
+
+  const applyServerThemeIfPresent = (usr) => {
+    try {
+      const serverTheme = usr?.preferences?.theme || usr?.theme || usr?.preferredTheme;
+      // If server has a saved theme, apply it (and notify) when it differs
+      if (serverTheme && serverTheme !== currentTheme) {
+        setTheme(serverTheme, { user: usr });
+        try { toast.success(`Applied your saved theme: ${serverTheme}`); } catch (e) {}
+        return;
+      }
+
+      // No server preference — derive a safe theme from the user's unlocked achievements
+      // This prevents leaking a previous user's theme stored in localStorage
+      const unlockedCount = (usr?.achievements || []).filter(a => a.isUnlocked).length;
+      let derived = 'default';
+      if (unlockedCount >= 25) derived = 'master';
+      else if (unlockedCount >= 20) derived = 'platinum';
+      else if (unlockedCount >= 15) derived = 'gold';
+      else if (unlockedCount >= 10) derived = 'silver';
+      else if (unlockedCount >= 5) derived = 'bronze';
+
+      if (derived !== currentTheme) {
+        setTheme(derived, { user: usr });
+        try { toast(`Applied a theme based on your progress: ${derived}`); } catch (e) {}
+      }
+    } catch (err) {
+      console.warn('Failed to apply server theme', err);
+    }
+  };
+
   // Load user profile on mount
   useEffect(() => {
     const loadUser = async () => {
@@ -34,6 +67,7 @@ export const AuthProvider = ({ children }) => {
           const response = await axios.get(`${API_URL}/auth/profile`);
           if (response.data.success) {
             setUser(response.data.data);
+            applyServerThemeIfPresent(response.data.data);
           } else {
             // Invalid token response, clear it
             setToken(null);
@@ -168,6 +202,7 @@ export const AuthProvider = ({ children }) => {
         const { token, user } = response.data.data;
         setToken(token);
         setUser(user);
+        applyServerThemeIfPresent(user);
         localStorage.setItem('authToken', token);
         return { success: true };
       }
@@ -195,6 +230,7 @@ export const AuthProvider = ({ children }) => {
         const { token, user } = response.data.data;
         setToken(token);
         setUser(user);
+        applyServerThemeIfPresent(user);
         localStorage.setItem('authToken', token);
         return { success: true };
       }
@@ -232,6 +268,12 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('authToken');
       localStorage.removeItem('token'); // Also remove 'token' key if used
       delete axios.defaults.headers.common['Authorization'];
+      // Reset theme to default on logout to avoid leaking previous user's theme
+      try {
+        setTheme('default');
+      } catch (e) {
+        // ignore
+      }
     }
   };
 
@@ -292,6 +334,7 @@ export const AuthProvider = ({ children }) => {
         console.log('RefreshUser - Updated user data:', response.data.data);
         console.log('RefreshUser - Module progress:', response.data.data.moduleProgress);
         setUser(response.data.data);
+        applyServerThemeIfPresent(response.data.data);
       }
     } catch (error) {
       console.error('Failed to refresh user:', error);

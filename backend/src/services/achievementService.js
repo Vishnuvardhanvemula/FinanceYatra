@@ -1,7 +1,15 @@
 /**
- * Achievement Badges System
+ * Achievement Badges System with Tier Support
  * Defines all available achievements and unlock criteria
+ * Supports Bronze, Silver, Gold, and Platinum tiers
  */
+
+export const ACHIEVEMENT_TIERS = {
+  BRONZE: { name: 'Bronze', color: '#CD7F32', threshold: 1, multiplier: 1 },
+  SILVER: { name: 'Silver', color: '#C0C0C0', threshold: 0.5, multiplier: 1.5 },
+  GOLD: { name: 'Gold', color: '#FFD700', threshold: 0.75, multiplier: 2 },
+  PLATINUM: { name: 'Platinum', color: '#E5E4E2', threshold: 1, multiplier: 3 },
+};
 
 export const ACHIEVEMENTS = [
   // Getting Started Achievements
@@ -110,46 +118,23 @@ export const ACHIEVEMENTS = [
     rarity: 'epic',
   },
 
-  // Streak Achievements
+  // Streak Achievements (Tiered)
   {
-    id: 'streak-3',
-    title: '3-Day Streak',
-    description: 'Maintained a 3-day learning streak',
+    id: 'streak-master',
+    title: 'Streak Master',
+    description: 'Maintain consistent learning streaks',
     icon: '🔥',
     category: 'streaks',
-    criteria: 'Learn for 3 consecutive days',
+    criteria: 'Learn for consecutive days',
+    hasTiers: true,
+    tiers: {
+      bronze: { threshold: 3, title: 'Bronze Streak', description: '3-day streak', points: 50, icon: '🥉' },
+      silver: { threshold: 7, title: 'Silver Streak', description: '7-day streak', points: 100, icon: '🥈' },
+      gold: { threshold: 30, title: 'Gold Streak', description: '30-day streak', points: 300, icon: '🥇' },
+      platinum: { threshold: 100, title: 'Platinum Streak', description: '100-day streak', points: 1000, icon: '💎' },
+    },
     points: 50,
     rarity: 'common',
-  },
-  {
-    id: 'streak-7',
-    title: 'Week Warrior',
-    description: 'Maintained a 7-day learning streak',
-    icon: '🔥🔥',
-    category: 'streaks',
-    criteria: 'Learn for 7 consecutive days',
-    points: 100,
-    rarity: 'uncommon',
-  },
-  {
-    id: 'streak-30',
-    title: 'Monthly Master',
-    description: 'Maintained a 30-day learning streak',
-    icon: '🔥🔥🔥',
-    category: 'streaks',
-    criteria: 'Learn for 30 consecutive days',
-    points: 300,
-    rarity: 'epic',
-  },
-  {
-    id: 'streak-100',
-    title: 'Century Champion',
-    description: 'Maintained a 100-day learning streak',
-    icon: '🔥🔥🔥🔥',
-    category: 'streaks',
-    criteria: 'Learn for 100 consecutive days',
-    points: 1000,
-    rarity: 'legendary',
   },
 
   // Points Achievements

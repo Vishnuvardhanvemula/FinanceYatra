@@ -13,6 +13,7 @@ import ModulesPage from './pages/ModulesPage';
 import ModuleDetailPage from './pages/ModuleDetailPage';
 import DashboardPage from './pages/DashboardPage';
 import AchievementsPage from './pages/AchievementsPage';
+import ShareAchievementPage from './pages/ShareAchievementPage';
 
 function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -183,20 +184,14 @@ function Footer() {
               <h3 className="text-2xl font-bold text-white">financeYatra</h3>
             </div>
             <p className="text-gray-300 dark:text-gray-400 text-sm mb-6 leading-relaxed max-w-md">
-              Empowering India with financial literacy. Learn finance concepts in 11+ languages with AI-powered assistance. Your journey to financial freedom starts here.
+              Empowering India with financial literacy. Learn finance in 11+ languages with AI assistance.
             </p>
             <div className="flex gap-3">
               <a href="#" className="w-10 h-10 bg-white/10 dark:bg-white/5 hover:bg-teal-500 dark:hover:bg-teal-600 rounded-lg flex items-center justify-center transition-all duration-200">
                 <span>🐦</span>
               </a>
               <a href="#" className="w-10 h-10 bg-white/10 dark:bg-white/5 hover:bg-teal-500 dark:hover:bg-teal-600 rounded-lg flex items-center justify-center transition-all duration-200">
-                <span>💼</span>
-              </a>
-              <a href="#" className="w-10 h-10 bg-white/10 dark:bg-white/5 hover:bg-teal-500 dark:hover:bg-teal-600 rounded-lg flex items-center justify-center transition-all duration-200">
                 <span>📘</span>
-              </a>
-              <a href="#" className="w-10 h-10 bg-white/10 dark:bg-white/5 hover:bg-teal-500 dark:hover:bg-teal-600 rounded-lg flex items-center justify-center transition-all duration-200">
-                <span>📸</span>
               </a>
             </div>
           </div>
@@ -241,22 +236,22 @@ function Footer() {
         </div>
 
         {/* Disclaimer Notice - Enhanced UI */}
-        <div className="mt-12 mb-8">
-          <div className="bg-gradient-to-r from-yellow-900/30 via-yellow-800/20 to-yellow-900/30 border border-yellow-600/40 rounded-xl p-6 backdrop-blur-sm">
-            <div className="flex items-start gap-4">
+        <div className="mt-8 mb-6">
+          <div className="bg-gradient-to-r from-yellow-900/30 via-yellow-800/20 to-yellow-900/30 border border-yellow-600/40 rounded-xl p-4 backdrop-blur-sm">
+            <div className="flex items-start gap-3">
               <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-                  <span className="text-yellow-400 text-2xl">⚠️</span>
+                <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                  <span className="text-yellow-400 text-xl">⚠️</span>
                 </div>
               </div>
-              <div className="flex-1 space-y-3">
+              <div className="flex-1">
                 <h4 className="text-lg font-semibold text-yellow-400">Educational Content Notice</h4>
-                <p className="text-sm text-gray-300 dark:text-gray-400 leading-relaxed">
+                <p className="text-sm text-gray-300 dark:text-gray-400 leading-relaxed mt-2">
                   Information provided is for learning purposes. Always verify current rates, fees, and regulations with official sources like 
                   <a href="https://www.rbi.org.in" target="_blank" rel="noopener noreferrer" className="text-yellow-400 hover:text-yellow-300 font-medium ml-1 underline decoration-dotted">RBI</a>, 
                   your bank, or certified financial advisors before making financial decisions.
                 </p>
-                <div className="flex flex-wrap gap-2 pt-2">
+                <div className="flex flex-wrap gap-2 mt-3">
                   <a href="https://www.rbi.org.in" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-xs text-gray-300 hover:text-white transition-colors">
                     <span>🏦</span> Reserve Bank of India
                   </a>
@@ -273,9 +268,9 @@ function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-white/10 dark:border-white/5 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="border-t border-white/10 dark:border-white/5 mt-6 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-center md:text-left">
-            <p className="text-sm text-gray-400 dark:text-gray-500 mb-1">
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               &copy; 2025 financeYatra. Making Money Management Simple for Everyone
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-600 italic">
@@ -668,6 +663,7 @@ export default function App() {
               } />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/achievements" element={<AchievementsPage />} />
+              <Route path="/share/achievement/:achievementId" element={<ShareAchievementPage />} />
             </Routes>
           </Layout>
         </AuthProvider>

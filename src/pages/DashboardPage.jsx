@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import ProfileBanner from '../components/ProfileBanner';
+import AchievementBadge from '../components/AchievementBadge';
 
 // Helper function to render achievement icons as SVG
 const AchievementIcon = ({ icon }) => {
@@ -77,6 +79,8 @@ const DashboardPage = () => {
   const [analytics, setAnalytics] = useState(null);
   const [achievements, setAchievements] = useState(null);
   const [stats, setStats] = useState(null);
+  const [error, setError] = useState(null);
+  const [bannerTheme, setBannerTheme] = useState('default');
 
   // Memoize user progress to detect changes
   const userProgressKey = useMemo(() => 
@@ -85,6 +89,10 @@ const DashboardPage = () => {
   );
 
   useEffect(() => {
+    // Debug: log auth and token state when dashboard mounts / updates
+    // eslint-disable-next-line no-console
+    console.debug('Dashboard mount/useEffect: authLoading=', authLoading, 'user=', user ? { id: user.id, email: user.email } : null, 'hasToken=', !!token);
+
     // Wait for auth to finish loading before checking
     if (authLoading) return;
     
@@ -94,11 +102,43 @@ const DashboardPage = () => {
     }
 
     fetchDashboardData();
+    logDailyActivity(); // Log user's daily activity
   }, [user, token, authLoading, navigate, userProgressKey]);
+
+  const logDailyActivity = async () => {
+    if (!token) return;
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/dashboard/log-activity', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        console.warn('⚠️ Activity logging endpoint not available (404) - skipping');
+        return;
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.data.activityLogged) {
+        console.log('✅ Daily activity logged successfully');
+        // Refresh analytics to show updated streak and activity
+        fetchDashboardData();
+      }
+    } catch (error) {
+      console.error('❌ Error logging daily activity:', error);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      setError(null);
 
       // Fetch analytics, achievements, and stats in parallel
       const [analyticsRes, achievementsRes, statsRes] = await Promise.all([
@@ -123,11 +163,22 @@ const DashboardPage = () => {
       if (achievementsData.success) setAchievements(achievementsData.data);
       if (statsData.success) setStats(statsData.data);
 
+      // If none of the requests succeeded, set an error
+      if (!analyticsData.success && !achievementsData.success && !statsData.success) {
+        setError('Failed to load dashboard data. Please check your connection and try again.');
+      }
+
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      setError('An error occurred while loading the dashboard. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRetry = () => {
+    setError(null);
+    fetchDashboardData();
   };
 
   if (loading) {
@@ -141,98 +192,36 @@ const DashboardPage = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="max-w-lg text-center p-6 rounded-xl shadow-lg bg-white">
+          <h3 className="text-xl font-bold mb-2">Unable to load dashboard</h3>
+          <p className="text-sm text-gray-600 mb-4">{error}</p>
+          <div className="flex items-center justify-center gap-3">
+            <button onClick={handleRetry} className="px-4 py-2 bg-blue-600 text-white rounded-md">Retry</button>
+            <button onClick={() => window.location.reload()} className="px-4 py-2 border rounded-md">Reload Page</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
+        {/* Profile Banner */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-3">
-            Welcome back, {user?.name}!
-            <svg className="w-10 h-10 text-yellow-500 dark:text-yellow-400 inline-block animate-wave" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
-            </svg>
-          </h1>
-          <p className="text-lg font-semibold text-teal-600 dark:text-teal-400 mb-1">
-            Empowering You to Master Money
-          </p>
-          <p className="text-gray-600 dark:text-gray-300">
-            Track your progress, celebrate achievements, and continue your financial learning journey
-          </p>
+          <ProfileBanner
+            user={user}
+            achievements={achievements?.achievements || []}
+            theme={bannerTheme}
+            showCustomization={true}
+            onThemeChange={setBannerTheme}
+          />
         </div>
 
-        {/* Quick Stats Cards */}
-        {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {/* Total Points */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-yellow-500 dark:border-yellow-600">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Points</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
-                    {stats.totalPoints}
-                  </p>
-                </div>
-                <div className="bg-yellow-100 dark:bg-yellow-900/30 rounded-full p-3">
-                  <svg className="w-8 h-8 text-yellow-600 dark:text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Current Streak */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-orange-500 dark:border-orange-600">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Current Streak</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
-                    {stats.currentStreak} days
-                  </p>
-                </div>
-                <div className="bg-orange-100 dark:bg-orange-900/30 rounded-full p-3">
-                  <svg className="w-8 h-8 text-orange-600 dark:text-orange-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Modules Completed */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-green-500 dark:border-green-600">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Modules Completed</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
-                    {stats.modulesCompleted}/{stats.totalModules}
-                  </p>
-                </div>
-                <div className="bg-green-100 dark:bg-green-900/30 rounded-full p-3">
-                  <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Achievements */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-purple-500 dark:border-purple-600">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Achievements</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
-                    {stats.achievementsUnlocked}/{stats.totalAchievements}
-                  </p>
-                </div>
-                <div className="bg-purple-100 dark:bg-purple-900/30 rounded-full p-3">
-                  <svg className="w-8 h-8 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Quick Stats Cards removed to avoid duplication with ProfileBanner stats */}
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -444,33 +433,41 @@ const DashboardPage = () => {
           <div className="space-y-8">
             {/* User Profile Card */}
             {analytics?.overview && (
-              <div className="bg-gradient-to-br from-blue-600 to-indigo-700 dark:from-teal-600 dark:to-teal-800 rounded-xl shadow-md p-6 text-white">
+                <div
+                  className="rounded-xl shadow-md p-6 text-white"
+                  style={{
+                      background: `linear-gradient(135deg, var(--fy-gradient-start, #14b8a6), var(--fy-gradient-mid, #0d9488), var(--fy-gradient-end, #0f766e))`
+                    }}
+                >
                 <div className="text-center mb-4">
-                  <div className="w-20 h-20 bg-white dark:bg-gray-800 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <svg className="w-12 h-12 text-blue-600 dark:text-teal-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                    </svg>
-                  </div>
+                    <div
+                      className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center"
+                      style={{ background: 'var(--fy-accent, #0f766e)', boxShadow: '0 6px 18px rgba(0,0,0,0.18)' }}
+                    >
+                      <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20" style={{ color: 'white' }}>
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    </div>
                   <h3 className="text-xl font-bold">{user?.name}</h3>
-                  <p className="text-blue-200 dark:text-teal-200 text-sm">{user?.email}</p>
+                    <p className="text-sm" style={{ color: 'var(--fy-theme-text, #ffffff)' }}>{user?.email}</p>
                 </div>
 
                 <div className="space-y-3 mt-6">
                   <div className="flex justify-between items-center">
-                    <span className="text-blue-100 dark:text-teal-100">Proficiency Level</span>
-                    <span className="font-semibold capitalize">
+                    <span style={{ color: 'var(--fy-theme-text, #ffffff)' }}>Proficiency Level</span>
+                    <span className="font-semibold capitalize" style={{ color: 'var(--fy-accent, #3b82f6)' }}>
                       {analytics.overview.proficiencyLevel}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-blue-100 dark:text-teal-100">Learning Time</span>
-                    <span className="font-semibold">
+                    <span style={{ color: 'var(--fy-theme-text, #ffffff)' }}>Learning Time</span>
+                    <span className="font-semibold" style={{ color: 'var(--fy-accent, #3b82f6)' }}>
                       {analytics.overview.learningTimeFormatted}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-blue-100 dark:text-teal-100">Member Since</span>
-                    <span className="font-semibold">
+                    <span style={{ color: 'var(--fy-theme-text, #ffffff)' }}>Member Since</span>
+                    <span className="font-semibold" style={{ color: 'var(--fy-theme-text, #ffffff)' }}>
                       {new Date(analytics.overview.memberSince).toLocaleDateString('en-US', {
                         month: 'short',
                         year: 'numeric'

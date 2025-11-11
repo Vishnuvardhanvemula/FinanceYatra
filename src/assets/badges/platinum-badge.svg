@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Platinum Badge">
+  <defs>
+    <!-- main platinum gradient: cool metallic facets -->
+    <radialGradient id="g-plat" cx="30%" cy="25%" r="80%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="18%" stop-color="#e9fbfd" stop-opacity="0.9"/>
+      <stop offset="45%" stop-color="#c8f0f4" stop-opacity="0.95"/>
+      <stop offset="75%" stop-color="#98d6dd"/>
+      <stop offset="100%" stop-color="#67c6cc"/>
+    </radialGradient>
+
+    <!-- subtle metallic sheen across the disc -->
+    <linearGradient id="g-plat-sheen" x1="0" x2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- soft outer glow -->
+    <filter id="glow" x="-70%" y="-70%" width="240%" height="240%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feFlood flood-color="#9feff5" flood-opacity="0.35" result="flood"/>
+      <feComposite in="flood" in2="blur" operator="in" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- starburst for subtle radiance behind the emblem -->
+    <radialGradient id="g-star" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- sparkle shape used later -->
+    <g id="spark">
+      <path d="M0,-8 L2,-2 L8,0 L2,2 L0,8 L-2,2 L-8,0 L-2,-2 Z" fill="#ffffff" fill-opacity="0.95"/>
+    </g>
+  </defs>
+
+  <!-- deep outer frame for contrast -->
+  <circle cx="128" cy="128" r="122" fill="#081215"/>
+
+  <!-- ornate outer bezel: metallic rim with inner bevel -->
+  <g>
+    <circle cx="128" cy="128" r="100" fill="#0b2a2c"/>
+    <circle cx="128" cy="128" r="96" fill="none" stroke="#bfeff2" stroke-width="2" stroke-opacity="0.08"/>
+  </g>
+
+  <!-- grand platinum disc with sheen and facets -->
+  <g filter="url(#glow)">
+    <circle cx="128" cy="128" r="84" fill="url(#g-plat)" stroke="#9fe8ec" stroke-width="3"/>
+    <!-- sheen overlay -->
+    <ellipse cx="108" cy="96" rx="60" ry="34" fill="url(#g-plat-sheen)" opacity="0.9"/>
+
+    <!-- subtle faceted rings -->
+    <g fill="none" stroke="#ffffff22" stroke-width="1">
+      <path d="M128 46 A82 82 0 0 1 210 128" opacity="0.06"/>
+      <path d="M46 128 A82 82 0 0 1 128 210" opacity="0.06"/>
+    </g>
+  </g>
+
+  <!-- starburst center to make the emblem radiate -->
+  <g transform="translate(128,128)" opacity="0.85">
+    <circle r="60" fill="url(#g-star)"/>
+    <g stroke="#ffffff44" stroke-width="1" opacity="0.55">
+      <path d="M0,-70 L0,-30"/>
+      <path d="M0,70 L0,30"/>
+      <path d="M-70,0 L-30,0"/>
+      <path d="M70,0 L30,0"/>
+      <path d="M-50,-50 L-22,-22"/>
+      <path d="M50,50 L22,22"/>
+      <path d="M-50,50 L-22,22"/>
+      <path d="M50,-50 L22,-22"/>
+    </g>
+  </g>
+
+  <!-- Rupee icon (center) with embossed multi-layer treatment -->
+  <g transform="translate(128,128)" text-anchor="middle" dominant-baseline="middle">
+    <!-- outer shadow layer for depth -->
+    <text x="2" y="8" font-family="Segoe UI Symbol, Noto Sans, Arial" font-size="74" font-weight="900" fill="#033538" opacity="0.35">₹</text>
+    <!-- metallic fill with gradient-like effect simulated by overlay -->
+    <text x="0" y="6" font-family="Segoe UI Symbol, Noto Sans, Arial" font-size="72" font-weight="900" fill="#ffffff" style="fill: url(#g-plat); mix-blend-mode: overlay;">₹</text>
+    <!-- inner highlight to make it pop -->
+    <text x="0" y="6" font-family="Segoe UI Symbol, Noto Sans, Arial" font-size="72" font-weight="900" fill="#94fbff" opacity="0.18" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));"/>
+  </g>
+
+  <!-- bright sparkles to add grandeur -->
+  <g transform="translate(128,128)" opacity="0.95">
+    <use href="#spark" x="64" y="-48" transform="scale(0.9) rotate(12)"/>
+    <use href="#spark" x="-56" y="-58" transform="scale(0.7) rotate(-22)"/>
+    <use href="#spark" x="36" y="42" transform="scale(0.6) rotate(35)"/>
+    <use href="#spark" x="-30" y="48" transform="scale(0.5) rotate(8)"/>
+  </g>
+
+  <!-- ornate laurel hints enhanced -->
+  <g transform="translate(128,128)" fill="none" stroke="#ffffff22" stroke-width="2">
+    <path d="M-62,18 C-44,40 -28,44 -6,48" stroke-linecap="round" opacity="0.7"/>
+    <path d="M62,18 C44,40 28,44 6,48" stroke-linecap="round" opacity="0.7"/>
+  </g>
+
+  <!-- deeper drop shadow to anchor the badge -->
+  <ellipse cx="128" cy="206" rx="56" ry="14" fill="#00000060"/>
+</svg>

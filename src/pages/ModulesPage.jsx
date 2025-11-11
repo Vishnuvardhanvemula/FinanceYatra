@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../styles/theme-utils.css';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import { 
@@ -116,7 +117,19 @@ const ModulesPage = () => {
 
   const handleModuleClick = (module) => {
     if (isModuleLocked(module)) {
-      toast.error('Complete the prerequisite modules first!', { duration: 3000 });
+      const missingPrereqs = module.prerequisites
+        .filter(prereqId => !completedModules.includes(prereqId))
+        .map(prereqId => {
+          const prereqModule = learningModules.find(m => m.id === prereqId);
+          return prereqModule ? prereqModule.title : prereqId;
+        });
+      
+      if (missingPrereqs.length > 0) {
+        toast.error(
+          `🔒 Complete these modules first: ${missingPrereqs.join(', ')}`,
+          { duration: 4000 }
+        );
+      }
       return;
     }
     navigate(`/modules/${module.id}`);
@@ -139,7 +152,7 @@ const ModulesPage = () => {
                 <span>Back to Home</span>
               </button>
               <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Learning Modules</h1>
-              <p className="text-lg font-semibold text-teal-600 dark:text-teal-400 mt-2">
+              <p className="text-lg font-semibold mt-2 fy-accent-text">
                 Interactive Learning. Real-Life Finance.
               </p>
               <p className="text-gray-600 dark:text-gray-300 mt-1">
@@ -150,7 +163,7 @@ const ModulesPage = () => {
             {!isAuthenticated && (
               <button
                 onClick={() => navigate('/login')}
-                className="bg-indigo-600 dark:bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-teal-700 transition-colors"
+                className="py-2 px-6 rounded-lg fy-theme-button"
               >
                 Sign In to Track Progress
               </button>
@@ -159,9 +172,9 @@ const ModulesPage = () => {
 
           {/* Progress Stats */}
           {isAuthenticated && stats && (
-            <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800">
-                <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                <div className="text-2xl font-bold fy-accent-text">
                   {stats.completed}/{stats.total}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Completed Modules</div>
@@ -191,12 +204,12 @@ const ModulesPage = () => {
 
       {/* Filters */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex flex-wrap gap-2">
-          <button
+          <div className="flex flex-wrap gap-2">
+            <button
             onClick={() => setSelectedDifficulty('all')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               selectedDifficulty === 'all'
-                ? 'bg-indigo-600 dark:bg-teal-600 text-white'
+                ? 'text-white fy-theme-button'
                 : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border dark:border-gray-600'
             }`}
           >
@@ -237,7 +250,7 @@ const ModulesPage = () => {
 
       {/* Modules Grid */}
       <div className="max-w-7xl mx-auto px-4 pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredModules.map((module) => {
             const locked = isModuleLocked(module);
             const completed = isModuleCompleted(module.id);
@@ -248,15 +261,15 @@ const ModulesPage = () => {
               <div
                 key={module.id}
                 onClick={() => handleModuleClick(module)}
-                className={`bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all cursor-pointer border-2 relative overflow-hidden ${
+                className={`bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all cursor-pointer border-2 relative overflow-hidden fy-module-card-accent ${
                   locked 
                     ? 'border-gray-300 dark:border-gray-600 opacity-60' 
                     : completed
                     ? 'border-green-500 dark:border-green-600 bg-green-50/50 dark:bg-green-900/10'
                     : inProgress
                     ? 'border-blue-500 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-900/10'
-                    : 'border-transparent hover:border-indigo-300 dark:hover:border-teal-500'
-                }`}
+                    : ''
+                } ${(!locked && !completed && !inProgress) ? 'fy-theme-border-hover' : ''}`}
               >
                 {/* Completion Badge Overlay */}
                 {completed && (
@@ -270,7 +283,7 @@ const ModulesPage = () => {
 
                 {/* In Progress Badge Overlay */}
                 {!completed && inProgress && (
-                  <div className="absolute top-0 right-0 bg-gradient-to-br from-blue-500 to-blue-600 text-white px-3 py-1.5 text-xs font-bold rounded-bl-xl shadow-lg flex items-center gap-1 z-10">
+                  <div className="absolute top-0 right-0 text-white px-3 py-1.5 text-xs font-bold rounded-bl-xl shadow-lg flex items-center gap-1 z-10 fy-badge-gradient">
                     <svg className="w-3 h-3 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                     </svg>
@@ -280,9 +293,47 @@ const ModulesPage = () => {
 
                 {/* Lock Overlay for Locked Modules */}
                 {locked && (
-                  <div className="absolute top-0 left-0 right-0 bottom-0 bg-gray-900/10 dark:bg-gray-900/30 flex items-center justify-center backdrop-blur-[1px] z-10">
-                    <div className="bg-white dark:bg-gray-800 rounded-full p-4 shadow-xl">
-                      <span className="text-4xl">🔒</span>
+                  <div className="absolute top-0 left-0 right-0 bottom-0 bg-gray-900/20 dark:bg-gray-900/40 flex flex-col items-center justify-center backdrop-blur-sm z-10 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-2xl border-2 border-gray-300 dark:border-gray-600 max-w-xs w-full">
+                      <div className="text-center mb-3">
+                        <span className="text-5xl">🔒</span>
+                      </div>
+                      <h4 className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-2 text-center">
+                        Module Locked
+                      </h4>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 text-center">
+                        Complete these modules first:
+                      </p>
+                      <div className="space-y-2">
+                        {module.prerequisites.map(prereqId => {
+                          const prereqModule = learningModules.find(m => m.id === prereqId);
+                          const isCompleted = completedModules.includes(prereqId);
+                          return prereqModule ? (
+                            <div
+                              key={prereqId}
+                              className={`flex items-center gap-2 p-2 rounded-lg border ${
+                                isCompleted
+                                  ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700'
+                                  : 'bg-gray-50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600'
+                              }`}
+                            >
+                              <span className="text-lg">{isCompleted ? '✅' : prereqModule.icon}</span>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-xs font-medium truncate ${
+                                  isCompleted
+                                    ? 'text-green-700 dark:text-green-400'
+                                    : 'text-gray-700 dark:text-gray-300'
+                                }`}>
+                                  {prereqModule.title}
+                                </p>
+                              </div>
+                              {isCompleted && (
+                                <span className="text-xs font-bold text-green-600 dark:text-green-400">✓</span>
+                              )}
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -291,7 +342,7 @@ const ModulesPage = () => {
                 {!completed && inProgress && progressPercentage > 0 && (
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700">
                     <div 
-                      className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
+                      className="h-full transition-all duration-500 fy-progress-gradient"
                       style={{ width: `${progressPercentage}%` }}
                     ></div>
                   </div>
@@ -308,7 +359,7 @@ const ModulesPage = () => {
                     </div>
                   </div>
 
-                  <h3 className={`text-xl font-bold mb-2 flex items-center gap-2 ${
+                    <h3 className={`text-xl font-bold mb-2 flex items-center gap-2 ${
                     completed 
                       ? 'text-green-700 dark:text-green-400'
                       : inProgress
@@ -378,9 +429,9 @@ const ModulesPage = () => {
                     <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                       {module.learningOutcomes.slice(0, 2).map((outcome, idx) => (
                         <li key={idx} className="flex items-start gap-2">
-                          <span className="text-indigo-500 dark:text-teal-400 mt-1">•</span>
-                          <span>{outcome}</span>
-                        </li>
+                            <span className="mt-1 fy-outcome-bullet">•</span>
+                            <span>{outcome}</span>
+                          </li>
                       ))}
                       {module.learningOutcomes.length > 2 && (
                         <li className="text-xs text-gray-400 dark:text-gray-500 italic">
