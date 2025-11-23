@@ -1,0 +1,14 @@
+[
+  {
+    "weekId": "investment-week-2025-11",
+    "theme": "Investment Basics",
+    "description": "A week focused on introductory concepts for investing",
+    "startDate": "2025-11-17",
+    "endDate": "2025-11-23",
+    "tasks": [
+      { "id": "w1", "title": "Read about mutual funds", "detail": "Read our mutual funds guide and complete the quick quiz", "points": 20 },
+      { "id": "w2", "title": "Open a SIP", "detail": "Try the SIP wizard in the Learn section (demo)", "points": 30 },
+      { "id": "w3", "title": "Diversify portfolio", "detail": "Learn 3 ways to diversify your portfolio", "points": 15 }
+    ]
+  }
+]

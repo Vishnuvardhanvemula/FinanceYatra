@@ -1,0 +1,59 @@
+/* Utility classes that consume ThemeContext CSS variables
+   Use these across pages to make theming consistent and easy to apply
+*/
+
+:root {
+  /* fallback theme variables - financeYatra brand teal */
+  --fy-gradient-start: #14b8a6; /* teal-500 */
+  --fy-gradient-mid: #0d9488; /* teal-600 */
+  --fy-gradient-end: #0f766e; /* teal-700 */
+  --fy-accent: #0f766e; /* teal-700 accent */
+  --fy-theme-text: #ffffff; /* white text for contrast */
+}
+
+.fy-theme-gradient {
+  background: linear-gradient(135deg, var(--fy-gradient-start), var(--fy-gradient-mid), var(--fy-gradient-end));
+}
+
+.fy-accent {
+  background: var(--fy-accent);
+  color: #fff;
+}
+
+.fy-accent-text {
+  color: var(--fy-accent) !important;
+}
+
+.fy-theme-text {
+  color: var(--fy-theme-text) !important;
+}
+
+.fy-theme-outline {
+  border-color: var(--fy-accent) !important;
+}
+
+.fy-progress-gradient {
+  background: linear-gradient(90deg, var(--fy-accent), var(--fy-gradient-mid));
+}
+
+.fy-badge-gradient {
+  background: linear-gradient(135deg, var(--fy-accent), var(--fy-gradient-mid));
+  color: white;
+}
+
+.fy-theme-button {
+  background: var(--fy-accent);
+  color: white;
+}
+
+.fy-theme-border-hover:hover {
+  border-color: var(--fy-accent) !important;
+}
+
+.fy-outcome-bullet {
+  color: var(--fy-accent);
+}
+
+.fy-module-card-accent {
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}

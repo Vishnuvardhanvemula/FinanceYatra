@@ -1,0 +1,15 @@
+Title: Unified Payments Interface (UPI) and Digital Payments
+
+The Unified Payments Interface (UPI) is an instant payment system developed by the National Payments Corporation of India (NPCI). It allows users to transfer money between bank accounts using a mobile app.
+
+UPI transactions work 24x7 and are free for most users. Every user has a Virtual Payment Address (VPA), such as name@bank.
+
+Popular UPI apps include BHIM, Google Pay, PhonePe, and Paytm. Transactions can be made using UPI ID, QR code, or mobile number.
+
+For security, every UPI transaction requires a PIN. Banks and NPCI never ask for your PIN or OTP. Never share your credentials with anyone.
+
+Digital payments include UPI, net banking, debit/credit cards, and wallets. They promote transparency and reduce cash dependency.
+
+In case of unauthorized transactions, users should immediately report to their bank or through the UPI app’s grievance redressal section.
+
+NPCI recommends verifying payment requests and double-checking UPI IDs before transferring funds.

@@ -1,0 +1,12 @@
+Title: Understanding Savings and Interest
+
+Saving means setting aside part of your income for future needs. It helps in emergencies and builds long-term wealth.
+
+Interest is the amount earned on your savings. It can be simple interest or compound interest.
+
+Simple Interest = (Principal × Rate × Time) / 100  
+Compound Interest = Principal × (1 + Rate/100)^Time - Principal
+
+Recurring Deposits allow you to deposit a fixed amount monthly and earn interest on it. It encourages consistent saving habits.
+
+The habit of saving regularly ensures financial independence and provides funds for future goals such as education, marriage, or retirement.
