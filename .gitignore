@@ -1,0 +1,40 @@
+# Node
+node_modules/
+**/node_modules/
+
+# Frontend build
+/frontend/dist/
+/frontend/.vite/
+
+# Python virtualenvs
+venv/
+.venv/
+env/
+ENV/
+rag_system/venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+
+# System
+.DS_Store
+.env
+*.log
+
+# IDEs
+.vscode/
+.idea/
+
+# macOS
+.AppleDouble
+.LSOverride
+
+# Distribution / packaging
+dist/
+build/
+
+# Misc
+*.sqlite3
+.pytest_cache/
