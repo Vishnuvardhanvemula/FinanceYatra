@@ -67,8 +67,8 @@ router.get('/leaderboard', optionalAuth, async (req, res) => {
     const entries = (users || []).map((u, idx) => ({
       rank: idx + 1,
       points: u.totalPoints || 0,
-      displayName: `Anonymous ${idx + 1}`,
-      nameInitial: u.name ? u.name.charAt(0).toUpperCase() : 'A',
+      displayName: u.name || `User ${idx + 1}`,
+      nameInitial: u.name ? u.name.charAt(0).toUpperCase() : 'U',
       badge: u.proficiencyLevel || null,
       isMe: !!(req.userId && u._id && req.userId.toString() === u._id.toString())
     }));
@@ -232,7 +232,7 @@ router.post('/weekly/claim', authenticate, ...validatorsClaim, async (req, res) 
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
     const { taskId, weekId } = req.body;
     if (!taskId || !weekId) return res.status(400).json({ success: false, message: 'Missing taskId or weekId' });
-    
+
     let week = null;
     try {
       week = await WeeklyChallenge.findOne({ weekId }).lean();

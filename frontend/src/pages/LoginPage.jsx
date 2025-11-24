@@ -47,8 +47,8 @@ const LoginPage = () => {
       {/* Subtle Background Elements */}
       <div className="absolute inset-0 opacity-30 dark:opacity-20">
         <div className="absolute top-20 left-10 w-72 h-72 bg-teal-400 dark:bg-teal-600 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl animate-pulse-slow"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-teal-500 dark:bg-teal-700 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl animate-pulse-slow" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-teal-400 dark:bg-teal-600 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl animate-pulse-slow" style={{animationDelay: '4s'}}></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-teal-500 dark:bg-teal-700 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-teal-400 dark:bg-teal-600 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl animate-pulse-slow" style={{ animationDelay: '4s' }}></div>
       </div>
 
       <div className="max-w-md w-full relative z-10">
@@ -68,7 +68,7 @@ const LoginPage = () => {
         </div>
 
         {/* Login Card */}
-        <div className="card-glass p-8 animate-fadeIn" style={{animationDelay: '100ms'}}>
+        <div className="card-glass p-8 animate-fadeIn" style={{ animationDelay: '100ms' }}>
           <div className="mb-6">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               Welcome Back
@@ -154,7 +154,7 @@ const LoginPage = () => {
 
           {/* Continue as Guest */}
           <button
-            onClick={() => navigate('/chat')}
+            onClick={() => navigate('/modules')}
             className="w-full bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 py-3 rounded-xl font-semibold transition-all duration-200 border-2 border-gray-200 dark:border-gray-600 hover:border-teal-300 dark:hover:border-teal-500 hover:shadow-md flex items-center justify-center gap-2"
           >
             Continue as Guest
@@ -173,7 +173,7 @@ const LoginPage = () => {
         </div>
 
         {/* Features */}
-        <div className="mt-8 text-center animate-fadeIn" style={{animationDelay: '200ms'}}>
+        <div className="mt-8 text-center animate-fadeIn" style={{ animationDelay: '200ms' }}>
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600 dark:text-gray-300">
             <span className="flex items-center gap-1.5 bg-white/80 dark:bg-gray-800/80 px-3 py-2 rounded-full shadow-sm">
               <span>🌍</span>
