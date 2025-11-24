@@ -17,7 +17,7 @@ const CelebrationModal = ({ onClose, xpEarned = 100, rankProgress = 75 }) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4"
+                className="fixed inset-0 bg-black/90 backdrop-blur-md z-[110] flex items-center justify-center p-4"
             >
                 {/* Confetti/Particle Effects (CSS or Canvas could be added here) */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">

@@ -60,7 +60,7 @@ router.post('/register', async (req, res) => {
 
   } catch (error) {
     console.error('❌ Register route error:', error.message);
-    
+
     res.status(400).json({
       success: false,
       message: error.message || 'Registration failed'
@@ -95,7 +95,7 @@ router.post('/login', async (req, res) => {
 
   } catch (error) {
     console.error('❌ Login route error:', error.message);
-    
+
     res.status(401).json({
       success: false,
       message: error.message || 'Login failed'
@@ -109,14 +109,30 @@ router.post('/login', async (req, res) => {
  */
 router.get('/profile', authenticate, async (req, res) => {
   try {
+    const user = await User.findById(req.userId)
+      .select('-password')
+      .lean();
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Add virtual fields explicitly for compatibility
+    user.xp = user.totalPoints || 0;
+    user.points = user.totalPoints || 0;
+    user.streak = user.currentStreak || 0;
+
     res.json({
       success: true,
-      data: req.user
+      data: user
     });
 
   } catch (error) {
     console.error('❌ Get profile error:', error.message);
-    
+
     res.status(500).json({
       success: false,
       message: 'Failed to fetch profile'
@@ -141,7 +157,7 @@ router.put('/profile', authenticate, async (req, res) => {
 
   } catch (error) {
     console.error('❌ Update profile error:', error.message);
-    
+
     res.status(400).json({
       success: false,
       message: error.message || 'Profile update failed'
@@ -184,7 +200,7 @@ router.post('/change-password', authenticate, async (req, res) => {
 
   } catch (error) {
     console.error('❌ Change password error:', error.message);
-    
+
     res.status(400).json({
       success: false,
       message: error.message || 'Password change failed'
@@ -207,7 +223,7 @@ router.delete('/account', authenticate, async (req, res) => {
 
   } catch (error) {
     console.error('❌ Delete account error:', error.message);
-    
+
     res.status(500).json({
       success: false,
       message: 'Failed to delete account'
@@ -222,7 +238,7 @@ router.delete('/account', authenticate, async (req, res) => {
 router.post('/assess-proficiency', authenticate, async (req, res) => {
   try {
     const { questions } = req.body;
-    
+
     if (!questions || !Array.isArray(questions)) {
       return res.status(400).json({
         success: false,
@@ -249,7 +265,7 @@ router.post('/assess-proficiency', authenticate, async (req, res) => {
 
   } catch (error) {
     console.error('❌ Assess proficiency error:', error.message);
-    
+
     res.status(500).json({
       success: false,
       message: 'Failed to assess proficiency'
@@ -265,7 +281,7 @@ router.post('/logout', authenticate, async (req, res) => {
   try {
     // Note: JWT logout is handled client-side by removing the token
     // This endpoint exists for consistency and future server-side session management
-    
+
     res.json({
       success: true,
       message: 'Logged out successfully'
@@ -273,7 +289,7 @@ router.post('/logout', authenticate, async (req, res) => {
 
   } catch (error) {
     console.error('❌ Logout error:', error.message);
-    
+
     res.status(500).json({
       success: false,
       message: 'Logout failed'

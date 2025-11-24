@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
       // If server has a saved theme, apply it (and notify) when it differs
       if (serverTheme && serverTheme !== currentTheme) {
         setTheme(serverTheme, { user: usr });
-        try { toast.success(`Applied your saved theme: ${serverTheme}`); } catch (e) {}
+        try { toast.success(`Applied your saved theme: ${serverTheme}`); } catch (e) { }
         return;
       }
 
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
 
       if (derived !== currentTheme) {
         setTheme(derived, { user: usr });
-        try { toast(`Applied a theme based on your progress: ${derived}`); } catch (e) {}
+        try { toast(`Applied a theme based on your progress: ${derived}`); } catch (e) { }
       }
     } catch (err) {
       console.warn('Failed to apply server theme', err);
@@ -111,11 +111,11 @@ export const AuthProvider = ({ children }) => {
       const newAchievements = currentAchievements.filter(current => {
         // Check if this achievement wasn't in the previous list
         const isNew = !previousAchievements.some(prev => prev.id === current.id);
-        
+
         // Check if it was unlocked recently (within last 10 seconds)
         const unlockedAt = new Date(current.unlockedAt).getTime();
         const isRecent = (now - unlockedAt) < 10000; // 10 seconds
-        
+
         // Only show toast if it's both new to our tracking AND recently unlocked
         return isNew && isRecent;
       });
@@ -128,9 +128,8 @@ export const AuthProvider = ({ children }) => {
             toast.custom(
               (t) => (
                 <div
-                  className={`${
-                    t.visible ? 'animate-enter' : 'animate-leave'
-                  } max-w-md w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 shadow-2xl rounded-2xl pointer-events-auto flex items-center ring-2 ring-yellow-300 ring-opacity-50`}
+                  className={`${t.visible ? 'animate-enter' : 'animate-leave'
+                    } max-w-md w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 shadow-2xl rounded-2xl pointer-events-auto flex items-center ring-2 ring-yellow-300 ring-opacity-50`}
                 >
                   <div className="flex-1 w-0 p-6">
                     <div className="flex items-start">
@@ -157,17 +156,17 @@ export const AuthProvider = ({ children }) => {
                       className="px-4 py-6 flex items-center justify-center text-white hover:bg-white/20 focus:outline-none transition-all rounded-r-2xl group"
                       aria-label="Close notification"
                     >
-                      <svg 
-                        className="w-5 h-5 group-hover:scale-110 transition-transform" 
-                        fill="none" 
-                        stroke="currentColor" 
+                      <svg
+                        className="w-5 h-5 group-hover:scale-110 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          strokeWidth={2.5} 
-                          d="M6 18L18 6M6 6l12 12" 
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2.5}
+                          d="M6 18L18 6M6 6l12 12"
                         />
                       </svg>
                     </button>
@@ -256,7 +255,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem(`chatSessionId_${userId}`);
         console.log(`🔐 Cleared chat session for user: ${userId}`);
       }
-      
+
       if (token) {
         await axios.post(`${API_URL}/auth/logout`);
       }

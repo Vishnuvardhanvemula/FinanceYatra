@@ -85,7 +85,7 @@ const ModuleNode = ({ module, index, status, prereqTitles, onClick }) => {
                     ref={ref}
                     onMouseMove={onMouseMove}
                     onMouseLeave={onMouseLeave}
-                    onClick={() => onClick(module)}
+                    onClick={() => { console.log('[ModuleNode] Clicked module:', module); onClick(module); }}
                     style={{
                         transformStyle: 'preserve-3d',
                         rotateX,

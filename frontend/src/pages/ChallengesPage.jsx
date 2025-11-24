@@ -288,10 +288,10 @@ export default function ChallengesPage() {
                               const res = await challengeService.submitDailyAnswer(payload);
 
                               if (res?.correct === true) {
-                                toast.success(res?.message || `Correct! +${res?.xp || 10} XP`, { icon: '🎉' });
+                                toast.success(res?.message || `Correct! +${res?.xp || 10} XP`, { icon: '??' });
                               } else if (res?.correct === false) {
                                 toast.error(res?.message || 'Incorrect answer');
-                                if (res?.explanation) toast(res.explanation, { icon: 'ℹ️' });
+                                if (res?.explanation) toast(res.explanation, { icon: '??' });
                               } else {
                                 toast.success(res?.message || 'Answer submitted');
                               }
@@ -440,7 +440,7 @@ export default function ChallengesPage() {
                       onClick={async () => {
                         setClaimingAll(true);
                         try {
-                          // Simplified claim‑all logic (same as original)
+                          // Simplified claim-all logic (same as original)
                           toast.success('All rewards claimed!');
                         } catch (e) { toast.error('Error claiming rewards'); }
                         finally { setClaimingAll(false); }
@@ -478,49 +478,68 @@ export default function ChallengesPage() {
                   </div>
 
                   <div className="p-4 space-y-2">
-                    {leaderboard.slice(0, 5).map((u, i) => {
-                      const displayName = u.displayName || u.name || u.username || 'Anon';
-                      const points = u.points || u.totalPoints || u.pts || 0;
-
-                      return (
-                        <div
-                          key={i}
-                          className={`relative flex items-center justify-between p-3 rounded-xl border transition-all ${i < 3
-                            ? 'bg-gradient-to-r border-transparent shadow-sm'
-                            : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'} ${i === 0 ? 'from-yellow-50 to-white dark:from-yellow-900/20 dark:to-gray-800' :
-                              i === 1 ? 'from-gray-100 to-white dark:from-gray-700/50 dark:to-gray-800' :
-                                i === 2 ? 'from-orange-50 to-white dark:from-orange-900/20 dark:to-gray-800' : ''}`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm ${i === 0 ? 'bg-yellow-400 text-white shadow-lg shadow-yellow-400/40' :
-                              i === 1 ? 'bg-gray-400 text-white shadow-lg shadow-gray-400/40' :
-                                i === 2 ? 'bg-orange-400 text-white shadow-lg shadow-orange-400/40' :
-                                  'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>
-                              {i + 1}
-                            </div>
-
-                            <div className="flex flex-col">
-                              <span className="font-bold text-gray-900 dark:text-white text-sm">{displayName}</span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">{u.role || 'Learner'}</span>
-                            </div>
-                          </div>
-
-                          <div className="font-bold text-teal-600 dark:text-teal-400 text-sm">
-                            {points} XP
-                          </div>
-
-                          {i === 0 && <IconCrown className="absolute -top-2 -right-2 w-6 h-6 text-yellow-400 transform rotate-12 drop-shadow-md" />}
+                    {leaderboard.length === 0 ? (
+                      <div className="text-center py-12">
+                        <div className="mb-4">
+                          <IconTrophy className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600" />
                         </div>
-                      );
-                    })}
-                  </div>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                          No Rankings Yet
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                          Be the first to earn XP and claim the top spot!
+                        </p>
+                        <button
+                          onClick={() => navigate('/modules')}
+                          className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold transition-all"
+                        >
+                          Start Learning
+                        </button>
+                      </div>
+                    ) : (
+                      leaderboard.slice(0, 5).map((u, i) => {
+                        const displayName = u.displayName || u.name || u.username || 'Anon';
+                        const points = u.points || u.totalPoints || u.pts || 0;
 
+                        return (
+                          <div
+                            key={i}
+                            className={`relative flex items-center justify-between p-3 rounded-xl border transition-all ${i < 3
+                              ? 'bg-gradient-to-r border-transparent shadow-sm'
+                              : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'} ${i === 0 ? 'from-yellow-50 to-white dark:from-yellow-900/20 dark:to-gray-800' :
+                                i === 1 ? 'from-gray-100 to-white dark:from-gray-700/50 dark:to-gray-800' :
+                                  i === 2 ? 'from-orange-50 to-white dark:from-orange-900/20 dark:to-gray-800' : ''}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm ${i === 0 ? 'bg-yellow-400 text-white shadow-lg shadow-yellow-400/40' :
+                                i === 1 ? 'bg-gray-400 text-white shadow-lg shadow-gray-400/40' :
+                                  i === 2 ? 'bg-orange-400 text-white shadow-lg shadow-orange-400/40' :
+                                    'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>
+                                {i + 1}
+                              </div>
+
+                              <div className="flex flex-col">
+                                <span className="font-bold text-gray-900 dark:text-white text-sm">{displayName}</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">{u.role || 'Learner'}</span>
+                              </div>
+                            </div>
+
+                            <div className="font-bold text-teal-600 dark:text-teal-400 text-sm">
+                              {points} XP
+                            </div>
+
+                            {i === 0 && <IconCrown className="absolute -top-2 -right-2 w-6 h-6 text-yellow-400 transform rotate-12 drop-shadow-md" />}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
                   <div className="p-4 border-t border-gray-100 dark:border-gray-700 text-center">
                     <button
                       onClick={() => navigate('/leaderboard')}
                       className="text-sm font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 hover:underline"
                     >
-                      View Full Leaderboard →
+                      View Full Leaderboard ?
                     </button>
                   </div>
                 </motion.aside>

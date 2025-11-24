@@ -73,9 +73,13 @@ const LessonQuiz = memo(({ quiz, lessonTitle, onComplete }) => {
         quizRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     } else {
+      // Calculate final score including current question
+      const finalScore = score + (selectedAnswer === question.correct ? 1 : 0);
+      const percentage = Math.round((finalScore / totalQuestions) * 100);
+
       setQuizCompleted(true);
       if (onComplete) {
-        onComplete(score + (selectedAnswer === question.correct ? 1 : 0), totalQuestions);
+        onComplete(percentage); // Pass percentage score (0-100) instead of raw score
       }
     }
   };
@@ -279,8 +283,8 @@ const LessonQuiz = memo(({ quiz, lessonTitle, onComplete }) => {
             onClick={handleSubmitAnswer}
             disabled={selectedAnswer === null}
             className={`px-8 py-3 rounded-lg font-mono text-sm font-bold tracking-wider transition-all ${selectedAnswer === null
-                ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                : 'bg-cyan-600 hover:bg-cyan-500 text-black shadow-[0_0_20px_rgba(8,145,178,0.4)]'
+              ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+              : 'bg-cyan-600 hover:bg-cyan-500 text-black shadow-[0_0_20px_rgba(8,145,178,0.4)]'
               }`}
           >
             VERIFY_DATA

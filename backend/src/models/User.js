@@ -24,14 +24,14 @@ const userSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  
+
   // Profile
   language: {
     type: String,
     default: 'en',
     enum: ['en', 'hi', 'te', 'ta', 'bn', 'kn', 'ml', 'mr', 'gu', 'pa', 'or']
   },
-  
+
   // Proficiency (AI-detected)
   proficiencyLevel: {
     type: String,
@@ -51,7 +51,7 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  
+
   // Learning preferences
   learningGoals: [{
     type: String
@@ -59,7 +59,7 @@ const userSchema = new mongoose.Schema({
   preferredTopics: [{
     type: String
   }],
-  
+
   // Progress tracking
   totalQuestionsAsked: {
     type: Number,
@@ -91,7 +91,7 @@ const userSchema = new mongoose.Schema({
     currentStreak: { type: Number, default: 0 },
     lastQuestionId: { type: String }
   },
-  
+
   // Learning Modules Progress
   moduleProgress: [{
     moduleId: {
@@ -114,7 +114,7 @@ const userSchema = new mongoose.Schema({
       max: 100
     }
   }],
-  
+
   // Gamification
   achievements: [{
     id: String,
@@ -133,7 +133,7 @@ const userSchema = new mongoose.Schema({
       pointsEarned: { type: Number, default: 0 }
     }
   ],
-  
+
   // Analytics & Activity Tracking
   activityLog: [{
     type: Date
@@ -153,7 +153,7 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  
+
   // Account status
   isActive: {
     type: Boolean,
@@ -168,7 +168,7 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  
+
   // Timestamps
   createdAt: {
     type: Date,
@@ -179,15 +179,31 @@ const userSchema = new mongoose.Schema({
     default: Date.now
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Virtual fields for frontend compatibility
+userSchema.virtual('xp').get(function () {
+  return this.totalPoints || 0;
+});
+
+userSchema.virtual('points').get(function () {
+  return this.totalPoints || 0;
+});
+
+userSchema.virtual('streak').get(function () {
+  return this.currentStreak || 0;
 });
 
 // Index for faster queries
 userSchema.index({ email: 1 });
 userSchema.index({ proficiencyLevel: 1 });
+userSchema.index({ totalPoints: -1 }); // For leaderboard
 
 // Method to update proficiency level
-userSchema.methods.updateProficiency = function(level, score) {
+userSchema.methods.updateProficiency = function (level, score) {
   this.proficiencyLevel = level;
   this.proficiencyScore = score;
   this.proficiencyAssessedAt = new Date();
@@ -195,10 +211,10 @@ userSchema.methods.updateProficiency = function(level, score) {
 };
 
 // Method to track question
-userSchema.methods.trackQuestion = function(topic) {
+userSchema.methods.trackQuestion = function (topic) {
   this.totalQuestionsAsked += 1;
   this.questionsAnalyzed += 1;
-  
+
   // Update topic tracking
   const topicIndex = this.topicsExplored.findIndex(t => t.topic === topic);
   if (topicIndex >= 0) {
@@ -211,11 +227,11 @@ userSchema.methods.trackQuestion = function(topic) {
       lastAsked: new Date()
     });
   }
-  
+
   // Update streak
   const today = new Date().toDateString();
   const lastActive = this.lastActiveDate ? this.lastActiveDate.toDateString() : null;
-  
+
   if (lastActive === today) {
     // Same day, no change
   } else if (lastActive === new Date(Date.now() - 86400000).toDateString()) {
@@ -228,13 +244,66 @@ userSchema.methods.trackQuestion = function(topic) {
     // Streak broken
     this.currentStreak = 1;
   }
-  
+
   this.lastActiveDate = new Date();
   return this.save();
 };
 
+// Method to update daily activity streak (unified system)
+userSchema.methods.updateDailyStreak = function () {
+  const today = new Date().toDateString();
+  const lastActive = this.lastActiveDate ? this.lastActiveDate.toDateString() : null;
+
+  if (lastActive === today) {
+    // Already logged today, no change
+    return this.currentStreak;
+  }
+
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+
+  if (lastActive === yesterday) {
+    // Consecutive day, increment streak
+    this.currentStreak += 1;
+    if (this.currentStreak > this.longestStreak) {
+      this.longestStreak = this.currentStreak;
+    }
+  } else if (!lastActive || lastActive !== yesterday) {
+    // Streak broken or first time
+    this.currentStreak = 1;
+  }
+
+  this.lastActiveDate = new Date();
+
+  // Award streak milestone XP
+  if (this.currentStreak === 7) {
+    this.totalPoints = (this.totalPoints || 0) + 50; // 7-day streak bonus
+  } else if (this.currentStreak === 30) {
+    this.totalPoints = (this.totalPoints || 0) + 200; // 30-day streak bonus
+  } else if (this.currentStreak === 100) {
+    this.totalPoints = (this.totalPoints || 0) + 1000; // 100-day streak bonus
+  }
+
+  return this.currentStreak;
+};
+
+// Method to award XP with activity logging
+userSchema.methods.awardXP = function (amount, source = 'general') {
+  if (amount && amount > 0) {
+    this.totalPoints = (this.totalPoints || 0) + amount;
+
+    // Log activity for streak tracking
+    const today = new Date().toDateString();
+    const lastActive = this.lastActiveDate ? this.lastActiveDate.toDateString() : null;
+
+    if (lastActive !== today) {
+      this.updateDailyStreak();
+    }
+  }
+  return this.totalPoints;
+};
+
 // Method to start a module
-userSchema.methods.startModule = function(moduleId) {
+userSchema.methods.startModule = function (moduleId) {
   const existing = this.moduleProgress.find(m => m.moduleId === moduleId);
   if (!existing) {
     this.moduleProgress.push({
@@ -247,9 +316,9 @@ userSchema.methods.startModule = function(moduleId) {
 };
 
 // Method to complete a lesson
-userSchema.methods.completeLesson = function(moduleId, lessonIndex) {
+userSchema.methods.completeLesson = function (moduleId, lessonIndex) {
   let moduleProgress = this.moduleProgress.find(m => m.moduleId === moduleId);
-  
+
   if (!moduleProgress) {
     // Start module if not started
     this.moduleProgress.push({
@@ -263,42 +332,60 @@ userSchema.methods.completeLesson = function(moduleId, lessonIndex) {
       moduleProgress.completedLessons.push(lessonIndex);
     }
   }
-  
+
   return this.save();
 };
 
 // Method to uncomplete a lesson
-userSchema.methods.uncompleteLesson = function(moduleId, lessonIndex) {
+userSchema.methods.uncompleteLesson = function (moduleId, lessonIndex) {
   const moduleProgress = this.moduleProgress.find(m => m.moduleId === moduleId);
-  
+
   if (moduleProgress) {
     moduleProgress.completedLessons = moduleProgress.completedLessons.filter(
       l => l !== lessonIndex
     );
   }
-  
+
   return this.save();
 };
 
-// Method to complete a module
-userSchema.methods.completeModule = function(moduleId, quizScore = null) {
+// Method to complete a module with XP config integration
+userSchema.methods.completeModule = function (moduleId, difficulty = 'beginner', quizScore = null, correctAnswers = 0, totalQuestions = 0) {
   const moduleProgress = this.moduleProgress.find(m => m.moduleId === moduleId);
-  
-  if (moduleProgress) {
+
+  if (moduleProgress && !moduleProgress.completedAt) {
     moduleProgress.completedAt = new Date();
     if (quizScore !== null) {
       moduleProgress.quizScore = quizScore;
     }
-    
-    // Award points
-    this.totalPoints += 100; // Base points for completing a module
+
+    // Award XP based on difficulty (matching frontend xpConfig.js)
+    const moduleXP = {
+      beginner: 100,
+      intermediate: 250,
+      expert: 500
+    };
+
+    const baseModuleXP = moduleXP[difficulty] || 100;
+
+    // Award quiz XP (10 per correct answer + 50 bonus for perfect score)
+    let quizXP = 0;
+    if (correctAnswers > 0) {
+      quizXP = correctAnswers * 10;
+      if (quizScore === 100 || (totalQuestions > 0 && correctAnswers === totalQuestions)) {
+        quizXP += 50; // Perfect score bonus
+      }
+    }
+
+    const totalXP = baseModuleXP + quizXP;
+    this.awardXP(totalXP, 'module_completion');
   }
-  
+
   return this.save();
 };
 
 // Method to get module progress
-userSchema.methods.getModuleProgress = function(moduleId) {
+userSchema.methods.getModuleProgress = function (moduleId) {
   return this.moduleProgress.find(m => m.moduleId === moduleId);
 };
 

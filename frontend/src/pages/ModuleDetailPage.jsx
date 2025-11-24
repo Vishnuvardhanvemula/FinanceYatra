@@ -9,7 +9,8 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import { getModuleById } from '../data/learningModules';
 import { getLessonContent } from '../data/lessonContent';
-import { ChevronLeft, ChevronRight, CheckCircle, Terminal, Shield, Activity, BookOpen, XCircle } from 'lucide-react';
+import LessonContentRenderer from '../components/LessonContentRenderer';
+import { ChevronLeft, ChevronRight, CheckCircle, Terminal, Shield, Activity, BookOpen, XCircle, Lightbulb } from 'lucide-react';
 import { QuizSkeleton, ModalSkeleton } from '../components/LoadingSkeletons';
 import { motion, AnimatePresence } from 'framer-motion';
 import CelebrationModal from '../components/CelebrationModal';
@@ -20,7 +21,7 @@ import { XP_VALUES } from '../config/xpConfig';
 const LessonQuiz = lazy(() => import('../components/LessonQuiz'));
 
 const ModuleDetailPage = () => {
-  const { moduleId } = useParams();
+  const { id: moduleId } = useParams(); // Route uses :id, extract and rename to moduleId
   const navigate = useNavigate();
   const { user, updateUserProgress } = useAuth();
 
@@ -32,13 +33,22 @@ const ModuleDetailPage = () => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Load Module Data
+  // Load Module  Data
   useEffect(() => {
     const loadData = () => {
       setLoading(true);
+
+      if (!moduleId) {
+        console.error('[ModuleDetailPage] No moduleId provided');
+        toast.error('Mission not found!');
+        navigate('/modules');
+        return;
+      }
+
       const moduleData = getModuleById(moduleId);
 
       if (!moduleData) {
+        console.error('[ModuleDetailPage] Module not found for ID:', moduleId);
         toast.error('Mission not found!');
         navigate('/modules');
         return;
@@ -124,7 +134,7 @@ const ModuleDetailPage = () => {
       <div className="fixed inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
+      <header className="sticky top-16 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -193,14 +203,33 @@ const ModuleDetailPage = () => {
             {/* Content Area */}
             <div className="grid gap-6">
               {currentLesson?.content ? (
-                <div className="prose prose-invert max-w-none prose-headings:text-cyan-50 prose-a:text-cyan-400 hover:prose-a:text-cyan-300 prose-strong:text-white prose-code:text-purple-300 prose-code:bg-purple-900/20 prose-code:px-1 prose-code:rounded prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-800">
-                  {/* Render HTML content safely if needed, or just text */}
-                  <div dangerouslySetInnerHTML={{ __html: currentLesson.content }} />
+                <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-8">
+                  <LessonContentRenderer content={currentLesson.content} />
                 </div>
               ) : (
                 <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-8 text-center">
                   <BookOpen className="w-12 h-12 text-slate-600 mx-auto mb-4" />
                   <p className="text-slate-400">Content for this phase is currently being decrypted.</p>
+                </div>
+              )}
+
+              {/* Key Points Section */}
+              {currentLesson?.keyPoints && currentLesson.keyPoints.length > 0 && (
+                <div className="bg-gradient-to-br from-cyan-900/20 to-purple-900/20 border border-cyan-500/30 rounded-xl p-6 shadow-lg">
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="p-2 bg-yellow-500/20 rounded-lg">
+                      <Lightbulb className="text-yellow-400" size={24} />
+                    </div>
+                    <h3 className="text-2xl font-bold text-cyan-300">Key Takeaways</h3>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-3">
+                    {currentLesson.keyPoints.map((point, idx) => (
+                      <div key={idx} className="flex items-start gap-3 bg-slate-900/50 p-4 rounded-lg border border-slate-700/50 hover:border-cyan-500/30 transition-colors">
+                        <CheckCircle className="text-green-400 flex-shrink-0 mt-1" size={18} />
+                        <span className="text-slate-300 text-sm leading-relaxed">{point}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -258,7 +287,7 @@ const ModuleDetailPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-[110] bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4"
           >
             <div className="w-full max-w-2xl relative">
               <button

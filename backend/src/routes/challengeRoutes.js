@@ -58,18 +58,30 @@ function isSameDay(d1, d2) {
 router.get('/leaderboard', optionalAuth, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit, 10) || 50;
-    const users = await User.find({ isActive: true })
-      .sort({ totalPoints: -1, updatedAt: -1 })
+
+    // Only show users with XP > 0 (active learners)
+    const users = await User.find({
+      isActive: true,
+      totalPoints: { $gt: 0 }  // Exclude users with 0 XP
+    })
+      .sort({ totalPoints: -1, currentStreak: -1, updatedAt: -1 })
       .limit(limit)
-      .select('name totalPoints proficiencyLevel _id')
+      .select('name totalPoints currentStreak proficiencyLevel _id')
       .lean();
 
     const entries = (users || []).map((u, idx) => ({
+      id: u._id.toString(), // Use _id as id for frontend matching
       rank: idx + 1,
       points: u.totalPoints || 0,
+      totalPoints: u.totalPoints || 0, // Alias for compatibility
+      xp: u.totalPoints || 0, // Alias for compatibility
+      streak: u.currentStreak || 0,
       displayName: u.name || `User ${idx + 1}`,
+      name: u.name,
+      username: u.name,
       nameInitial: u.name ? u.name.charAt(0).toUpperCase() : 'U',
       badge: u.proficiencyLevel || null,
+      role: u.proficiencyLevel ? u.proficiencyLevel.charAt(0).toUpperCase() + u.proficiencyLevel.slice(1) : 'Learner',
       isMe: !!(req.userId && u._id && req.userId.toString() === u._id.toString())
     }));
 
