@@ -1,6 +1,8 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Calculator, TrendingUp, Umbrella, FileText, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import Logo from './Logo';
@@ -12,35 +14,8 @@ export default function MainNavbar() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [calculatorsOpen, setCalculatorsOpen] = React.useState(false);
+  const [mobileCalculatorsOpen, setMobileCalculatorsOpen] = React.useState(false);
   const buttonRef = React.useRef(null);
-  const [dropdownPos, setDropdownPos] = React.useState({ top: 0, left: 0, width: 192 });
-
-  React.useEffect(() => {
-    if (!calculatorsOpen) return;
-    const el = buttonRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    // position dropdown so its right edge aligns with button right
-    setDropdownPos({ top: rect.bottom + window.scrollY + 8, left: rect.right - 192 + window.scrollX, width: 192 });
-
-    const handleKey = (e) => {
-      if (e.key === 'Escape') setCalculatorsOpen(false);
-    };
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [calculatorsOpen]);
-
-  React.useEffect(() => {
-    if (!calculatorsOpen) return;
-    const onDocMouseDown = (e) => {
-      const btn = buttonRef.current;
-      const dd = document.getElementById('calculators-dropdown-portal');
-      if (btn && (btn.contains(e.target) || (dd && dd.contains(e.target)))) return;
-      setCalculatorsOpen(false);
-    };
-    document.addEventListener('mousedown', onDocMouseDown);
-    return () => document.removeEventListener('mousedown', onDocMouseDown);
-  }, [calculatorsOpen]);
 
   const handleLogout = async () => {
     await logout();
@@ -57,7 +32,7 @@ export default function MainNavbar() {
   };
 
   return (
-    <nav className="fixed w-full top-0 left-0 z-[100]">
+    <nav className="fixed w-full top-0 left-0 z-[999]">
       <div className="bg-[#0b101b]/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -73,7 +48,7 @@ export default function MainNavbar() {
               <Link to="/chat" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 font-medium">Chat</Link>
               <Link to="/modules" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 font-medium">Learn</Link>
               <Link to="/challenges" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 font-medium">Challenges</Link>
-              <div className="relative" onMouseEnter={() => setCalculatorsOpen(true)}>
+              <div className="relative" onMouseEnter={() => setCalculatorsOpen(true)} onMouseLeave={() => setCalculatorsOpen(false)}>
                 <button
                   ref={buttonRef}
                   onClick={() => navigate('/calculators')}
@@ -81,22 +56,61 @@ export default function MainNavbar() {
                   aria-expanded={calculatorsOpen}
                   aria-haspopup="true"
                 >
-                  Calculators
+                  Tools
                   <svg className={`w-4 h-4 transition-transform ${calculatorsOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="none" stroke="currentColor"><path d="M6 8l4 4 4-4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </button>
 
-                {calculatorsOpen && buttonRef.current && createPortal(
-                  <div id="calculators-dropdown-portal" style={{ position: 'absolute', top: dropdownPos.top + 'px', left: dropdownPos.left + 'px', width: dropdownPos.width + 'px' }}>
-                    <div className="bg-[#0b101b] backdrop-blur-md rounded-lg shadow-2xl z-[10000] py-2" style={{ boxShadow: '0 18px 50px rgba(0,0,0,0.6)' }}>
-                      <Link to="/calculators/emi" className="block px-4 py-2 text-sm text-gray-100 hover:bg-white/10">EMI Calculator</Link>
-                      <Link to="/sip" className="block px-4 py-2 text-sm text-gray-100 hover:bg-white/10">SIP Calculator</Link>
-                      <Link to="/calculators/retirement" className="block px-4 py-2 text-sm text-gray-100 hover:bg-white/10">Retirement Calculator</Link>
-                      <Link to="/calculators/emergency" className="block px-4 py-2 text-sm text-gray-100 hover:bg-white/10">Emergency Fund</Link>
-                      <Link to="/calculators/tax" className="block px-4 py-2 text-sm text-gray-100 hover:bg-white/10">Income Tax Calculator</Link>
-                    </div>
-                  </div>,
-                  document.body
-                )}
+                <AnimatePresence>
+                  {calculatorsOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-full right-0 mt-2 w-64 bg-[#0b101b]/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50"
+                      style={{ boxShadow: '0 20px 60px -10px rgba(0,0,0,0.8)' }}
+                    >
+                      <div className="py-2">
+                        <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Tools</div>
+
+                        <Link to="/calculators/emi" className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors group">
+                          <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 group-hover:text-blue-300 transition-colors">
+                            <Calculator size={16} />
+                          </div>
+                          <span>EMI Calculator</span>
+                        </Link>
+
+                        <Link to="/calculators/sip" className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors group">
+                          <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500/20 group-hover:text-emerald-300 transition-colors">
+                            <TrendingUp size={16} />
+                          </div>
+                          <span>SIP Calculator</span>
+                        </Link>
+
+                        <Link to="/calculators/retirement" className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors group">
+                          <div className="p-1.5 rounded-lg bg-violet-500/10 text-violet-400 group-hover:bg-violet-500/20 group-hover:text-violet-300 transition-colors">
+                            <Umbrella size={16} />
+                          </div>
+                          <span>Retirement Planner</span>
+                        </Link>
+
+                        <Link to="/calculators/tax" className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors group">
+                          <div className="p-1.5 rounded-lg bg-orange-500/10 text-orange-400 group-hover:bg-orange-500/20 group-hover:text-orange-300 transition-colors">
+                            <FileText size={16} />
+                          </div>
+                          <span>Tax Analyzer</span>
+                        </Link>
+
+                        <Link to="/calculators/emergency" className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors group">
+                          <div className="p-1.5 rounded-lg bg-red-500/10 text-red-400 group-hover:bg-red-500/20 group-hover:text-red-300 transition-colors">
+                            <ShieldAlert size={16} />
+                          </div>
+                          <span>Emergency Fund</span>
+                        </Link>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
               <a href="#about" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 font-medium">About</a>
             </div>
@@ -140,10 +154,33 @@ export default function MainNavbar() {
                 <Link to="/chat" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">Chat</Link>
                 <Link to="/modules" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">Modules</Link>
                 <Link to="/challenges" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">Challenges</Link>
-                <Link to="/calculators" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">Calculators</Link>
-                <Link to="/sip" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">SIP</Link>
-                <Link to="/retirement" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">Retirement</Link>
-                <Link to="/calculators/emergency" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">Emergency Fund</Link>
+
+                <div className="space-y-1">
+                  <button
+                    onClick={() => setMobileCalculatorsOpen(!mobileCalculatorsOpen)}
+                    className="w-full flex items-center justify-between px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg"
+                  >
+                    <span>Calculators</span>
+                    <svg className={`w-4 h-4 transition-transform ${mobileCalculatorsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </button>
+
+                  <AnimatePresence>
+                    {mobileCalculatorsOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden pl-4 space-y-1"
+                      >
+                        <Link to="/calculators/emi" className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 rounded-lg">EMI Calculator</Link>
+                        <Link to="/calculators/sip" className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 rounded-lg">SIP Calculator</Link>
+                        <Link to="/calculators/retirement" className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 rounded-lg">Retirement Planner</Link>
+                        <Link to="/calculators/tax" className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 rounded-lg">Tax Analyzer</Link>
+                        <Link to="/calculators/emergency" className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 rounded-lg">Emergency Fund</Link>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
                 <hr className="my-2 dark:border-gray-600" />
                 {isAuthenticated ? (
                   <button onClick={handleLogout} className="px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-left">Logout</button>

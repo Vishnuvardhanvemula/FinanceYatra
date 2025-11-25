@@ -297,4 +297,43 @@ router.post('/logout', authenticate, async (req, res) => {
   }
 });
 
+/**
+ * POST /api/auth/progress
+ * Update module progress
+ */
+router.post('/progress', authenticate, async (req, res) => {
+  try {
+    const { moduleId, lastCompletedLesson, xpEarned, isCompleted } = req.body;
+
+    if (!moduleId || lastCompletedLesson === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Module ID and last completed lesson are required'
+      });
+    }
+
+    const result = await authService.updateModuleProgress(
+      req.userId,
+      moduleId,
+      lastCompletedLesson,
+      xpEarned,
+      isCompleted
+    );
+
+    res.json({
+      success: true,
+      message: result.message,
+      xpAwarded: result.xpAwarded
+    });
+
+  } catch (error) {
+    console.error('❌ Update progress error:', error.message);
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update progress'
+    });
+  }
+});
+
 export default router;

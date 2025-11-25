@@ -1,4 +1,6 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { TrendingUp, DollarSign, Calendar, Percent, RefreshCw, ArrowUpRight, Info } from 'lucide-react';
 
 function formatCurrency(v) {
   if (!isFinite(v)) return '₹0';
@@ -13,14 +15,144 @@ function computeSIPSeries(monthly, annualRate, years) {
   for (let m = 1; m <= months; m++) {
     value = value * (1 + r) + monthly;
     if (m % 12 === 0) {
-      // push yearly points to reduce chart density
       series.push({ month: m, value });
     }
   }
-  // ensure at least one point (month 12) for very small durations
   if (series.length === 0 && months > 0) series.push({ month: months, value });
   return series;
 }
+
+// Chart Component
+const Chart = ({ nominal, real }) => {
+  const chartRef = useRef(null);
+  const [hover, setHover] = useState({ idx: null, x: 0, y: 0 });
+  const [size, setSize] = useState({ w: 0, h: 300 });
+
+  useEffect(() => {
+    const el = chartRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setSize({ w: el.clientWidth, h: 300 }));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const padding = 40;
+  const width = Math.max(300, size.w);
+  const height = size.h;
+  const points = nominal.length;
+  const dataMax = Math.max(...nominal.map((d) => d.value), 1);
+  const chartW = width - padding * 2;
+
+  const xFor = (i) => padding + (chartW * i) / Math.max(1, points - 1);
+  const yFor = (v) => height - padding - ((height - padding * 2) * v) / dataMax;
+
+  const nominalPath = nominal.map((d, i) => `${i === 0 ? 'M' : 'L'} ${xFor(i)} ${yFor(d.value)}`).join(' ');
+  const realPath = real.map((d, i) => `${i === 0 ? 'M' : 'L'} ${xFor(i)} ${yFor(d.value)}`).join(' ');
+
+  // Area fill for nominal
+  const areaPath = `${nominalPath} L ${xFor(points - 1)} ${height - padding} L ${xFor(0)} ${height - padding} Z`;
+
+  const onMove = (e) => {
+    const bounds = chartRef.current.getBoundingClientRect();
+    const x = e.clientX - bounds.left - padding;
+    const idx = Math.round((x / chartW) * (points - 1));
+    const clamped = Math.max(0, Math.min(points - 1, idx));
+    setHover({ idx: clamped, x: xFor(clamped), y: yFor(nominal[clamped].value) });
+  };
+
+  return (
+    <div ref={chartRef} className="w-full h-[300px] relative cursor-crosshair" onMouseMove={onMove} onMouseLeave={() => setHover({ idx: null, x: 0, y: 0 })}>
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
+        <defs>
+          <linearGradient id="gradTeal" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#14b8a6" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        {/* Grid */}
+        {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
+          <line
+            key={i}
+            x1={padding}
+            x2={width - padding}
+            y1={padding + (height - padding * 2) * t}
+            y2={padding + (height - padding * 2) * t}
+            stroke="rgba(255,255,255,0.05)"
+            strokeWidth={1}
+          />
+        ))}
+
+        {/* Paths */}
+        <path d={areaPath} fill="url(#gradTeal)" />
+        <path d={nominalPath} fill="none" stroke="#2dd4bf" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+        <path d={realPath} fill="none" stroke="#fbbf24" strokeWidth={2} strokeDasharray="4 4" strokeOpacity={0.8} />
+
+        {/* Hover */}
+        {hover.idx !== null && (
+          <g>
+            <line x1={hover.x} x2={hover.x} y1={padding} y2={height - padding} stroke="rgba(255,255,255,0.2)" strokeDasharray="4 4" />
+            <circle cx={hover.x} cy={hover.y} r={6} fill="#0b101b" stroke="#2dd4bf" strokeWidth={2} />
+          </g>
+        )}
+      </svg>
+
+      {/* Tooltip */}
+      {hover.idx !== null && (
+        <div
+          className="absolute z-10 bg-[#0b101b]/90 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-2xl pointer-events-none min-w-[180px]"
+          style={{
+            left: hover.x,
+            top: hover.y - 20,
+            transform: 'translate(-50%, -100%)'
+          }}
+        >
+          <div className="text-xs font-medium text-gray-400 mb-2">Year {Math.round(nominal[hover.idx].month / 12)}</div>
+          <div className="space-y-1">
+            <div className="flex justify-between gap-4">
+              <span className="text-xs text-teal-400">Projected</span>
+              <span className="text-sm font-bold text-white">{formatCurrency(nominal[hover.idx].value)}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-xs text-amber-400">Real Value</span>
+              <span className="text-sm font-medium text-gray-300">{formatCurrency(real[hover.idx].value)}</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const SliderInput = ({ label, value, onChange, min, max, step = 1, prefix = '', suffix = '', icon: Icon }) => (
+  <div className="space-y-4">
+    <div className="flex justify-between items-center">
+      <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+        {Icon && <Icon className="w-4 h-4 text-teal-400" />}
+        {label}
+      </label>
+      <div className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 flex items-center min-w-[100px]">
+        <span className="text-gray-400 text-sm mr-1">{prefix}</span>
+        <input
+          type="number"
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="bg-transparent text-white text-right w-full focus:outline-none font-medium"
+        />
+        <span className="text-gray-400 text-sm ml-1">{suffix}</span>
+      </div>
+    </div>
+    <input
+      type="range"
+      min={min}
+      max={max}
+      step={step}
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+      className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-teal-500"
+    />
+  </div>
+);
 
 export default function SIPCalculator() {
   const [monthly, setMonthly] = useState(5000);
@@ -33,200 +165,140 @@ export default function SIPCalculator() {
 
   const finalNominal = series.length ? series[series.length - 1].value : 0;
   const finalReal = finalNominal / Math.pow(1 + inflation / 100, years);
+  const totalInvested = monthly * years * 12;
+  const wealthGained = finalNominal - totalInvested;
 
-  // Slider background helper
-  const sliderBg = (val, min, max) => {
-    const pct = Math.round(((val - min) / (max - min || 1)) * 100);
-    return { background: `linear-gradient(90deg, rgba(20,184,166,0.95) 0%, rgba(20,184,166,0.95) ${pct}%, rgba(55,65,81,0.25) ${pct}%)` };
-  };
-
-  // Chart tooltip state
-  const chartRef = useRef(null);
-  const [hover, setHover] = useState({ idx: null, x: 0, y: 0 });
-
-  // Chart component (responsive width)
-  const Chart = ({ nominal, real }) => {
-    const ref = chartRef;
-    const [size, setSize] = useState({ w: 700, h: 260 });
-
-    useEffect(() => {
-      const el = ref.current;
-      if (!el) return;
-      const ro = new ResizeObserver(() => {
-        setSize({ w: el.clientWidth || 700, h: 260 });
-      });
-      ro.observe(el);
-      setSize({ w: el.clientWidth || 700, h: 260 });
-      return () => ro.disconnect();
-    }, [ref]);
-
-    const padding = 40;
-    const width = Math.max(300, size.w);
-    const height = size.h;
-    const points = nominal.length;
-    const dataMax = Math.max(...nominal.map((d) => d.value), 1);
-    const chartW = width - padding * 2;
-
-    const xFor = (i) => padding + (chartW * i) / Math.max(1, points - 1);
-    const yFor = (v) => height - padding - ((height - padding * 2) * v) / dataMax;
-
-    const nominalPath = nominal.map((d, i) => `${i === 0 ? 'M' : 'L'} ${xFor(i)} ${yFor(d.value)}`).join(' ');
-    const realPath = real.map((d, i) => `${i === 0 ? 'M' : 'L'} ${xFor(i)} ${yFor(d.value)}`).join(' ');
-
-    const onMove = (e) => {
-      const bounds = ref.current.getBoundingClientRect();
-      const x = e.clientX - bounds.left - padding;
-      const idx = Math.round((x / chartW) * (points - 1));
-      const clamped = Math.max(0, Math.min(points - 1, idx));
-      const cx = xFor(clamped);
-      const cy = yFor(nominal[clamped].value);
-      setHover({ idx: clamped, x: cx, y: cy });
-    };
-
-    const onLeave = () => setHover({ idx: null, x: 0, y: 0 });
-
-    return (
-      <div ref={ref} className="w-full h-[260px] relative" onMouseMove={onMove} onMouseLeave={onLeave}>
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
-          <rect x="0" y="0" width={width} height={height} fill="transparent" />
-          {/* grid lines */}
-          <g className="opacity-25 text-gray-500">
-            {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
-              <line key={i} x1={padding} x2={width - padding} y1={padding + (height - padding * 2) * t} y2={padding + (height - padding * 2) * t} stroke="#374151" strokeWidth={1} />
-            ))}
-          </g>
-          <g>
-            <path d={nominalPath} fill="none" stroke="#10b981" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" />
-            <path d={realPath} fill="none" stroke="#f59e0b" strokeWidth={3} strokeDasharray="6 6" strokeLinejoin="round" strokeLinecap="round" />
-          </g>
-        </svg>
-
-        {/* Hover marker & tooltip */}
-        {hover.idx !== null && (
-          <div>
-            <div className="absolute -translate-x-1/2" style={{ left: hover.x }}>
-              <div className="w-0.5 h-28 bg-white/40 mx-auto" style={{ transform: 'translateY(-8px)' }} />
-            </div>
-
-            <div className="absolute bg-[#0b101b] text-gray-100 rounded-lg p-2 text-xs shadow-lg" style={{ left: hover.x + 8, top: hover.y - 60, minWidth: 160 }}>
-              <div className="font-semibold">Year {Math.round(nominal[hover.idx].month / 12)}</div>
-              <div className="flex items-center justify-between mt-1">
-                <div className="text-xs text-gray-300">Nominal</div>
-                <div className="text-sm font-medium text-teal-300">{formatCurrency(nominal[hover.idx].value)}</div>
-              </div>
-              <div className="flex items-center justify-between mt-1">
-                <div className="text-xs text-gray-300">Real</div>
-                <div className="text-sm font-medium text-amber-300">{formatCurrency(real[hover.idx].value)}</div>
-              </div>
-              <div className="mt-1 text-xs text-gray-400">Difference: {formatCurrency(nominal[hover.idx].value - real[hover.idx].value)}</div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
+  const reset = () => {
+    setMonthly(5000);
+    setRate(12);
+    setYears(10);
+    setInflation(6);
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h2 className="text-2xl font-bold text-gray-100 mb-2">SIP Calculator</h2>
-      <p className="text-gray-400 mb-6">Visualize your SIP corpus and see inflation-adjusted purchasing power.</p>
+    <div className="min-h-screen pt-12 pb-12 px-4 sm:px-6 lg:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-7xl mx-auto"
+      >
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500 mb-4">
+            SIP Calculator
+          </h1>
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+            Visualize wealth creation with inflation-adjusted returns. See the real power of compounding.
+          </p>
+        </div>
 
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Left: Control Panel (40%) */}
-        <div className="md:w-2/5 w-full">
-          <div className="glass-card p-6 rounded-2xl space-y-6">
-            <h3 className="text-lg font-semibold text-white">Control Panel</h3>
-            <p className="text-sm text-gray-300">Use sliders for quick changes, or enter exact values.</p>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm text-gray-300">Monthly Investment</label>
-                <div className="flex items-center gap-3 mt-2">
-                  <input type="range" min="0" max="200000" value={monthly} onChange={(e) => setMonthly(Number(e.target.value))} style={sliderBg(monthly, 0, 200000)} className="w-full h-2 rounded-lg accent-teal-500" />
-                  <input type="number" value={monthly} onChange={(e) => setMonthly(Number(e.target.value || 0))} className="w-28 p-2 rounded-md bg-white/5 text-white text-sm" />
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left: Controls */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-teal-400" />
+                  Parameters
+                </h2>
+                <button
+                  onClick={reset}
+                  className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Reset
+                </button>
               </div>
 
-              <div>
-                <label className="text-sm text-gray-300">Expected Return (annual %)</label>
-                <div className="flex items-center gap-3 mt-2">
-                  <input type="range" min="0" max="30" value={rate} onChange={(e) => setRate(Number(e.target.value))} style={sliderBg(rate, 0, 30)} className="w-full h-2 rounded-lg" />
-                  <input type="number" value={rate} onChange={(e) => setRate(Number(e.target.value || 0))} className="w-20 p-2 rounded-md bg-white/5 text-white text-sm" />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm text-gray-300">Time Period (years)</label>
-                <div className="flex items-center gap-3 mt-2">
-                  <input type="range" min="1" max="40" value={years} onChange={(e) => setYears(Number(e.target.value))} style={sliderBg(years, 1, 40)} className="w-full h-2 rounded-lg" />
-                  <input type="number" value={years} onChange={(e) => setYears(Number(e.target.value || 0))} className="w-20 p-2 rounded-md bg-white/5 text-white text-sm" />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm text-gray-300">Inflation Rate (%)</label>
-                <div className="flex items-center gap-3 mt-2">
-                  <input type="range" min="0" max="15" value={inflation} onChange={(e) => setInflation(Number(e.target.value))} style={sliderBg(inflation, 0, 15)} className="w-full h-2 rounded-lg" />
-                  <input type="number" value={inflation} onChange={(e) => setInflation(Number(e.target.value || 0))} className="w-20 p-2 rounded-md bg-white/5 text-white text-sm" />
+              <div className="space-y-8">
+                <SliderInput
+                  label="Monthly Investment"
+                  value={monthly}
+                  onChange={setMonthly}
+                  min={500}
+                  max={200000}
+                  step={500}
+                  prefix="₹"
+                  icon={DollarSign}
+                />
+                <SliderInput
+                  label="Expected Return (p.a)"
+                  value={rate}
+                  onChange={setRate}
+                  min={1}
+                  max={30}
+                  step={0.5}
+                  suffix="%"
+                  icon={Percent}
+                />
+                <SliderInput
+                  label="Time Period"
+                  value={years}
+                  onChange={setYears}
+                  min={1}
+                  max={40}
+                  suffix="Yr"
+                  icon={Calendar}
+                />
+                <div className="pt-4 border-t border-white/10">
+                  <SliderInput
+                    label="Inflation Rate"
+                    value={inflation}
+                    onChange={setInflation}
+                    min={0}
+                    max={15}
+                    step={0.5}
+                    suffix="%"
+                    icon={ArrowUpRight}
+                  />
+                  <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                    <Info className="w-3 h-3" />
+                    Adjusts for purchasing power over time
+                  </p>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="pt-2 border-t border-white/5">
-              <div className="text-sm text-gray-300">Summary</div>
-              <div className="flex items-baseline gap-4 mt-2">
-                <div>
-                  <div className="text-xs text-gray-400">Monthly</div>
-                  <div className="text-lg font-semibold text-white">{formatCurrency(monthly)}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-400">Return</div>
-                  <div className="text-lg font-semibold text-white">{rate}%</div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-400">Inflation</div>
-                  <div className="text-lg font-semibold text-white">{inflation}%</div>
+          {/* Right: Visualization */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
+                <div className="text-sm text-gray-400 mb-1">Invested Amount</div>
+                <div className="text-2xl font-bold text-white">{formatCurrency(totalInvested)}</div>
+              </div>
+              <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
+                <div className="text-sm text-gray-400 mb-1">Wealth Gained</div>
+                <div className="text-2xl font-bold text-teal-400">+{formatCurrency(wealthGained)}</div>
+              </div>
+              <div className="bg-gradient-to-br from-teal-500/20 to-blue-600/20 border border-teal-500/30 rounded-2xl p-5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-teal-500/20 rounded-full blur-2xl -mr-10 -mt-10" />
+                <div className="text-sm text-teal-200 mb-1">Projected Value</div>
+                <div className="text-2xl font-bold text-white">{formatCurrency(finalNominal)}</div>
+              </div>
+            </div>
+
+            {/* Chart */}
+            <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-white">Wealth Projection</h3>
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-teal-400" />
+                    <span className="text-gray-300">Projected</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full border border-amber-400 border-dashed" />
+                    <span className="text-gray-300">Real Value</span>
+                  </div>
                 </div>
               </div>
+              <Chart nominal={series} real={realSeries} />
             </div>
           </div>
         </div>
-
-        {/* Right: Visualization (60%) */}
-        <div className="md:w-3/5 w-full flex flex-col gap-4">
-          <div className="flex gap-4">
-            <div className="flex-1 bg-gradient-to-br from-emerald-600 to-teal-500 text-white rounded-2xl p-5 shadow-lg transform hover:scale-[1.01] transition">
-              <div className="text-sm text-emerald-100">Projected Value</div>
-              <div className="text-3xl md:text-4xl font-extrabold mt-2">{formatCurrency(finalNominal)}</div>
-              <div className="text-sm text-emerald-100 mt-2">Estimated corpus at the end of {years} years</div>
-            </div>
-
-            <div className="flex-1 bg-gradient-to-br from-amber-500 to-orange-400 text-black rounded-2xl p-5 shadow-lg transform hover:scale-[1.01] transition">
-              <div className="text-sm text-amber-900">Real Value</div>
-              <div className="text-3xl md:text-4xl font-extrabold mt-2">{formatCurrency(finalReal)}</div>
-              <div className="text-xs text-amber-800 mt-2">This is what your money will be worth in today's terms.</div>
-            </div>
-          </div>
-
-          <div className="glass-card p-4 rounded-2xl">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-teal-400" />
-                  <span className="text-sm text-gray-200">Nominal</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full border-2 border-amber-400" />
-                  <span className="text-sm text-gray-200">Inflation-adjusted</span>
-                </div>
-              </div>
-              <div className="text-xs text-gray-400">Hover chart to see yearly values and differences</div>
-            </div>
-
-            <Chart nominal={series} real={realSeries} />
-          </div>
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

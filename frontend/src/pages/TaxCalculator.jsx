@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import calculateIndianTax from '../utils/taxCalculator';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, Cell } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Calculator, Shield, TrendingUp, AlertCircle, Check, X, ChevronDown, ChevronUp, IndianRupee } from 'lucide-react';
 
 function rupee(n) { return '₹' + (Number(n) || 0).toLocaleString(); }
 
@@ -9,23 +10,40 @@ function CustomTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
   const items = payload.slice().reverse();
   return (
-    <div className="backdrop-blur-md bg-slate-900/40 border border-white/8 rounded-lg p-3 text-sm text-white">
-      <div className="text-xs text-gray-300 mb-2">{label}</div>
+    <div className="bg-[#0b101b]/90 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-2xl">
+      <div className="text-xs font-medium text-gray-400 mb-2">{label}</div>
       {items.map((p, i) => (
-        <div key={i} className="flex items-center justify-between text-white/90">
-          <div className="text-sm">{p.name}</div>
-          <div className="font-semibold">{rupee(p.value)}</div>
+        <div key={i} className="flex items-center justify-between gap-4 text-sm mb-1 last:mb-0">
+          <div className="text-gray-300">{p.name}</div>
+          <div className="font-semibold text-white">{rupee(p.value)}</div>
         </div>
       ))}
     </div>
   );
 }
 
+const InputField = ({ label, value, onChange, prefix = '₹' }) => (
+  <div className="space-y-2">
+    <label className="text-sm font-medium text-gray-300">{label}</label>
+    <div className="relative group">
+      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <span className="text-gray-500 group-focus-within:text-teal-400 transition-colors">{prefix}</span>
+      </div>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value || 0))}
+        className="block w-full pl-8 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-transparent transition-all font-medium"
+      />
+    </div>
+  </div>
+);
+
 export default function TaxCalculator() {
   const [gross, setGross] = useState(1200000);
   const [showDeductions, setShowDeductions] = useState(true);
   const [sec80c, setSec80c] = useState(150000);
-  const [sec80d, setSec80d] = useState(5000);
+  const [sec80d, setSec80d] = useState(25000);
   const [hra, setHra] = useState(0);
 
   const result = useMemo(() => calculateIndianTax(Number(gross || 0), { hra: Number(hra || 0), sec80c: Number(sec80c || 0), sec80d: Number(sec80d || 0) }), [gross, hra, sec80c, sec80d]);
@@ -41,127 +59,162 @@ export default function TaxCalculator() {
   const winner = result.old.tax < result.new.tax ? 'old' : (result.new.tax < result.old.tax ? 'new' : 'tie');
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h2 className="text-2xl font-bold text-gray-100 mb-2">Income Tax Calculator (FY 2024-25)</h2>
-      <p className="text-gray-400 mb-6">Compare Old vs New tax regimes and see savings.</p>
+    <div className="min-h-screen pt-12 pb-12 px-4 sm:px-6 lg:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-7xl mx-auto"
+      >
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500 mb-4">
+            Tax Regime Analyzer
+          </h1>
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+            Compare Old vs New tax regimes instantly. Find out where you save more for FY 2024-25.
+          </p>
+        </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left controls */}
-        <div className="lg:w-2/5 w-full">
-          <div className="glass-card p-6 rounded-2xl space-y-4">
-            <label className="text-sm text-gray-300">Gross Salary (annual)</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-300">₹</span>
-              <input type="number" value={gross} onChange={(e) => setGross(Number(e.target.value || 0))} className="w-full p-3 pl-9 rounded-md bg-white/5 text-white" />
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left: Inputs */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                  <Calculator className="w-5 h-5 text-teal-400" />
+                  Income Details
+                </h2>
+              </div>
 
-            <div className="mt-4">
-              <div className="bg-white/3 border border-white/6 p-4 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-300">Include Old-Regime Deductions</div>
-                  <label className="inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only" checked={showDeductions} onChange={() => setShowDeductions(s => !s)} />
-                    <div className={`w-11 h-6 flex items-center bg-white/6 rounded-full p-1 ${showDeductions ? 'justify-end' : 'justify-start'}`}>
-                      <div className="w-4 h-4 bg-white rounded-full shadow" />
+              <div className="space-y-6">
+                <InputField label="Gross Annual Income" value={gross} onChange={setGross} />
+
+                <div className="pt-4 border-t border-white/10">
+                  <button
+                    onClick={() => setShowDeductions(!showDeductions)}
+                    className="flex items-center justify-between w-full text-left group"
+                  >
+                    <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">Deductions (Old Regime)</span>
+                    <div className={`p-1 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors ${showDeductions ? 'text-teal-400' : 'text-gray-500'}`}>
+                      {showDeductions ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </div>
-                  </label>
+                  </button>
+
+                  <AnimatePresence>
+                    {showDeductions && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pt-4 space-y-4">
+                          <InputField label="Section 80C (Max 1.5L)" value={sec80c} onChange={setSec80c} />
+                          <InputField label="Section 80D (Health Ins)" value={sec80d} onChange={setSec80d} />
+                          <InputField label="HRA Exemption" value={hra} onChange={setHra} />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
+              </div>
+            </div>
+          </div>
 
-                <AnimatePresence initial={false}>
-                  {showDeductions && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.24 }}
-                      className="mt-3 overflow-hidden"
-                    >
-                      <div className="space-y-3">
-                        <div>
-                          <label className="text-xs text-gray-300">Section 80C (max ₹1.5L)</label>
-                          <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-300">₹</span>
-                            <input type="number" value={sec80c} onChange={(e) => setSec80c(Number(e.target.value || 0))} className="w-full p-2 pl-9 rounded-md bg-white/5 text-white text-sm mt-1" />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-300">Section 80D</label>
-                          <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-300">₹</span>
-                            <input type="number" value={sec80d} onChange={(e) => setSec80d(Number(e.target.value || 0))} className="w-full p-2 pl-9 rounded-md bg-white/5 text-white text-sm mt-1" />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-300">HRA (annual)</label>
-                          <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-300">₹</span>
-                            <input type="number" value={hra} onChange={(e) => setHra(Number(e.target.value || 0))} className="w-full p-2 pl-9 rounded-md bg-white/5 text-white text-sm mt-1" />
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+          {/* Right: Comparison */}
+          <div className="lg:col-span-8 space-y-8">
+            {/* Battle Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Old Regime Card */}
+              <div className={`relative overflow-hidden rounded-3xl p-6 border transition-all duration-300 ${winner === 'old' ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.1)]' : 'bg-[#0b101b]/60 border-white/10'}`}>
+                {winner === 'old' && (
+                  <div className="absolute top-0 right-0 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl">
+                    RECOMMENDED
+                  </div>
+                )}
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">Old Regime</h3>
+                    <p className="text-sm text-gray-400">With Deductions</p>
+                  </div>
+                  <Shield className={`w-6 h-6 ${winner === 'old' ? 'text-emerald-400' : 'text-gray-600'}`} />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Tax Payable</span>
+                    <span className={`font-bold ${winner === 'old' ? 'text-emerald-400' : 'text-white'}`}>{rupee(result.old.tax)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Take Home</span>
+                    <span className="text-white">{rupee(oldTake)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* New Regime Card */}
+              <div className={`relative overflow-hidden rounded-3xl p-6 border transition-all duration-300 ${winner === 'new' ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.1)]' : 'bg-[#0b101b]/60 border-white/10'}`}>
+                {winner === 'new' && (
+                  <div className="absolute top-0 right-0 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl">
+                    RECOMMENDED
+                  </div>
+                )}
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">New Regime</h3>
+                    <p className="text-sm text-gray-400">Default (No Deductions)</p>
+                  </div>
+                  <TrendingUp className={`w-6 h-6 ${winner === 'new' ? 'text-emerald-400' : 'text-gray-600'}`} />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Tax Payable</span>
+                    <span className={`font-bold ${winner === 'new' ? 'text-emerald-400' : 'text-white'}`}>{rupee(result.new.tax)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Take Home</span>
+                    <span className="text-white">{rupee(newTake)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Savings Banner */}
+            <div className="bg-gradient-to-r from-teal-500/20 to-blue-600/20 border border-teal-500/30 rounded-2xl p-6 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-teal-500/20 rounded-full text-teal-400">
+                  <IndianRupee className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-sm text-teal-200">Total Savings</div>
+                  <div className="text-2xl font-bold text-white">{rupee(result.taxSaved)}</div>
+                </div>
+              </div>
+              <div className="text-right hidden sm:block">
+                <div className="text-sm text-gray-400">By choosing</div>
+                <div className="text-lg font-semibold text-white">{result.recommended === 'old' ? 'Old Regime' : 'New Regime'}</div>
+              </div>
+            </div>
+
+            {/* Chart */}
+            <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl">
+              <h3 className="text-lg font-semibold text-white mb-6">Comparison</h3>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={data} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff" strokeOpacity={0.05} vertical={false} />
+                    <XAxis dataKey="name" tick={{ fill: '#9ca3af', fontSize: 12 }} axisLine={false} tickLine={false} dy={10} />
+                    <YAxis tickFormatter={(v) => (v >= 100000 ? `${v / 100000}L` : v)} tick={{ fill: '#9ca3af', fontSize: 12 }} axisLine={false} tickLine={false} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
+                    <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                    <Bar dataKey="take" stackId="a" fill="#10b981" name="Take Home" radius={[0, 0, 4, 4]} barSize={60} />
+                    <Bar dataKey="tax" stackId="a" fill="#ef4444" name="Tax Liability" radius={[4, 4, 0, 0]} barSize={60} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Right visualization */}
-        <div className="lg:w-3/5 w-full space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
-            <div className={`p-5 rounded-2xl text-white flex items-center justify-between ${winner === 'old' ? 'bg-emerald-700 shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-400/10' : 'bg-slate-800'}`}>
-              <div>
-                <div className="text-sm">Old Regime</div>
-                <div className="text-2xl font-bold mt-2">{rupee(result.old.tax)}</div>
-              </div>
-              <div className="text-sm text-right">
-                {winner === 'old' && <div className="text-xs">🏆 Winner</div>}
-              </div>
-            </div>
-
-            <div className="col-span-1 sm:col-span-1 flex items-center justify-center">
-              <div className="text-center p-4 rounded-3xl bg-gradient-to-r from-slate-800/50 via-emerald-700/8 to-slate-800/50">
-                <div className="text-sm text-gray-300">Tax Saved</div>
-                <div className="text-4xl font-extrabold text-white mt-1">{rupee(result.taxSaved)}</div>
-                <div className="text-xs text-gray-400 mt-1">Save with {result.recommended === 'old' ? 'Old' : 'New'} Regime</div>
-              </div>
-            </div>
-
-            <div className={`p-5 rounded-2xl text-white flex items-center justify-between ${winner === 'new' ? 'bg-emerald-700 shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-400/10' : 'bg-slate-800'}`}>
-              <div>
-                <div className="text-sm">New Regime</div>
-                <div className="text-2xl font-bold mt-2">{rupee(result.new.tax)}</div>
-              </div>
-              <div className="text-sm text-right">
-                {winner === 'new' && <div className="text-xs">🏆 Winner</div>}
-              </div>
-            </div>
-          </div>
-
-          <div className="glass-card p-4 rounded-2xl">
-            <div style={{ width: '100%', height: 320 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff" strokeOpacity={0.04} />
-                  <XAxis dataKey="name" tick={{ fill: '#94a3b8' }} />
-                  <YAxis tickFormatter={(v) => (v >= 100000 ? `${v/100000}L` : v)} tick={{ fill: '#94a3b8' }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend />
-                  {/* Stack: bottom -> take (green), top -> tax (red) */}
-                  <Bar dataKey="take" stackId="a" fill="#10b981" name="Take Home" barSize={48} radius={[10,10,0,0]}>
-                    {data.map((entry, idx) => (<Cell key={`cell-take-${idx}`} />))}
-                  </Bar>
-                  <Bar dataKey="tax" stackId="a" fill="#ef4444" name="Tax Liability" barSize={48} radius={[10,10,0,0]}>
-                    {data.map((entry, idx) => (<Cell key={`cell-tax-${idx}`} />))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
-

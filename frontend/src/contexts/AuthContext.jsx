@@ -340,6 +340,112 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Update user's module progress
+  const updateUserProgress = async (progressData) => {
+    try {
+      const response = await axios.post(`${API_URL}/auth/progress`, {
+        moduleId: progressData.moduleId,
+        lastCompletedLesson: progressData.lastCompletedLesson,
+        timestamp: progressData.timestamp,
+        xpEarned: progressData.xpEarned, // Send XP earned
+        isCompleted: progressData.isCompleted // Send completion flag
+      });
+
+      if (response.data.success) {
+        // Update local user state with new progress
+        setUser(prev => {
+          const currentProgressArray = Array.isArray(prev?.moduleProgress)
+            ? [...prev.moduleProgress]
+            : [];
+
+          const existingIndex = currentProgressArray.findIndex(m => m.moduleId === progressData.moduleId);
+
+          if (existingIndex >= 0) {
+            const existingModule = currentProgressArray[existingIndex];
+            const updatedCompletedLessons = Array.isArray(existingModule.completedLessons)
+              ? [...existingModule.completedLessons]
+              : [];
+
+            if (!updatedCompletedLessons.includes(progressData.lastCompletedLesson)) {
+              updatedCompletedLessons.push(progressData.lastCompletedLesson);
+            }
+
+            currentProgressArray[existingIndex] = {
+              ...existingModule,
+              lastCompletedLesson: progressData.lastCompletedLesson,
+              timestamp: progressData.timestamp,
+              completedLessons: updatedCompletedLessons,
+              ...(progressData.isCompleted && { completedAt: new Date() }) // Set completedAt if finished
+            };
+          } else {
+            currentProgressArray.push({
+              moduleId: progressData.moduleId,
+              lastCompletedLesson: progressData.lastCompletedLesson,
+              timestamp: progressData.timestamp,
+              completedLessons: [progressData.lastCompletedLesson],
+              ...(progressData.isCompleted && { completedAt: new Date() }) // Set completedAt if finished
+            });
+          }
+
+          const newTotalPoints = (prev.totalPoints || 0) + (response.data.xpAwarded || 0);
+          return {
+            ...prev,
+            moduleProgress: currentProgressArray,
+            totalPoints: newTotalPoints,
+            xp: newTotalPoints, // Sync alias for Dashboard
+            points: newTotalPoints // Sync alias for Challenges
+          };
+        });
+        return { success: true };
+      }
+
+      return { success: false, message: response.data.message };
+    } catch (error) {
+      console.error('Update progress error:', error);
+      // Still update local state even if API fails (offline mode)
+      setUser(prev => {
+        const currentProgressArray = Array.isArray(prev?.moduleProgress)
+          ? [...prev.moduleProgress]
+          : [];
+
+        const existingIndex = currentProgressArray.findIndex(m => m.moduleId === progressData.moduleId);
+
+        if (existingIndex >= 0) {
+          const existingModule = currentProgressArray[existingIndex];
+          const updatedCompletedLessons = Array.isArray(existingModule.completedLessons)
+            ? [...existingModule.completedLessons]
+            : [];
+
+          if (!updatedCompletedLessons.includes(progressData.lastCompletedLesson)) {
+            updatedCompletedLessons.push(progressData.lastCompletedLesson);
+          }
+
+          currentProgressArray[existingIndex] = {
+            ...existingModule,
+            lastCompletedLesson: progressData.lastCompletedLesson,
+            timestamp: progressData.timestamp,
+            completedLessons: updatedCompletedLessons,
+            ...(progressData.isCompleted && { completedAt: new Date() }) // Set completedAt if finished
+          };
+        } else {
+          currentProgressArray.push({
+            moduleId: progressData.moduleId,
+            lastCompletedLesson: progressData.lastCompletedLesson,
+            timestamp: progressData.timestamp,
+            completedLessons: [progressData.lastCompletedLesson],
+            ...(progressData.isCompleted && { completedAt: new Date() }) // Set completedAt if finished
+          });
+        }
+
+        return {
+          ...prev,
+          moduleProgress: currentProgressArray
+        };
+      });
+      return { success: false, message: 'Progress saved locally only' };
+    }
+  };
+
   const value = {
     user,
     token,
@@ -350,7 +456,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateProfile,
     changePassword,
-    refreshUser
+    refreshUser,
+    updateUserProgress
   };
 
   return (

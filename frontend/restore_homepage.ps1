@@ -1,4 +1,5 @@
-﻿import React, { useEffect, useRef, useMemo, useState, Suspense } from 'react';
+$Content = @"
+import React, { useEffect, useRef, useMemo, useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Canvas, useFrame } from '@react-three/fiber';
@@ -149,7 +150,7 @@ const RupeeSymbol = ({ scrollProgress, lowEnd = false, isMobile = false }) => {
     // SCROLL LOGIC
     // Oscillate X to avoid text collision (Right -> Left -> Right -> Left)
     const targetX = 4 * Math.cos(progress * Math.PI * 3.5);
-
+    
     // Fix Crop: Raise base position and reduce scroll influence
     const targetY = 0.5 + Math.sin(time * 0.5) * 0.1 - (progress * 0.5);
 
@@ -193,7 +194,7 @@ const RupeeSymbol = ({ scrollProgress, lowEnd = false, isMobile = false }) => {
             reflectivity={1}
           />
         </mesh>
-
+        
         {/* Orbiting Elements now follow the Rupee */}
         <OrbitingElements />
       </group>
@@ -865,3 +866,6 @@ export default function App() {
     </div>
   );
 }
+"@
+
+Set-Content -Path "d:\projects\Finance tutor\frontend\src\pages\HomePage.jsx" -Value $Content -Encoding UTF8

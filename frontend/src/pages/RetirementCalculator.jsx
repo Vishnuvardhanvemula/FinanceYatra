@@ -1,114 +1,169 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { User, Briefcase, TrendingUp, AlertTriangle, CheckCircle, Settings, ChevronDown, ChevronUp, DollarSign, Calendar } from 'lucide-react';
 
 function formatCurrency(v) {
   if (!isFinite(v)) return '₹0';
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(v);
 }
 
-function AdvancedSettings({ expectedReturn, setExpectedReturn, inflation, setInflation }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="mt-4">
-      <button onClick={() => setOpen((s) => !s)} className="text-sm text-gray-300 hover:text-white flex items-center gap-2">
-        <span>{open ? '▼' : '▶'}</span>
-        <span>Advanced Settings</span>
-      </button>
-      {open && (
-        <div className="mt-3 p-3 bg-white/3 rounded-lg">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs text-gray-200">Expected Return (%)</label>
-              <input type="number" value={expectedReturn} onChange={(e) => setExpectedReturn(Number(e.target.value || 0))} className="w-full p-2 rounded-md bg-white/5 text-white text-sm mt-2" />
-            </div>
-            <div>
-              <label className="text-xs text-gray-200">Inflation (%)</label>
-              <input type="number" value={inflation} onChange={(e) => setInflation(Number(e.target.value || 0))} className="w-full p-2 rounded-md bg-white/5 text-white text-sm mt-2" />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Compute required corpus at retirement using real return formula
 function computeRequiredCorpus({ monthlyExpenses, yearsToRetire, yearsInRetirement, expectedReturn, inflation }) {
   const annualExpenseToday = monthlyExpenses * 12;
   const expenseAtRetirement = annualExpenseToday * Math.pow(1 + inflation / 100, yearsToRetire);
-
-  // real return approx
   const r = expectedReturn / 100;
   const g = inflation / 100;
   const realReturn = (1 + r) / (1 + g) - 1;
 
-  if (Math.abs(realReturn) < 1e-6) {
-    // if return ~= inflation, required corpus is N * expense at retirement
-    return expenseAtRetirement * yearsInRetirement;
-  }
+  if (Math.abs(realReturn) < 1e-6) return expenseAtRetirement * yearsInRetirement;
 
-  // Present value of increasing annuity (growth = g, discount = r) at retirement
-  // PV = expenseAtRetirement * (1 - ((1+g)/(1+r))^{yearsInRetirement}) / (r - g)
   const denom = r - g;
-  if (Math.abs(denom) < 1e-9) {
-    return expenseAtRetirement * yearsInRetirement;
-  }
+  if (Math.abs(denom) < 1e-9) return expenseAtRetirement * yearsInRetirement;
+
   const factor = 1 - Math.pow((1 + g) / (1 + r), yearsInRetirement);
-  const pv = expenseAtRetirement * (factor / denom);
-  return pv;
+  return expenseAtRetirement * (factor / denom);
 }
 
-function computeProjection({ currentAge, retirementAge, lifeExpectancy, existingCorpus, monthlySavings, expectedReturn, inflation }) {
-  const values = [];
-  const r = expectedReturn / 100;
-  const g = inflation / 100;
-  const startAge = currentAge;
-  const endAge = lifeExpectancy;
-  const yearsToRetire = Math.max(0, retirementAge - currentAge);
-  const yearsTotal = Math.max(0, endAge - startAge);
+// Chart Component
+const Chart = ({ data, target }) => {
+  const chartRef = useRef(null);
+  const [hover, setHover] = useState({ idx: null, x: 0, y: 0 });
+  const [size, setSize] = useState({ w: 0, h: 300 });
 
-  let corpus = Number(existingCorpus || 0);
+  useEffect(() => {
+    const el = chartRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setSize({ w: el.clientWidth, h: 300 }));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
-  for (let y = 0; y <= yearsTotal; y++) {
-    const age = startAge + y;
-    // record before update so the chart shows starting corpus at current age
-    values.push({ age, yearIndex: y, corpus: Math.max(-1e12, corpus) });
+  const padding = 40;
+  const width = Math.max(300, size.w);
+  const height = size.h;
+  const points = data.length;
+  const values = data.map((d) => d.corpus);
+  const maxVal = Math.max(...values, target * 1.1, 1);
+  const minVal = Math.min(...values, 0);
+  const chartW = width - padding * 2;
 
-    if (age < retirementAge) {
-      // accumulation: annualized monthly savings added at year-end for simplicity
-      corpus = corpus * (1 + r) + monthlySavings * 12;
-    } else {
-      // withdrawal phase: apply growth, then we withdraw inflation-adjusted annual expense
-      corpus = corpus * (1 + r);
-      const yearsSinceRet = age - retirementAge;
-      const annualExpense = monthlySavings /* placeholder */; // avoid lint
-      // compute withdrawal: monthlyExpenses grows with inflation from today
-      // BUT we need monthlyExpenses input; caller will provide via closure
-    }
-  }
+  const xFor = (i) => padding + (chartW * i) / Math.max(1, points - 1);
+  const yFor = (v) => {
+    const range = maxVal - minVal || 1;
+    return height - padding - ((height - padding * 2) * (v - minVal)) / range;
+  };
 
-  return values;
-}
+  const pts = data.map((d, i) => ({ x: xFor(i), y: yFor(d.corpus) }));
+  const linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const areaPath = `${linePath} L ${xFor(points - 1)} ${height - padding} L ${xFor(0)} ${height - padding} Z`;
+  const targetY = yFor(target);
+
+  const onMove = (e) => {
+    const bounds = chartRef.current.getBoundingClientRect();
+    const x = e.clientX - bounds.left - padding;
+    const idx = Math.round((x / chartW) * (points - 1));
+    const clamped = Math.max(0, Math.min(points - 1, idx));
+    setHover({ idx: clamped, x: xFor(clamped), y: yFor(data[clamped].corpus) });
+  };
+
+  return (
+    <div ref={chartRef} className="w-full h-[300px] relative cursor-crosshair" onMouseMove={onMove} onMouseLeave={() => setHover({ idx: null, x: 0, y: 0 })}>
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
+        <defs>
+          <linearGradient id="gradRetire" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        {/* Grid */}
+        {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
+          <line key={i} x1={padding} x2={width - padding} y1={padding + (height - padding * 2) * t} y2={padding + (height - padding * 2) * t} stroke="rgba(255,255,255,0.05)" strokeWidth={1} />
+        ))}
+
+        {/* Target Line */}
+        <line x1={padding} x2={width - padding} y1={targetY} y2={targetY} stroke="#ef4444" strokeWidth={2} strokeDasharray="4 4" opacity={0.6} />
+        <text x={width - padding} y={targetY - 8} fill="#ef4444" fontSize="12" textAnchor="end" opacity={0.8}>Required: {formatCurrency(target)}</text>
+
+        {/* Paths */}
+        <path d={areaPath} fill="url(#gradRetire)" />
+        <path d={linePath} fill="none" stroke="#10b981" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+
+        {/* Hover */}
+        {hover.idx !== null && (
+          <g>
+            <line x1={hover.x} x2={hover.x} y1={padding} y2={height - padding} stroke="rgba(255,255,255,0.2)" strokeDasharray="4 4" />
+            <circle cx={hover.x} cy={hover.y} r={6} fill="#0b101b" stroke="#10b981" strokeWidth={2} />
+          </g>
+        )}
+      </svg>
+
+      {/* Tooltip */}
+      {hover.idx !== null && (
+        <div
+          className="absolute z-10 bg-[#0b101b]/90 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-2xl pointer-events-none min-w-[140px]"
+          style={{ left: hover.x, top: hover.y - 20, transform: 'translate(-50%, -100%)' }}
+        >
+          <div className="text-xs font-medium text-gray-400 mb-1">Age {data[hover.idx].age}</div>
+          <div className="text-sm font-bold text-white">{formatCurrency(data[hover.idx].corpus)}</div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const InputGroup = ({ title, icon: Icon, children }) => (
+  <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl">
+    <h3 className="text-lg font-semibold text-white flex items-center gap-2 mb-6">
+      {Icon && <Icon className="w-5 h-5 text-teal-400" />}
+      {title}
+    </h3>
+    <div className="space-y-6">{children}</div>
+  </div>
+);
+
+const SliderField = ({ label, value, onChange, min, max, step = 1, prefix = '', suffix = '' }) => (
+  <div className="space-y-3">
+    <div className="flex justify-between items-center">
+      <label className="text-sm font-medium text-gray-300">{label}</label>
+      <div className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 flex items-center min-w-[80px]">
+        <span className="text-gray-400 text-sm mr-1">{prefix}</span>
+        <input
+          type="number"
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="bg-transparent text-white text-right w-full focus:outline-none font-medium text-sm"
+        />
+        <span className="text-gray-400 text-sm ml-1">{suffix}</span>
+      </div>
+    </div>
+    <input
+      type="range"
+      min={min}
+      max={max}
+      step={step}
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+      className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-teal-500"
+    />
+  </div>
+);
 
 export default function RetirementCalculator() {
-  // Required inputs from the user (as specified)
-  const [currentAge, setCurrentAge] = useState(35);
+  const [currentAge, setCurrentAge] = useState(30);
   const [retirementAge, setRetirementAge] = useState(60);
   const [lifeExpectancy, setLifeExpectancy] = useState(85);
-  const [monthlyExpenses, setMonthlyExpenses] = useState(40000);
-  const [existingCorpus, setExistingCorpus] = useState(2000000);
-
-  // Additional sensible inputs
-  const [monthlySavings, setMonthlySavings] = useState(10000);
-  const [expectedReturn, setExpectedReturn] = useState(8); // %
-  const [inflation, setInflation] = useState(5); // %
+  const [monthlyExpenses, setMonthlyExpenses] = useState(50000);
+  const [existingCorpus, setExistingCorpus] = useState(1000000);
+  const [monthlySavings, setMonthlySavings] = useState(20000);
+  const [expectedReturn, setExpectedReturn] = useState(10);
+  const [inflation, setInflation] = useState(6);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const yearsToRetire = Math.max(0, retirementAge - currentAge);
   const yearsInRetirement = Math.max(0, lifeExpectancy - retirementAge);
 
-  // Required corpus at retirement
   const requiredCorpus = useMemo(() => computeRequiredCorpus({ monthlyExpenses, yearsToRetire, yearsInRetirement, expectedReturn, inflation }), [monthlyExpenses, yearsToRetire, yearsInRetirement, expectedReturn, inflation]);
 
-  // Projected corpus at retirement considering existing corpus growth and yearly savings
   const projectedAtRetirement = useMemo(() => {
     const r = expectedReturn / 100;
     let corpus = Number(existingCorpus || 0);
@@ -118,61 +173,23 @@ export default function RetirementCalculator() {
     return corpus;
   }, [existingCorpus, monthlySavings, expectedReturn, yearsToRetire]);
 
-  const wealthGap = projectedAtRetirement - requiredCorpus; // positive = surplus
+  const wealthGap = projectedAtRetirement - requiredCorpus;
   const onTrack = wealthGap >= 0;
-
-  // Shortfall amount (positive means shortfall)
   const shortfallAmount = Math.max(0, requiredCorpus - projectedAtRetirement);
 
-  // Estimate extra monthly savings needed using binary search
-  const estimateExtraMonthly = (target, params) => {
-    const { existingCorpus, monthlySavings, expectedReturn, yearsToRetire } = params;
-    const r = expectedReturn / 100;
-    const projectWith = (extraMonthly) => {
-      let corpus = Number(existingCorpus || 0);
-      for (let y = 0; y < yearsToRetire; y++) {
-        corpus = corpus * (1 + r) + (monthlySavings + extraMonthly) * 12;
-      }
-      return corpus;
-    };
-
-    if (projectWith(0) >= target) return 0;
-    // binary search
-    let lo = 0;
-    let hi = Math.max(10000, Math.ceil((target - projectWith(0)) / Math.max(1, yearsToRetire * 12)) * 2);
-    // expand hi until it's enough
-    while (projectWith(hi) < target && hi < 5_000_000) hi *= 2;
-    for (let i = 0; i < 60; i++) {
-      const mid = (lo + hi) / 2;
-      if (projectWith(mid) >= target) hi = mid; else lo = mid;
-    }
-    return Math.ceil(hi);
-  };
-
-  const extraMonthlyNeeded = useMemo(() => {
-    if (shortfallAmount <= 0) return 0;
-    return estimateExtraMonthly(requiredCorpus, { existingCorpus, monthlySavings, expectedReturn, yearsToRetire });
-  }, [shortfallAmount, requiredCorpus, existingCorpus, monthlySavings, expectedReturn, yearsToRetire]);
-
-  // Generate yearly projection for chart: accumulation then withdrawal
   const projection = useMemo(() => {
     const r = expectedReturn / 100;
     const g = inflation / 100;
-    const startAge = currentAge;
-    const endAge = lifeExpectancy;
-    const years = endAge - startAge;
     const arr = [];
     let corpus = Number(existingCorpus || 0);
 
-    for (let i = 0; i <= years; i++) {
-      const age = startAge + i;
+    for (let i = 0; i <= (lifeExpectancy - currentAge); i++) {
+      const age = currentAge + i;
       arr.push({ age, corpus });
 
       if (age < retirementAge) {
-        // accumulation: corpus grows and we add annual savings
         corpus = corpus * (1 + r) + monthlySavings * 12;
       } else {
-        // withdrawal phase: corpus grows, then we withdraw inflation-adjusted expense
         corpus = corpus * (1 + r);
         const yearsSinceRet = age - retirementAge;
         const annualExpenseToday = monthlyExpenses * 12;
@@ -180,374 +197,122 @@ export default function RetirementCalculator() {
         corpus = corpus - withdrawal;
       }
     }
-
     return arr;
   }, [currentAge, lifeExpectancy, retirementAge, existingCorpus, monthlySavings, expectedReturn, inflation]);
 
-  // Chart interactions
-  const chartRef = useRef(null);
-  const [hover, setHover] = useState({ idx: null, x: 0, y: 0 });
-
-  const Chart = ({ data }) => {
-    const ref = chartRef;
-    const [size, setSize] = useState({ w: 700, h: 300 });
-
-    useEffect(() => {
-      const el = ref.current;
-      if (!el) return;
-      const ro = new ResizeObserver(() => {
-        setSize({ w: el.clientWidth || 700, h: 300 });
-      });
-      ro.observe(el);
-      setSize({ w: el.clientWidth || 700, h: 300 });
-      return () => ro.disconnect();
-    }, [ref]);
-
-    const padding = 40;
-    const width = Math.max(300, size.w);
-    const height = size.h;
-    const points = data.length;
-    const values = data.map((d) => d.corpus);
-    const maxVal = Math.max(...values, 1);
-    const minVal = Math.min(...values, 0);
-    const chartW = width - padding * 2;
-
-    const xFor = (i) => padding + (chartW * i) / Math.max(1, points - 1);
-    const yFor = (v) => {
-      // map minVal..maxVal to bottom..top
-      const range = maxVal - minVal || 1;
-      return height - padding - ((height - padding * 2) * (v - minVal)) / range;
-    };
-
-    const linePath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${xFor(i)} ${yFor(d.corpus)}`).join(' ');
-    const areaPath = `${data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${xFor(i)} ${yFor(d.corpus)}`).join(' ')} L ${xFor(points - 1)} ${height - padding} L ${xFor(0)} ${height - padding} Z`;
-
-    const onMove = (e) => {
-      const bounds = ref.current.getBoundingClientRect();
-      const x = e.clientX - bounds.left - padding;
-      const idx = Math.round((x / chartW) * (points - 1));
-      const clamped = Math.max(0, Math.min(points - 1, idx));
-      const cx = xFor(clamped);
-      const cy = yFor(data[clamped].corpus);
-      setHover({ idx: clamped, x: cx, y: cy });
-    };
-
-    return (
-      <div ref={ref} className="w-full h-[300px] relative" onMouseMove={onMove} onMouseLeave={() => setHover({ idx: null, x: 0, y: 0 })}>
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
-          <defs>
-            <linearGradient id="gradArea" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.24" />
-              <stop offset="100%" stopColor="#10b981" stopOpacity="0.02" />
-            </linearGradient>
-            <linearGradient id="gradDanger" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#ef4444" stopOpacity="0.18" />
-              <stop offset="100%" stopColor="#ef4444" stopOpacity="0.02" />
-            </linearGradient>
-          </defs>
-          <rect x="0" y="0" width={width} height={height} fill="transparent" />
-          <g>
-            <path d={areaPath} fill="url(#gradArea)" stroke="none" />
-            <path d={linePath} fill="none" stroke="#10b981" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" />
-          </g>
-          {/* Target line for required corpus */}
-          {typeof window !== 'undefined' && (() => {
-            // compute Y for required corpus (if in scope)
-            return null;
-          })()}
-        </svg>
-
-        {hover.idx !== null && (
-          <div>
-            <div className="absolute -translate-x-1/2" style={{ left: hover.x }}>
-              <div className="w-0.5 h-28 bg-white/30 mx-auto" style={{ transform: 'translateY(-8px)' }} />
-            </div>
-
-            <div className="absolute bg-[#0b101b] text-gray-100 rounded-lg p-2 text-xs shadow-lg" style={{ left: hover.x + 8, top: hover.y - 60, minWidth: 160 }}>
-              <div className="font-semibold">Age {data[hover.idx].age}</div>
-              <div className="mt-1 text-sm">Corpus: {formatCurrency(data[hover.idx].corpus)}</div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // Render Chart with target line and danger shading by wrapping Chart and augmenting SVG via a small wrapper
-  const ChartWithTarget = ({ data, target }) => {
-    // reuse chart Ref logic by directly recreating similar rendering here to inject overlays
-    const ref = chartRef;
-    const [size, setSize] = useState({ w: 700, h: 300 });
-
-    useEffect(() => {
-      const el = ref.current;
-      if (!el) return;
-      const ro = new ResizeObserver(() => {
-        setSize({ w: el.clientWidth || 700, h: 300 });
-      });
-      ro.observe(el);
-      setSize({ w: el.clientWidth || 700, h: 300 });
-      return () => ro.disconnect();
-    }, [ref]);
-
-    const padding = 40;
-    const width = Math.max(300, size.w);
-    const height = size.h;
-    const points = data.length;
-    const values = data.map((d) => d.corpus);
-    const maxVal = Math.max(...values, 1, target);
-    const minVal = Math.min(...values, 0);
-    const chartW = width - padding * 2;
-
-    const xFor = (i) => padding + (chartW * i) / Math.max(1, points - 1);
-    const yFor = (v) => {
-      const range = maxVal - minVal || 1;
-      return height - padding - ((height - padding * 2) * (v - minVal)) / range;
-    };
-
-    const pts = data.map((d, i) => ({ x: xFor(i), y: yFor(d.corpus) }));
-    const linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-    const areaPath = `${pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')} L ${xFor(points - 1)} ${height - padding} L ${xFor(0)} ${height - padding} Z`;
-
-    // find first index where corpus <= 0
-    const firstBelowZero = data.findIndex((d) => d.corpus <= 0);
-    const retirementIndex = Math.max(0, data.findIndex((d) => d.age >= retirementAge));
-
-    const yTarget = yFor(target);
-
-    // x-axis ticks every 5 years for readability
-    const ages = data.map((d) => d.age);
-    const firstAge = ages[0];
-    const lastAge = ages[ages.length - 1];
-    const tickStep = 5;
-    const ticks = [];
-    for (let a = Math.ceil(firstAge / tickStep) * tickStep; a <= lastAge; a += tickStep) ticks.push(a);
-
-    return (
-      <div ref={ref} className="w-full h-[320px] relative">
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
-          <defs>
-            <linearGradient id="gradArea2" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.28" />
-              <stop offset="60%" stopColor="#06b6d4" stopOpacity="0.12" />
-              <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.02" />
-            </linearGradient>
-            <linearGradient id="gradDanger2" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#fb7185" stopOpacity="0.18" />
-              <stop offset="100%" stopColor="#fb7185" stopOpacity="0.02" />
-            </linearGradient>
-            <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
-              <feDropShadow dx="0" dy="6" stdDeviation="12" floodColor="#000" floodOpacity="0.35" />
-            </filter>
-            <filter id="dangerGlow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="6" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
-          {/* background grid */}
-          <g className="opacity-20">
-            {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
-              <line key={i} x1={padding} x2={width - padding} y1={padding + (height - padding * 2) * t} y2={padding + (height - padding * 2) * t} stroke="#374151" strokeWidth={1} />
-            ))}
-          </g>
-
-          {/* danger shading below zero */}
-          {firstBelowZero >= 0 && (
-            (() => {
-              const xStart = xFor(firstBelowZero);
-              const xEnd = xFor(points - 1);
-              const yZero = yFor(0);
-              const d = `M ${xStart} ${yZero} L ${xStart} ${height - padding} L ${xEnd} ${height - padding} L ${xEnd} ${yZero} Z`;
-              // draw a thin outline with a soft glow instead of a heavy fill
-              return (
-                <g>
-                  <path d={d} fill="none" stroke="#fb7185" strokeWidth={2} strokeOpacity={0.85} filter="url(#dangerGlow)" />
-                  <path d={d} fill="none" stroke="#fb7185" strokeWidth={1} strokeOpacity={0.55} />
-                </g>
-              );
-            })()
-          )}
-
-          {/* area and line */}
-          <g filter="url(#softShadow)">
-            <path d={areaPath} fill="url(#gradArea2)" stroke="none" />
-            <path d={linePath} fill="none" stroke="#06b6d4" strokeWidth={3.5} strokeLinejoin="round" strokeLinecap="round" />
-          </g>
-
-          {/* target dashed line with label */}
-          <g>
-            <line x1={padding} x2={width - padding} y1={yTarget} y2={yTarget} stroke="#f59e0b" strokeWidth={2} strokeDasharray="8 6" />
-            <rect x={width - padding - 160} y={yTarget - 22} width={150} height={20} rx={6} fill="#f59e0b" opacity={0.12} />
-            <text x={width - padding - 148} y={yTarget - 8} fill="#f59e0b" fontSize="12" fontWeight="600">Target: {formatCurrency(target)}</text>
-          </g>
-
-          {/* retirement vertical marker */}
-          {retirementIndex >= 0 && (
-            <g>
-              <line x1={xFor(retirementIndex)} x2={xFor(retirementIndex)} y1={padding} y2={height - padding} stroke="#94a3b8" strokeWidth={1} strokeDasharray="4 6" />
-              <circle cx={xFor(retirementIndex)} cy={yFor(data[retirementIndex].corpus)} r={4} fill="#fff" stroke="#06b6d4" strokeWidth={2} />
-              <text x={xFor(retirementIndex) + 6} y={padding + 14} fill="#cbd5e1" fontSize="11">Retirement</text>
-            </g>
-          )}
-
-          {/* x-axis ticks */}
-          <g>
-            {ticks.map((age, i) => {
-              const idx = data.findIndex((d) => d.age >= age);
-              if (idx < 0) return null;
-              return (
-                <g key={age}>
-                  <line x1={xFor(idx)} x2={xFor(idx)} y1={height - padding} y2={height - padding + 6} stroke="#475569" strokeWidth={1} />
-                  <text x={xFor(idx)} y={height - padding + 20} fill="#94a3b8" fontSize="11" textAnchor="middle">{age}</text>
-                </g>
-              );
-            })}
-          </g>
-        </svg>
-
-        {/* hover overlay reused from Chart */}
-        {hover.idx !== null && hover.idx < data.length && (
-          <div>
-            <div className="absolute -translate-x-1/2" style={{ left: xFor(hover.idx) }}>
-              <div className="w-0.5 h-28 bg-white/30 mx-auto" style={{ transform: 'translateY(-8px)' }} />
-            </div>
-
-            <div className="absolute bg-gradient-to-br from-slate-900/80 to-slate-800/70 text-gray-100 rounded-lg p-3 text-sm shadow-2xl" style={{ left: xFor(hover.idx) + 12, top: yFor(data[hover.idx].corpus) - 72, minWidth: 180 }}>
-              <div className="font-semibold">Age {data[hover.idx].age}</div>
-              <div className="mt-1">Corpus: <span className="font-medium">{formatCurrency(data[hover.idx].corpus)}</span></div>
-              <div className="text-xs text-gray-400 mt-1">Projected</div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h2 className="text-2xl font-bold text-gray-100 mb-2">Retirement Gap Analyzer</h2>
-      <p className="text-gray-400 mb-6">Estimate if you're on track for retirement and visualize your wealth gap.</p>
-
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Left: Grouped Inputs (two cards) */}
-        <div className="md:w-2/5 w-full flex flex-col gap-4">
-          <div className="glass-card p-5 rounded-2xl">
-            <h3 className="text-lg font-semibold text-white">Personal Profile</h3>
-            <p className="text-sm text-gray-400">Basic life-stage inputs</p>
-            <div className="mt-4 space-y-4">
-              <div>
-                <label className="text-sm text-gray-300">Current Age</label>
-                <div className="flex items-center gap-3 mt-2">
-                  <input type="range" min="18" max="70" value={currentAge} onChange={(e) => setCurrentAge(Number(e.target.value))} className="w-full h-2 rounded-lg" />
-                  <input type="number" value={currentAge} onChange={(e) => setCurrentAge(Number(e.target.value || 0))} className="w-20 p-2 rounded-md bg-white/5 text-white text-sm" />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm text-gray-300">Retirement Age</label>
-                <div className="flex items-center gap-3 mt-2">
-                  <input type="range" min="40" max="75" value={retirementAge} onChange={(e) => setRetirementAge(Number(e.target.value))} className="w-full h-2 rounded-lg" />
-                  <input type="number" value={retirementAge} onChange={(e) => setRetirementAge(Number(e.target.value || 0))} className="w-20 p-2 rounded-md bg-white/5 text-white text-sm" />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm text-gray-300">Life Expectancy</label>
-                <div className="flex items-center gap-3 mt-2">
-                  <input type="range" min="70" max="100" value={lifeExpectancy} onChange={(e) => setLifeExpectancy(Number(e.target.value))} className="w-full h-2 rounded-lg" />
-                  <input type="number" value={lifeExpectancy} onChange={(e) => setLifeExpectancy(Number(e.target.value || 0))} className="w-20 p-2 rounded-md bg-white/5 text-white text-sm" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass-card p-5 rounded-2xl">
-            <h3 className="text-lg font-semibold text-white">Financial Details</h3>
-            <p className="text-sm text-gray-400">Your current expenses, corpus and savings</p>
-            <div className="mt-4 space-y-4">
-              <div>
-                <label className="text-sm text-gray-300">Current Monthly Expenses</label>
-                <div className="flex items-center gap-3 mt-2">
-                  <input type="range" min="5000" max="500000" step="500" value={monthlyExpenses} onChange={(e) => setMonthlyExpenses(Number(e.target.value))} className="w-full h-2 rounded-lg" />
-                  <input type="number" value={monthlyExpenses} onChange={(e) => setMonthlyExpenses(Number(e.target.value || 0))} className="w-32 p-2 rounded-md bg-white/5 text-white text-sm" />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm text-gray-300">Existing Corpus</label>
-                <div className="flex items-center gap-3 mt-2">
-                  <input type="range" min="0" max="20000000" step="50000" value={existingCorpus} onChange={(e) => setExistingCorpus(Number(e.target.value))} className="w-full h-2 rounded-lg" />
-                  <input type="number" value={existingCorpus} onChange={(e) => setExistingCorpus(Number(e.target.value || 0))} className="w-32 p-2 rounded-md bg-white/5 text-white text-sm" />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm text-gray-300">Monthly Savings (you add)</label>
-                <div className="flex items-center gap-3 mt-2">
-                  <input type="range" min="0" max="200000" step="500" value={monthlySavings} onChange={(e) => setMonthlySavings(Number(e.target.value))} className="w-full h-2 rounded-lg" />
-                  <input type="number" value={monthlySavings} onChange={(e) => setMonthlySavings(Number(e.target.value || 0))} className="w-28 p-2 rounded-md bg-white/5 text-white text-sm" />
-                </div>
-              </div>
-            </div>
-
-            <AdvancedSettings expectedReturn={expectedReturn} setExpectedReturn={setExpectedReturn} inflation={inflation} setInflation={setInflation} />
-          </div>
+    <div className="min-h-screen pt-12 pb-12 px-4 sm:px-6 lg:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-7xl mx-auto"
+      >
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500 mb-4">
+            Retirement Planner
+          </h1>
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+            Analyze the gap between your corpus and retirement goals. Plan your future with confidence.
+          </p>
         </div>
 
-        {/* Right: Results & Chart */}
-        <div className="md:w-3/5 w-full flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex-1">
-              <div className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold ${onTrack ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}`}>
-                {onTrack ? 'On Track' : 'At Risk'}
-              </div>
-              <div className="mt-3 text-sm text-gray-300">Projected corpus at retirement</div>
-              <div className="text-2xl md:text-3xl font-extrabold text-white">{formatCurrency(projectedAtRetirement)}</div>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left Column: Inputs */}
+          <div className="lg:col-span-4 space-y-6">
+            <InputGroup title="Life Stage" icon={User}>
+              <SliderField label="Current Age" value={currentAge} onChange={setCurrentAge} min={18} max={70} suffix="Yr" />
+              <SliderField label="Retirement Age" value={retirementAge} onChange={setRetirementAge} min={40} max={75} suffix="Yr" />
+              <SliderField label="Life Expectancy" value={lifeExpectancy} onChange={setLifeExpectancy} min={70} max={100} suffix="Yr" />
+            </InputGroup>
 
-            <div className="w-full sm:w-1/2 bg-gradient-to-br from-slate-900/40 to-slate-800/30 rounded-2xl p-4">
-              {shortfallAmount > 0 ? (
-                <div className="bg-rose-600/10 border border-rose-600/20 rounded-lg p-3 mb-3">
-                  <div className="text-sm font-semibold text-rose-300">Action Required</div>
-                  <div className="text-sm text-gray-200 mt-1">You need to save an extra <span className="font-bold text-rose-100">{formatCurrency(extraMonthlyNeeded)}</span>/month to reach your goal.</div>
-                </div>
-              ) : (
-                <div className="bg-emerald-600/10 border border-emerald-600/20 rounded-lg p-3 mb-3">
-                  <div className="text-sm font-semibold text-emerald-300">Good Progress</div>
-                  <div className="text-sm text-gray-200 mt-1">You're on track for retirement.</div>
-                </div>
-              )}
+            <InputGroup title="Financials" icon={Briefcase}>
+              <SliderField label="Monthly Expense" value={monthlyExpenses} onChange={setMonthlyExpenses} min={5000} max={500000} step={500} prefix="₹" />
+              <SliderField label="Existing Corpus" value={existingCorpus} onChange={setExistingCorpus} min={0} max={50000000} step={100000} prefix="₹" />
+              <SliderField label="Monthly Savings" value={monthlySavings} onChange={setMonthlySavings} min={0} max={500000} step={500} prefix="₹" />
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <div className="text-xs text-gray-400">Required Corpus</div>
-                  <div className="text-lg font-semibold text-white">{formatCurrency(requiredCorpus)}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-400">Projected Corpus</div>
-                  <div className="text-lg font-semibold text-white">{formatCurrency(projectedAtRetirement)}</div>
-                </div>
+              <div className="pt-4 border-t border-white/10">
+                <button
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className="flex items-center gap-2 text-sm text-teal-400 hover:text-teal-300 transition-colors w-full justify-center"
+                >
+                  <Settings className="w-4 h-4" />
+                  {showAdvanced ? 'Hide Advanced' : 'Advanced Settings'}
+                  {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+
+                <AnimatePresence>
+                  {showAdvanced && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pt-4 space-y-4">
+                        <SliderField label="Expected Return" value={expectedReturn} onChange={setExpectedReturn} min={5} max={20} step={0.5} suffix="%" />
+                        <SliderField label="Inflation Rate" value={inflation} onChange={setInflation} min={2} max={12} step={0.5} suffix="%" />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-            </div>
+            </InputGroup>
           </div>
 
-          <div className="glass-card p-4 rounded-2xl">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-teal-400" /> <span className="text-sm text-gray-200">Corpus</span></div>
-                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-rose-400" /> <span className="text-sm text-gray-200">Danger Zone</span></div>
+          {/* Right Column: Visualization */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* Status Card */}
+            <div className={`rounded-3xl p-8 border ${onTrack ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-rose-500/10 border-rose-500/30'} relative overflow-hidden`}>
+              <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    {onTrack ? (
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-sm font-medium border border-emerald-500/20">
+                        <CheckCircle className="w-4 h-4" /> On Track
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/20 text-rose-400 text-sm font-medium border border-rose-500/20">
+                        <AlertTriangle className="w-4 h-4" /> At Risk
+                      </div>
+                    )}
+                  </div>
+                  <h2 className="text-3xl font-bold text-white mb-1">
+                    {formatCurrency(projectedAtRetirement)}
+                  </h2>
+                  <p className="text-gray-400 text-sm">Projected corpus at age {retirementAge}</p>
+                </div>
+
+                <div className="text-right">
+                  <div className="text-sm text-gray-400 mb-1">Required Corpus</div>
+                  <div className="text-xl font-semibold text-white">{formatCurrency(requiredCorpus)}</div>
+                  {!onTrack && (
+                    <div className="text-sm text-rose-400 mt-1">Shortfall: {formatCurrency(shortfallAmount)}</div>
+                  )}
+                </div>
               </div>
-              <div className="text-xs text-gray-400">Accumulation → Withdrawal</div>
             </div>
 
-            <ChartWithTarget data={projection} target={requiredCorpus} />
+            {/* Chart */}
+            <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-white">Wealth Projection</h3>
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${onTrack ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                    <span className="text-gray-300">Corpus</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 border-t-2 border-rose-500 border-dashed w-6" />
+                    <span className="text-gray-300">Required</span>
+                  </div>
+                </div>
+              </div>
+              <Chart data={projection} target={requiredCorpus} />
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -101,6 +101,10 @@ const userSchema = new mongoose.Schema({
     completedLessons: [{
       type: Number
     }],
+    lastCompletedLesson: {
+      type: Number,
+      default: -1
+    },
     startedAt: {
       type: Date,
       default: Date.now

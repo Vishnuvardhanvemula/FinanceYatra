@@ -9,711 +9,594 @@ export const module1Content = {
     {
       id: 0,
       title: 'Savings Account',
-      subtitle: 'Understanding Your First Bank Account',
+      subtitle: 'Your First Step to Financial Freedom',
       duration: '6 mins',
       content: `
         <h3>What is a Savings Account?</h3>
-        <p>A savings account is the most basic and essential banking product designed to help you safely store your money while earning interest. It's your first step toward financial independence.</p>
+        <p>Think of a savings account as your <strong>digital piggy bank</strong>, but better! It's the most essential banking product where you can safely park your money while it earns interest for you. It's usually the first relationship anyone starts with a bank.</p>
         
-        <h4>Key Features:</h4>
+        <div class="bg-blue-900/30 p-4 rounded-lg border-l-4 border-blue-500 my-4">
+          <h4 class="text-blue-300 m-0">💡 Pro Tip</h4>
+          <p class="m-0 text-sm">Don't just leave your money idle at home! In a savings account, your money grows automatically thanks to compound interest.</p>
+        </div>
+
+        <h4>Why Do You Need One?</h4>
         <ul>
-          <li><strong>Interest Earnings:</strong> Banks pay you 2.5% - 4% interest annually on your balance</li>
-          <li><strong>Safety:</strong> Your deposits are insured up to ₹5 lakh by DICGC</li>
-          <li><strong>Easy Access:</strong> Withdraw money anytime through ATM, net banking, or branch</li>
-          <li><strong>Minimum Balance:</strong> Most banks require ₹1,000 - ₹10,000 minimum balance</li>
+          <li><strong>💰 Earn Interest:</strong> Banks pay you <strong>2.5% - 4%</strong> interest annually just for keeping your money with them.</li>
+          <li><strong>🛡️ Safety First:</strong> Your deposits are insured up to <strong>₹5 Lakh</strong> by DICGC. Even if the bank fails, your money is safe.</li>
+          <li><strong>🏧 Instant Access:</strong> Need cash? Withdraw anytime via ATMs, UPI, or Net Banking.</li>
+          <li><strong>💳 Go Cashless:</strong> Get a Debit Card to shop online, pay bills, and book tickets.</li>
         </ul>
 
-        <h4>Types of Savings Accounts:</h4>
-        <ul>
-          <li><strong>Regular Savings Account:</strong> For individuals with basic banking needs</li>
-          <li><strong>Salary Account:</strong> Zero balance account for salaried employees</li>
-          <li><strong>Women's Savings Account:</strong> Special benefits and higher interest rates for women</li>
-          <li><strong>Senior Citizen Account:</strong> Higher interest rates (0.25% - 0.5% extra)</li>
-          <li><strong>Kids Savings Account:</strong> Accounts for minors with parental control</li>
-        </ul>
+        <h4>Types of Accounts (Choose What Fits You)</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-gray-800 p-3 rounded">
+            <strong>Regular Savings</strong>
+            <p class="text-sm text-gray-400">Standard account for everyone. Requires a minimum balance (e.g., ₹1,000 - ₹10,000).</p>
+          </div>
+          <div class="bg-gray-800 p-3 rounded">
+            <strong>Salary Account</strong>
+            <p class="text-sm text-gray-400">For employees. Zero minimum balance required as long as salary is credited.</p>
+          </div>
+          <div class="bg-gray-800 p-3 rounded">
+            <strong>Zero Balance / Basic</strong>
+            <p class="text-sm text-gray-400">Great for students! No minimum balance penalty, but may have transaction limits.</p>
+          </div>
+          <div class="bg-gray-800 p-3 rounded">
+            <strong>Senior Citizen</strong>
+            <p class="text-sm text-gray-400">For those 60+. Offers higher interest rates and priority service.</p>
+          </div>
+        </div>
 
-        <h4>How to Open a Savings Account:</h4>
+        <h4>How to Open One?</h4>
         <ol>
-          <li>Choose a bank (compare interest rates, branch network, digital services)</li>
-          <li>Gather KYC documents: Aadhaar card, PAN card, address proof, passport-size photos</li>
-          <li>Visit branch or apply online</li>
-          <li>Fill application form with personal and nominee details</li>
-          <li>Make initial deposit (₹100 - ₹1,000)</li>
-          <li>Get your account number, debit card, and checkbook</li>
+          <li><strong>Pick a Bank:</strong> Compare interest rates and app experience.</li>
+          <li><strong>KYC is Key:</strong> You'll need your <strong>Aadhaar Card</strong> and <strong>PAN Card</strong>.</li>
+          <li><strong>Apply:</strong> Visit a branch or do it online via Video KYC (takes 5 mins!).</li>
+          <li><strong>Nomination:</strong> Always add a nominee (family member) who can claim funds in unfortunate events.</li>
         </ol>
 
-        <h4>Important Tips:</h4>
-        <ul>
-          <li>Link your Aadhaar and PAN for seamless transactions</li>
-          <li>Activate internet and mobile banking immediately</li>
-          <li>Set up SMS and email alerts for all transactions</li>
-          <li>Never share your PIN, password, or OTP with anyone</li>
-          <li>Maintain minimum balance to avoid penalty charges</li>
-        </ul>
+        <div class="bg-green-900/30 p-4 rounded-lg border border-green-500/30 my-4">
+          <h4 class="text-green-300 m-0">🌟 Real Life Example</h4>
+          <p class="m-0 text-sm"><strong>Rahul (22)</strong> just got his first job. He opened a <strong>Salary Account</strong> so he doesn't have to worry about maintaining a minimum balance. He also linked his UPI to this account for easy daily payments.</p>
+        </div>
       `,
       keyPoints: [
-        'Savings accounts earn 2.5% - 4% annual interest',
-        'Deposits are insured up to ₹5 lakh',
-        'Choose account type based on your needs',
-        'Always maintain minimum balance to avoid charges'
+        'Savings accounts earn you 2.5% - 4% interest annually',
+        'Your money is insured up to ₹5 Lakh by DICGC',
+        'Salary accounts typically have ZERO minimum balance requirement',
+        'Always add a nominee to secure your family\'s future'
       ],
       quiz: [
         {
           type: 'mcq',
-          question: 'What is the maximum amount insured by DICGC in a savings account?',
-          options: ['₹1 lakh', '₹2 lakh', '₹5 lakh', '₹10 lakh'],
+          question: 'What is the maximum amount insured by DICGC in your savings account?',
+          options: ['₹1 Lakh', '₹2 Lakh', '₹5 Lakh', '₹10 Lakh'],
           correct: 2,
-          explanation: 'DICGC (Deposit Insurance and Credit Guarantee Corporation) insures deposits up to ₹5 lakh per bank per depositor. This provides safety for your money even if the bank fails.'
-        },
-        {
-          type: 'mcq',
-          question: 'Which type of savings account typically requires ZERO minimum balance?',
-          options: ['Regular Savings Account', 'Salary Account', 'Senior Citizen Account', 'Kids Savings Account'],
-          correct: 1,
-          explanation: 'Salary accounts are specifically designed for salaried employees and don\'t require any minimum balance. However, if no salary is credited for 2-3 months, it may be converted to a regular savings account.'
+          explanation: 'Your deposits are insured up to ₹5 Lakh per bank by the DICGC. This means even in the rare case a bank fails, your money up to this limit is 100% safe.'
         },
         {
           type: 'scenario',
-          question: 'Priya wants to open a savings account. She has ₹50,000 to deposit and makes frequent ATM withdrawals. Which feature should she prioritize?',
-          context: 'Priya is a college student who needs regular access to her money for expenses.',
+          question: 'Sarah is a college student with no regular income. She wants to save her pocket money but can\'t maintain a high balance. Which account is best?',
+          context: 'Sarah needs a safe place for her savings without penalty charges.',
           options: [
-            'Highest interest rate only',
-            'Large branch network with many ATMs',
-            'Minimum balance requirement',
-            'Only online banking facility'
+            'Regular Savings Account (Min Bal: ₹10,000)',
+            'Zero Balance / Basic Savings Account',
+            'Current Account',
+            'Fixed Deposit'
           ],
           correct: 1,
-          explanation: 'Since Priya makes frequent withdrawals, a bank with a large ATM network is most important. This helps her avoid charges for using other banks\' ATMs and provides convenient access to her money.'
+          explanation: 'A Zero Balance (BSBDA) account is perfect for students like Sarah. It allows her to save without the stress or penalty of maintaining a minimum monthly balance.'
         },
         {
           type: 'truefalse',
-          question: 'Senior citizens get extra interest (0.25%-0.5%) on their savings accounts.',
+          question: 'You should share your UPI PIN with the bank manager if they call you for verification.',
           options: ['True', 'False'],
-          correct: 0,
-          explanation: 'True! Most banks offer additional interest of 0.25% to 0.5% to senior citizens (60+ years) on savings accounts as a benefit for retired individuals.'
+          correct: 1,
+          explanation: 'FALSE! Never share your PIN, OTP, or Password with anyone, even if they claim to be from the bank. Bank officials will NEVER ask for these details.'
         },
         {
           type: 'mcq',
-          question: 'What documents are mandatory for opening a savings account under KYC norms?',
+          question: 'Why is a "Salary Account" better for employees?',
           options: [
-            'Only Aadhaar card',
-            'Aadhaar and PAN card',
-            'Only passport',
-            'Only driving license'
+            'It has a higher interest rate',
+            'It usually requires ZERO minimum balance',
+            'It allows unlimited free ATM withdrawals',
+            'It comes with a free credit card always'
           ],
           correct: 1,
-          explanation: 'Under KYC (Know Your Customer) norms, both Aadhaar card (for identity and address proof) and PAN card (for tax purposes) are mandatory documents for opening a savings account in India.'
+          explanation: 'The biggest advantage of a Salary Account is the Zero Minimum Balance requirement. As long as your salary is credited regularly, you don\'t need to keep a fixed amount in the account.'
+        },
+        {
+          type: 'scenario',
+          question: 'Rahul wants to open a bank account. He has his Aadhaar card but lost his PAN card. Can he still open a regular savings account?',
+          context: 'KYC norms are strict for banking.',
+          options: [
+            'Yes, Aadhaar is enough',
+            'No, PAN (or Form 60) is mandatory',
+            'Yes, if he promises to submit it later',
+            'Yes, with a driving license only'
+          ],
+          correct: 1,
+          explanation: 'For a regular savings account, a PAN Card (or Form 60 if you don\'t have one) is mandatory along with officially valid documents like Aadhaar. It is required for tax tracking purposes.'
         }
       ]
     },
     {
       id: 1,
       title: 'Current Account',
-      subtitle: 'Banking for Business and Frequent Transactions',
+      subtitle: 'The Business Powerhouse',
       duration: '5 mins',
       content: `
         <h3>What is a Current Account?</h3>
-        <p>A current account is designed for businesses, professionals, and individuals who need to make frequent transactions. Unlike savings accounts, current accounts do not earn interest but offer unlimited transaction capabilities.</p>
+        <p>While a savings account is for saving, a <strong>Current Account</strong> is built for <strong>spending and transacting</strong>. It is designed specifically for businesses, shop owners, and professionals who make a large number of transactions daily.</p>
         
-        <h4>Key Features:</h4>
+        <div class="bg-yellow-900/30 p-4 rounded-lg border-l-4 border-yellow-500 my-4">
+          <h4 class="text-yellow-300 m-0">⚠️ Crucial Difference</h4>
+          <p class="m-0 text-sm">Current Accounts earn <strong>0% Interest</strong>. Yes, you read that right! The benefit isn't interest; it's the freedom to transact without limits.</p>
+        </div>
+
+        <h4>Savings vs. Current: The Showdown</h4>
+        <table class="w-full text-sm text-left border-collapse my-4">
+          <thead>
+            <tr class="border-b border-gray-700 text-gray-300">
+              <th class="py-2">Feature</th>
+              <th class="py-2">Savings Account</th>
+              <th class="py-2">Current Account</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-400">
+            <tr class="border-b border-gray-800">
+              <td class="py-2"><strong>Best For</strong></td>
+              <td>Individuals</td>
+              <td>Businesses</td>
+            </tr>
+            <tr class="border-b border-gray-800">
+              <td class="py-2"><strong>Interest</strong></td>
+              <td>2.5% - 4% ✅</td>
+              <td>0% ❌</td>
+            </tr>
+            <tr class="border-b border-gray-800">
+              <td class="py-2"><strong>Transactions</strong></td>
+              <td>Limited</td>
+              <td>Unlimited 🚀</td>
+            </tr>
+            <tr class="border-b border-gray-800">
+              <td class="py-2"><strong>Min Balance</strong></td>
+              <td>Low (₹1k - ₹10k)</td>
+              <td>High (₹10k - ₹50k)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4>The Superpower: Overdraft (OD) Facility</h4>
+        <p>Imagine having ₹10,000 in your account but needing to pay a supplier ₹15,000. With an Overdraft facility, the bank lets you withdraw that extra ₹5,000!</p>
         <ul>
-          <li><strong>Unlimited Transactions:</strong> No limit on number of deposits and withdrawals</li>
-          <li><strong>Overdraft Facility:</strong> Withdraw more than your balance (subject to approval)</li>
-          <li><strong>No Interest:</strong> Banks don't pay interest on current accounts</li>
-          <li><strong>Higher Minimum Balance:</strong> Typically ₹5,000 - ₹25,000 required</li>
-          <li><strong>Business Features:</strong> Multiple user access, cash management services</li>
+          <li>It's like a short-term loan attached to your account.</li>
+          <li>You only pay interest on the <strong>extra amount used</strong> and for the <strong>days used</strong>.</li>
+          <li>Great for managing cash flow gaps in business.</li>
         </ul>
 
-        <h4>Who Needs a Current Account?</h4>
+        <h4>Who Needs This?</h4>
         <ul>
-          <li><strong>Business Owners:</strong> For daily business transactions and payments</li>
-          <li><strong>Freelancers & Professionals:</strong> Separate account for professional income</li>
-          <li><strong>Traders:</strong> High-frequency transactions without limits</li>
-          <li><strong>Companies & Partnerships:</strong> Required for registered businesses</li>
+          <li>🏪 <strong>Shop Owners:</strong> To deposit daily cash sales.</li>
+          <li>💻 <strong>Freelancers/Consultants:</strong> To keep business income separate from personal savings.</li>
+          <li>🏢 <strong>Companies:</strong> To manage payroll and vendor payments.</li>
         </ul>
 
-        <h4>Types of Current Accounts:</h4>
-        <ul>
-          <li><strong>Regular Current Account:</strong> For small businesses and professionals</li>
-          <li><strong>Premium Current Account:</strong> Additional features for medium businesses</li>
-          <li><strong>Packaged Current Account:</strong> Bundled with insurance and other services</li>
-          <li><strong>Foreign Currency Account:</strong> For businesses dealing in foreign exchange</li>
-        </ul>
-
-        <h4>Overdraft Facility:</h4>
-        <p>An overdraft allows you to withdraw more money than you have in your account, up to a pre-approved limit. This is useful for managing short-term cash flow issues.</p>
-        <ul>
-          <li>Interest charged only on the amount used</li>
-          <li>Flexible repayment options</li>
-          <li>Requires good credit history</li>
-          <li>Typical rate: 10% - 14% per annum</li>
-        </ul>
-
-        <h4>Documents Required:</h4>
-        <ul>
-          <li>Business registration certificate</li>
-          <li>PAN card of business and owners</li>
-          <li>Address proof of business premises</li>
-          <li>Partnership deed or MOA/AOA for companies</li>
-          <li>Board resolution for authorized signatories</li>
-        </ul>
+        <div class="bg-purple-900/30 p-4 rounded-lg border border-purple-500/30 my-4">
+          <h4 class="text-purple-300 m-0">💡 Smart Strategy</h4>
+          <p class="m-0 text-sm">Keep your business funds in a Current Account for operations, but sweep excess profit into a Fixed Deposit to earn interest. Don't let large sums sit idle in a Current Account!</p>
+        </div>
       `,
       keyPoints: [
-        'Current accounts are for businesses and frequent transactions',
-        'No interest earned, but unlimited transactions allowed',
-        'Overdraft facility available for cash flow management',
-        'Higher minimum balance requirement than savings accounts'
+        'Current Accounts are for businesses and have NO transaction limits',
+        'You earn 0% interest on Current Accounts',
+        'Overdraft (OD) lets you withdraw more money than you have',
+        'Always separate personal savings from business expenses'
       ],
       quiz: [
         {
           type: 'mcq',
-          question: 'What is the main difference between a savings account and a current account?',
-          options: [
-            'Current accounts earn higher interest',
-            'Current accounts allow unlimited transactions but don\'t earn interest',
-            'Savings accounts require higher minimum balance',
-            'Current accounts are only for individuals'
-          ],
-          correct: 1,
-          explanation: 'Current accounts are designed for businesses with unlimited transaction capabilities but don\'t earn any interest. Savings accounts earn interest (2.5%-4%) but may have transaction limits.'
+          question: 'What is the interest rate typically offered on a Current Account?',
+          options: ['2.5%', '4.0%', '6.0%', '0%'],
+          correct: 3,
+          explanation: 'Current accounts offer 0% interest. The value they provide is in "unlimited transactions" and business features, not in growing your money.'
         },
         {
           type: 'scenario',
-          question: 'Rajesh runs a small retail shop with daily sales of ₹20,000-₹30,000. He makes 50-60 transactions daily. Which account should he choose?',
-          context: 'Rajesh needs to deposit daily sales, pay suppliers, and manage multiple transactions.',
+          question: 'Raj runs a busy grocery store with 100+ UPI transactions daily. Why should he switch from his personal Savings account to a Current Account?',
+          context: 'Raj is worried about transaction limits and tax confusion.',
           options: [
-            'Regular Savings Account',
-            'Fixed Deposit',
-            'Current Account',
-            'Recurring Deposit'
+            'To earn more interest',
+            'To avoid transaction limits and separate business income',
+            'To get a free credit card',
+            'To avoid KYC'
           ],
-          correct: 2,
-          explanation: 'Rajesh should open a Current Account because it offers unlimited transactions without restrictions, which is essential for his business with 50-60 daily transactions. Savings accounts have transaction limits.'
-        },
-        {
-          type: 'calculation',
-          question: 'If a current account has a minimum balance requirement of ₹10,000 and offers overdraft facility up to ₹50,000 at 12% annual interest, how much interest will be charged if you use ₹30,000 overdraft for 2 months?',
-          options: [
-            '₹600',
-            '₹3,600',
-            '₹1,200',
-            '₹7,200'
-          ],
-          correct: 0,
-          explanation: 'Interest = Principal × Rate × Time. Here: ₹30,000 × 12% × (2/12) = ₹30,000 × 0.12 × 0.1667 = ₹600. Overdraft interest is calculated only on the amount used and for the period used.'
+          correct: 1,
+          explanation: 'Savings accounts have limits on the number of free transactions. For a business with high volume like Raj\'s, a Current Account avoids these limits and helps clearly separate business income for tax purposes.'
         },
         {
           type: 'truefalse',
-          question: 'Freelancers and self-employed professionals don\'t need a current account since they are not running a registered company.',
+          question: 'An Overdraft facility allows you to withdraw money you don\'t currently have in your account.',
           options: ['True', 'False'],
+          correct: 0,
+          explanation: 'True! An Overdraft is a credit facility that lets you withdraw more than your balance up to a sanctioned limit, acting as a safety net for cash flow.'
+        },
+        {
+          type: 'calculation',
+          question: 'You use an overdraft of ₹50,000 for just 10 days. The interest rate is 12% per annum. Do you pay interest for the whole year?',
+          options: [
+            'Yes, interest is charged annually',
+            'No, interest is charged only for 10 days',
+            'No, overdraft is free',
+            'Yes, but only 50%'
+          ],
           correct: 1,
-          explanation: 'False! Freelancers and self-employed professionals benefit from current accounts as they help separate personal and professional finances, handle frequent client payments, and maintain better financial records even without company registration.'
+          explanation: 'Overdraft interest is calculated on a daily basis. You only pay interest for the exact number of days (10 days) you used the money, making it a cost-effective way to borrow for short periods.'
         },
         {
           type: 'mcq',
-          question: 'What is the typical minimum balance requirement for a current account?',
+          question: 'Which of these is NOT a typical feature of a Current Account?',
           options: [
-            '₹500 - ₹1,000',
-            '₹5,000 - ₹25,000',
-            '₹50,000 - ₹1,00,000',
-            'No minimum balance required'
+            'Unlimited deposits/withdrawals',
+            'Overdraft facility',
+            'High interest rates',
+            'Higher minimum balance requirement'
           ],
-          correct: 1,
-          explanation: 'Current accounts typically require ₹5,000 to ₹25,000 as minimum balance, which is significantly higher than savings accounts. This is because they are designed for businesses with higher transaction volumes.'
+          correct: 2,
+          explanation: 'High interest rates are NOT a feature of Current Accounts. In fact, they typically offer 0% interest.'
         }
       ]
     },
     {
       id: 2,
       title: 'Fixed Deposits (FD)',
-      subtitle: 'Guaranteed Returns with Fixed Tenure',
+      subtitle: 'Guaranteed Returns, Zero Stress',
       duration: '7 mins',
       content: `
         <h3>What is a Fixed Deposit?</h3>
-        <p>A Fixed Deposit (FD) is a secure investment where you deposit a lump sum for a fixed period and earn guaranteed interest. It's one of the safest investment options with predictable returns.</p>
+        <p>A Fixed Deposit (FD) is the rockstar of safe investments. You deposit a lump sum for a fixed period (say, 1 year or 5 years), and the bank guarantees you a fixed interest rate that is higher than a savings account.</p>
         
-        <h4>Key Features:</h4>
+        <div class="bg-green-900/30 p-4 rounded-lg border-l-4 border-green-500 my-4">
+          <h4 class="text-green-300 m-0">📈 Why People Love FDs</h4>
+          <p class="m-0 text-sm">It's predictable! If the bank says you'll get 7%, you get 7%. Market ups and downs don't affect your returns.</p>
+        </div>
+
+        <h4>Key Features</h4>
         <ul>
-          <li><strong>Fixed Interest Rate:</strong> Interest rate locked at the time of deposit</li>
-          <li><strong>Higher Returns:</strong> 5% - 8% interest per annum (higher than savings)</li>
-          <li><strong>Flexible Tenure:</strong> 7 days to 10 years</li>
-          <li><strong>Safety:</strong> Insured up to ₹5 lakh by DICGC</li>
-          <li><strong>Loan Facility:</strong> Get loan against FD (80% - 90% of FD value)</li>
+          <li><strong>Higher Returns:</strong> Earn <strong>5% - 8%</strong> interest (Senior citizens get even more!).</li>
+          <li><strong>Flexible Tenure:</strong> Park your money for as little as <strong>7 days</strong> or as long as <strong>10 years</strong>.</li>
+          <li><strong>Loan Facility:</strong> Need money urgently? Don't break the FD! Take a loan against it (usually up to 90% of value).</li>
         </ul>
 
-        <h4>Types of Fixed Deposits:</h4>
-        <ul>
-          <li><strong>Regular FD:</strong> Fixed tenure, interest paid at maturity or periodically</li>
-          <li><strong>Tax Saver FD:</strong> 5-year lock-in, eligible for 80C tax deduction</li>
-          <li><strong>Senior Citizen FD:</strong> Extra 0.25% - 0.5% interest for seniors</li>
-          <li><strong>Cumulative FD:</strong> Interest compounded and paid at maturity</li>
-          <li><strong>Non-Cumulative FD:</strong> Interest paid monthly, quarterly, or annually</li>
-          <li><strong>Flexi FD:</strong> Automatic sweep-in facility from savings to FD</li>
-        </ul>
+        <h4>Types of FDs You Should Know</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-gray-800 p-3 rounded">
+            <strong>Standard FD</strong>
+            <p class="text-sm text-gray-400">Lock money for a fixed time. Withdraw anytime with a small penalty.</p>
+          </div>
+          <div class="bg-gray-800 p-3 rounded">
+            <strong>Tax Saver FD</strong>
+            <p class="text-sm text-gray-400">Lock for <strong>5 years</strong> to save tax under Section 80C. No premature withdrawal allowed.</p>
+          </div>
+          <div class="bg-gray-800 p-3 rounded">
+            <strong>Cumulative FD</strong>
+            <p class="text-sm text-gray-400">Interest is reinvested. You get a big lump sum at the end. Great for long-term goals.</p>
+          </div>
+          <div class="bg-gray-800 p-3 rounded">
+            <strong>Non-Cumulative FD</strong>
+            <p class="text-sm text-gray-400">Interest is paid out monthly or quarterly. Perfect for regular income (e.g., for retirees).</p>
+          </div>
+        </div>
 
-        <h4>Interest Rate Factors:</h4>
+        <h4>💡 Pro Strategy: FD Laddering</h4>
+        <p>Instead of putting ₹3 Lakh in one 3-year FD, split it!</p>
         <ul>
-          <li><strong>Tenure:</strong> Longer tenure = higher interest rates</li>
-          <li><strong>Bank Type:</strong> Small finance banks offer 7.5% - 9%, scheduled banks offer 5% - 7%</li>
-          <li><strong>Senior Citizens:</strong> Additional 0.25% - 0.5% interest</li>
-          <li><strong>Deposit Amount:</strong> Some banks offer higher rates for larger deposits</li>
+          <li>Put ₹1 Lakh for 1 year</li>
+          <li>Put ₹1 Lakh for 2 years</li>
+          <li>Put ₹1 Lakh for 3 years</li>
         </ul>
+        <p><strong>Why?</strong> This way, one FD matures every year, giving you liquidity without breaking the investment!</p>
 
-        <h4>Example Calculation:</h4>
-        <p><strong>Investment:</strong> ₹1,00,000 for 5 years at 7% per annum (compounded quarterly)</p>
-        <ul>
-          <li>Maturity Amount: ₹1,41,478</li>
-          <li>Interest Earned: ₹41,478</li>
-          <li>Quarterly Compounding Benefit: ₹828 extra vs simple interest</li>
-        </ul>
-
-        <h4>Premature Withdrawal:</h4>
-        <ul>
-          <li>You can break FD before maturity</li>
-          <li>Penalty: 0.5% - 1% reduction in interest rate</li>
-          <li>No penalty in case of senior citizen death</li>
-          <li>Better to use loan against FD instead of breaking it</li>
-        </ul>
-
-        <h4>Tax Implications:</h4>
-        <ul>
-          <li>Interest income is fully taxable as per your income tax slab</li>
-          <li>TDS deducted if interest exceeds ₹40,000 per year (₹50,000 for seniors)</li>
-          <li>Submit Form 15G/15H if your income is below taxable limit</li>
-          <li>Tax Saver FD offers deduction under Section 80C (up to ₹1.5 lakh)</li>
-        </ul>
-
-        <h4>When to Choose FD:</h4>
-        <ul>
-          <li>For short-term goals (1-5 years)</li>
-          <li>When you need guaranteed, risk-free returns</li>
-          <li>For emergency fund (choose short tenure or flexi FD)</li>
-          <li>For senior citizens looking for regular income</li>
-          <li>To save tax using 5-year tax saver FD</li>
-        </ul>
+        <h4>Tax Talk 📝</h4>
+        <p>Interest earned on FDs is <strong>fully taxable</strong>. If your interest income exceeds ₹40,000/year (₹50k for seniors), the bank will deduct TDS (Tax Deducted at Source). Submit <strong>Form 15G/15H</strong> if your total income is below the taxable limit to avoid this.</p>
       `,
       keyPoints: [
-        'FDs offer guaranteed returns of 5% - 8% per annum',
-        'Longer tenure means higher interest rates',
-        'Senior citizens get extra 0.25% - 0.5% interest',
-        'Interest income is taxable as per your tax slab'
+        'FDs offer guaranteed returns higher than savings accounts',
+        'Tax Saver FDs have a mandatory 5-year lock-in period',
+        'You can take a loan against your FD instead of breaking it',
+        'Use "FD Laddering" to balance returns and liquidity'
       ],
       quiz: [
         {
-          type: 'calculation',
-          question: 'You invest ₹1,00,000 in an FD for 3 years at 7% per annum with quarterly compounding. What will be the approximate maturity amount?',
+          type: 'mcq',
+          question: 'You have ₹1 Lakh to invest. You want to save tax under Section 80C. Which FD should you choose?',
           options: [
-            '₹1,21,000',
-            '₹1,23,000',
-            '₹1,25,000',
-            '₹1,27,000'
+            'Standard FD for 1 year',
+            'Tax Saver FD (5-year lock-in)',
+            'Cumulative FD for 3 years',
+            'Flexi FD'
           ],
           correct: 1,
-          explanation: 'With quarterly compounding at 7% for 3 years, the formula is: A = P(1 + r/4)^(4×3). This gives approximately ₹1,23,000. Quarterly compounding gives better returns than simple interest.'
-        },
-        {
-          type: 'mcq',
-          question: 'What is the lock-in period for a Tax Saver FD that qualifies for Section 80C deduction?',
-          options: [
-            '1 year',
-            '3 years',
-            '5 years',
-            '10 years'
-          ],
-          correct: 2,
-          explanation: 'Tax Saver FDs have a mandatory lock-in period of 5 years and qualify for tax deduction under Section 80C up to ₹1.5 lakh. You cannot withdraw or take a loan against this FD during the lock-in period.'
+          explanation: 'Only a Tax Saver FD with a mandatory lock-in period of 5 years qualifies for tax deduction under Section 80C of the Income Tax Act.'
         },
         {
           type: 'scenario',
-          question: 'Meera has ₹5 lakh and needs monthly income for household expenses. Which FD option suits her best?',
-          context: 'Meera is 62 years old, retired, and wants regular monthly income without taking risks.',
+          question: 'Meera (65) wants a monthly income from her retirement corpus of ₹10 Lakh. Which FD type is best?',
+          context: 'She needs cash flow to pay bills, not a lump sum later.',
           options: [
-            'Cumulative FD with maturity payout',
-            'Non-cumulative FD with monthly interest payout',
+            'Cumulative FD',
+            'Non-Cumulative FD (Monthly Payout)',
             'Tax Saver FD',
-            'Flexi FD with sweep-in facility'
+            'Recurring Deposit'
           ],
           correct: 1,
-          explanation: 'Non-cumulative FD with monthly interest payout is ideal for Meera. It provides regular monthly income while keeping the principal safe. As a senior citizen, she\'ll also get 0.25%-0.5% extra interest.'
+          explanation: 'A Non-Cumulative FD with a monthly payout option is perfect for Meera. It will credit the interest directly to her savings account every month, acting like a pension.'
         },
         {
           type: 'truefalse',
-          question: 'Breaking an FD before maturity always results in complete loss of interest earned.',
+          question: 'If you break an FD before maturity, you lose ALL the interest earned.',
           options: ['True', 'False'],
           correct: 1,
-          explanation: 'False! When you prematurely withdraw an FD, you still get interest but at a reduced rate (typically 0.5%-1% less than the contracted rate). You don\'t lose all the interest, just a penalty is applied.'
+          explanation: 'False! You don\'t lose all interest. You typically receive interest at a slightly lower rate (usually 1% less than the original rate) as a penalty for premature withdrawal.'
+        },
+        {
+          type: 'calculation',
+          question: 'You invest ₹1,00,000 at 7% interest. After 1 year, you earn ₹7,000. Is this interest taxable?',
+          options: [
+            'No, FD interest is tax-free',
+            'Yes, it is added to your income and taxed as per your slab',
+            'Only if it exceeds ₹40,000',
+            'Only if you withdraw it'
+          ],
+          correct: 1,
+          explanation: 'FD interest is fully taxable. It is added to your annual income and taxed according to your income tax slab, regardless of whether you withdraw it or reinvest it.'
         },
         {
           type: 'mcq',
-          question: 'What is the maximum amount you can borrow as a loan against your FD?',
+          question: 'What is "FD Laddering"?',
           options: [
-            '50% - 60% of FD value',
-            '70% - 75% of FD value',
-            '80% - 90% of FD value',
-            '100% of FD value'
+            'Investing all money in one big FD',
+            'Splitting investment across different tenures (1yr, 2yr, 3yr) to maintain liquidity',
+            'Taking a loan against FD',
+            'Investing only when rates are high'
           ],
-          correct: 2,
-          explanation: 'Banks typically offer loans of 80%-90% of the FD value. This is better than breaking the FD because you keep earning interest on the FD while paying interest on the loan (difference is only 1%-2%).'
+          correct: 1,
+          explanation: 'FD Laddering is a smart strategy where you divide your investment into multiple FDs with different maturity dates. This ensures you have money becoming available regularly.'
         }
       ]
     },
     {
       id: 3,
       title: 'Recurring Deposits (RD)',
-      subtitle: 'Build Savings with Monthly Deposits',
+      subtitle: 'Small Steps, Big Goals',
       duration: '6 mins',
       content: `
         <h3>What is a Recurring Deposit?</h3>
-        <p>A Recurring Deposit (RD) is a savings scheme where you deposit a fixed amount every month for a predetermined period and earn interest on the accumulated amount. It's perfect for building savings discipline.</p>
+        <p>Think of an RD as a <strong>"Reverse EMI"</strong>. Instead of paying the bank after buying something, you pay the bank <em>before</em> to save up for it! You deposit a fixed amount every month, and the bank pays you interest just like an FD.</p>
         
-        <h4>Key Features:</h4>
-        <ul>
-          <li><strong>Monthly Deposits:</strong> Fixed amount deposited every month</li>
-          <li><strong>Flexible Amount:</strong> Start with as low as ₹100 per month</li>
-          <li><strong>Fixed Tenure:</strong> 6 months to 10 years</li>
-          <li><strong>Interest Rate:</strong> Similar to FD rates (5% - 8% per annum)</li>
-          <li><strong>Disciplined Saving:</strong> Builds habit of regular savings</li>
-        </ul>
+        <div class="bg-blue-900/30 p-4 rounded-lg border-l-4 border-blue-500 my-4">
+          <h4 class="text-blue-300 m-0">🎯 Perfect For Goals</h4>
+          <p class="m-0 text-sm">Planning a vacation next year? Want to buy a new iPhone? Start an RD today!</p>
+        </div>
 
-        <h4>How RD Works:</h4>
+        <h4>How It Works</h4>
         <ol>
-          <li>Choose monthly deposit amount (e.g., ₹5,000)</li>
-          <li>Select tenure (e.g., 3 years)</li>
-          <li>Bank automatically debits amount from savings account every month</li>
-          <li>Interest calculated quarterly and compounded</li>
-          <li>At maturity, receive principal + interest</li>
+          <li><strong>Decide Amount:</strong> Say, ₹5,000 per month.</li>
+          <li><strong>Choose Tenure:</strong> Say, 12 months.</li>
+          <li><strong>Automate:</strong> The bank automatically cuts ₹5,000 from your savings account on a fixed date.</li>
+          <li><strong>Enjoy:</strong> At the end of 12 months, you get your principal + interest (e.g., ₹60,000 + ₹2,500 interest).</li>
         </ol>
 
-        <h4>Example Calculation:</h4>
-        <p><strong>Monthly Deposit:</strong> ₹5,000 for 3 years at 7% interest</p>
-        <ul>
-          <li>Total Deposits: ₹5,000 × 36 months = ₹1,80,000</li>
-          <li>Interest Earned: ₹20,432</li>
-          <li>Maturity Amount: ₹2,00,432</li>
-          <li>Your money grows by 11.4%!</li>
-        </ul>
-
-        <h4>RD vs FD - Which is Better?</h4>
-        <table>
-          <tr>
-            <th>Feature</th>
-            <th>Recurring Deposit</th>
-            <th>Fixed Deposit</th>
-          </tr>
-          <tr>
-            <td>Investment</td>
-            <td>Monthly installments</td>
-            <td>Lump sum</td>
-          </tr>
-          <tr>
-            <td>Best For</td>
-            <td>Salaried persons, regular savers</td>
-            <td>Those with lump sum money</td>
-          </tr>
-          <tr>
-            <td>Interest Rate</td>
-            <td>5% - 8%</td>
-            <td>5% - 8% (slightly higher)</td>
-          </tr>
-          <tr>
-            <td>Flexibility</td>
-            <td>Requires monthly commitment</td>
-            <td>One-time investment</td>
-          </tr>
+        <h4>RD vs. FD: Which is Better?</h4>
+        <table class="w-full text-sm text-left border-collapse my-4">
+          <thead>
+            <tr class="border-b border-gray-700 text-gray-300">
+              <th class="py-2">Feature</th>
+              <th class="py-2">Recurring Deposit (RD)</th>
+              <th class="py-2">Fixed Deposit (FD)</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-400">
+            <tr class="border-b border-gray-800">
+              <td class="py-2"><strong>Investment Style</strong></td>
+              <td>Small monthly amounts</td>
+              <td>One-time lump sum</td>
+            </tr>
+            <tr class="border-b border-gray-800">
+              <td class="py-2"><strong>Best For</strong></td>
+              <td>Salaried / Regular Savers</td>
+              <td>Those with cash in hand</td>
+            </tr>
+            <tr class="border-b border-gray-800">
+              <td class="py-2"><strong>Interest Rate</strong></td>
+              <td>High (Same as FD)</td>
+              <td>High (Same as RD)</td>
+            </tr>
+          </tbody>
         </table>
 
-        <h4>Benefits of RD:</h4>
+        <h4>⚠️ The "Missed Payment" Trap</h4>
+        <p>Since RD is a commitment, you must pay every month. If you miss an installment:</p>
         <ul>
-          <li><strong>Builds Savings Habit:</strong> Forced monthly savings</li>
-          <li><strong>No Large Capital Needed:</strong> Start with small amounts</li>
-          <li><strong>Goal-Based Saving:</strong> Perfect for future expenses (vacation, gadgets)</li>
-          <li><strong>Safe Investment:</strong> Guaranteed returns, insured by DICGC</li>
-          <li><strong>Flexible Tenure:</strong> Choose based on your goal timeline</li>
+          <li>The bank may charge a penalty (e.g., ₹1.50 per ₹100).</li>
+          <li>If you miss 3-4 months continuously, the bank might close your RD account!</li>
         </ul>
-
-        <h4>Penalties & Rules:</h4>
-        <ul>
-          <li><strong>Missed Installment:</strong> ₹1.5 - ₹5 per month penalty (varies by bank)</li>
-          <li><strong>Default Period:</strong> If 3-4 consecutive months missed, RD may be closed</li>
-          <li><strong>Premature Withdrawal:</strong> 1% penalty on interest rate</li>
-          <li><strong>Partial Withdrawal:</strong> Not allowed (must close entire RD)</li>
-        </ul>
-
-        <h4>Tax Implications:</h4>
-        <ul>
-          <li>Interest earned is taxable as per your income tax slab</li>
-          <li>TDS applicable if interest exceeds ₹40,000 per year</li>
-          <li>No tax benefit available (unlike PPF or tax saver FD)</li>
-          <li>Include RD interest in your income tax return</li>
-        </ul>
-
-        <h4>Ideal Use Cases:</h4>
-        <ul>
-          <li><strong>Emergency Fund:</strong> Build 6 months of expenses over 2-3 years</li>
-          <li><strong>Future Purchase:</strong> Save for car, bike, gadgets, vacation</li>
-          <li><strong>Festival Savings:</strong> Plan for Diwali, wedding expenses</li>
-          <li><strong>Education:</strong> Save for child's tuition, coaching fees</li>
-          <li><strong>Down Payment:</strong> Accumulate for home loan down payment</li>
-        </ul>
+        <p><strong>Pro Tip:</strong> Always set the RD deduction date a few days after your salary date so you never run out of balance.</p>
       `,
       keyPoints: [
-        'RD helps build savings discipline with monthly deposits',
-        'Interest rates similar to FD (5% - 8%)',
-        'Perfect for salaried persons and goal-based savings',
-        'Penalty for missed installments, so set up auto-debit'
+        'RD is like a "Reverse EMI" to save for specific goals',
+        'Interest rates are typically the same as Fixed Deposits',
+        'Missing monthly installments can attract penalties',
+        'Ideal for people with regular monthly income'
       ],
       quiz: [
         {
           type: 'calculation',
-          question: 'If you deposit ₹2,000 per month in an RD for 2 years at 6.5% interest, what will be your approximate maturity amount?',
+          question: 'You start an RD of ₹5,000/month for 1 year. The interest rate is 7%. Approximately how much will you get at maturity?',
           options: [
-            '₹48,000',
-            '₹49,680',
-            '₹50,450',
-            '₹51,200'
+            '₹60,000 (Principal only)',
+            '₹62,300 (Principal + Interest)',
+            '₹70,000',
+            '₹55,000'
           ],
           correct: 1,
-          explanation: 'Total deposits = ₹2,000 × 24 = ₹48,000. With 6.5% interest compounded quarterly on RD, the interest earned is approximately ₹1,680. Maturity amount ≈ ₹49,680.'
+          explanation: 'You deposited ₹60,000 (5000 x 12). The interest earned would be around ₹2,300. So, you get back approximately ₹62,300. It\'s a great way to beat inflation!'
         },
         {
           type: 'scenario',
-          question: 'Amit wants to buy a bike costing ₹1,20,000 after 2 years. He can save ₹4,500 per month. What should he do?',
-          context: 'Amit is salaried and gets paid on the 1st of every month.',
+          question: 'Amit wants to buy a bike worth ₹1 Lakh next year. He can save ₹8,000 every month. What should he do?',
+          context: 'He wants a disciplined approach so he doesn\'t spend the money.',
           options: [
-            'Keep cash at home',
-            'Open RD with ₹4,500 monthly deposit',
-            'Invest in stocks',
-            'Open a savings account only'
+            'Keep cash in a cupboard',
+            'Open a Recurring Deposit (RD)',
+            'Invest in risky stocks',
+            'Leave it in a Savings Account'
           ],
           correct: 1,
-          explanation: 'RD is perfect for Amit\'s goal-based saving. With ₹4,500/month for 24 months, he\'ll deposit ₹1,08,000 and earn ₹8,000-10,000 as interest (at 7%), reaching his ₹1,20,000 target safely.'
-        },
-        {
-          type: 'mcq',
-          question: 'What happens if you miss 3-4 consecutive monthly installments in an RD?',
-          options: [
-            'Nothing, you can continue normally',
-            'Only penalty charges are applied',
-            'The RD may be closed by the bank',
-            'Interest rate is increased'
-          ],
-          correct: 2,
-          explanation: 'If you miss 3-4 consecutive installments, the bank may close your RD account. The accumulated amount with interest (minus penalties) will be returned to you. It\'s important to set up auto-debit to avoid this.'
+          explanation: 'An RD is perfect for goal-based savings. It forces discipline (automatic deduction) and earns decent interest, ensuring he reaches his target of ₹1 Lakh safely.'
         },
         {
           type: 'truefalse',
-          question: 'You can partially withdraw money from an RD account without closing it.',
+          question: 'You can withdraw a "part" of your RD money if you have an emergency.',
           options: ['True', 'False'],
           correct: 1,
-          explanation: 'False! Unlike savings accounts, RDs don\'t allow partial withdrawals. If you need money, you must close the entire RD, which attracts a penalty (typically 1% reduction in interest rate).'
+          explanation: 'False! RDs do not allow partial withdrawals. If you need money, you usually have to close the entire RD account (and pay a penalty) or take a loan against it.'
         },
         {
           type: 'mcq',
-          question: 'What is the typical penalty for missing an RD installment?',
+          question: 'What happens if you miss 3-4 consecutive RD installments?',
           options: [
-            '₹0.50 - ₹1 per month',
-            '₹1.50 - ₹5 per month',
-            '₹10 - ₹20 per month',
-            '₹50 - ₹100 per month'
+            'Nothing happens',
+            'The bank pays the installment for you',
+            'The bank may close your RD account',
+            'The interest rate doubles'
+          ],
+          correct: 2,
+          explanation: 'Banks take RD commitments seriously. If you miss multiple installments, they may prematurely close your account and refund your money after deducting penalties.'
+        },
+        {
+          type: 'mcq',
+          question: 'Who is an RD most suitable for?',
+          options: [
+            'A businessman with irregular income',
+            'A salaried person with fixed monthly income',
+            'A retired person with a large lump sum',
+            'A student with no income'
           ],
           correct: 1,
-          explanation: 'Most banks charge ₹1.50 to ₹5 per month as penalty for missed installments. While small, repeated defaults can lead to RD closure. Always set up auto-debit to avoid penalties.'
+          explanation: 'RDs are designed for salaried individuals or those with a regular income stream who can commit to setting aside a fixed sum every single month.'
         }
       ]
     },
     {
       id: 4,
       title: 'Bank Services',
-      subtitle: 'Essential Banking Services for Everyday Use',
+      subtitle: 'Mastering Modern Banking',
       duration: '6 mins',
       content: `
-        <h3>Essential Banking Services</h3>
-        <p>Modern banks offer a wide range of services beyond just savings and deposits. Understanding these services helps you manage money efficiently and securely.</p>
+        <h3>More Than Just Savings</h3>
+        <p>A bank isn't just a place to store money; it's a service hub that makes your life easier. From withdrawing cash at 2 AM to paying bills from your sofa, let's master the essential services.</p>
         
-        <h4>1. ATM Services</h4>
+        <h4>1. ATM Services (Your 24/7 Cash Machine)</h4>
         <ul>
-          <li><strong>Cash Withdrawal:</strong> 24/7 access to your money</li>
-          <li><strong>Balance Inquiry:</strong> Check account balance anytime</li>
-          <li><strong>Mini Statement:</strong> View last 5-10 transactions</li>
-          <li><strong>PIN Change:</strong> Update ATM PIN securely</li>
-          <li><strong>Cash Deposit:</strong> Some ATMs accept cash deposits</li>
-          <li><strong>Fund Transfer:</strong> Transfer money to other accounts</li>
+          <li><strong>Withdraw Cash:</strong> Anytime, anywhere.</li>
+          <li><strong>Check Balance:</strong> See how much you have.</li>
+          <li><strong>Change PIN:</strong> Keep your card secure.</li>
         </ul>
-        <p><strong>Free Transactions:</strong> 5 free transactions per month at own bank ATMs, 3 free at other bank ATMs in metro cities (5 in non-metro)</p>
+        <p class="text-sm text-gray-400"><strong>Note:</strong> You usually get <strong>5 FREE transactions</strong> per month at your own bank's ATM. After that, they may charge ₹20 per transaction.</p>
 
-        <h4>2. Net Banking / Internet Banking</h4>
-        <ul>
-          <li><strong>Fund Transfer:</strong> NEFT, RTGS, IMPS for instant transfers</li>
-          <li><strong>Bill Payments:</strong> Pay electricity, water, phone, DTH bills</li>
-          <li><strong>Mobile Recharge:</strong> Prepaid and postpaid recharge</li>
-          <li><strong>Account Statement:</strong> Download statements anytime</li>
-          <li><strong>FD/RD Creation:</strong> Open deposits online</li>
-          <li><strong>Loan Application:</strong> Apply for personal, home, car loans</li>
-          <li><strong>Cheque Book Request:</strong> Order new cheque books</li>
-          <li><strong>Stop Payment:</strong> Stop issued cheques</li>
-        </ul>
+        <h4>2. Digital Banking (Bank from Your Sofa) 📱</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+          <div class="bg-gray-800 p-3 rounded border border-gray-700">
+            <h5 class="text-blue-400 m-0">Net Banking</h5>
+            <p class="text-sm m-0">Great for big tasks: Opening FDs, downloading statements, or transferring large amounts (NEFT/RTGS).</p>
+          </div>
+          <div class="bg-gray-800 p-3 rounded border border-gray-700">
+            <h5 class="text-green-400 m-0">Mobile Banking / UPI</h5>
+            <p class="text-sm m-0">Perfect for daily use: Paying chai walas, splitting bills with friends, or recharging your phone.</p>
+          </div>
+        </div>
 
-        <h4>3. Mobile Banking</h4>
+        <h4>3. Cheques vs. Demand Drafts (DD)</h4>
         <ul>
-          <li><strong>UPI Payments:</strong> Instant payments using mobile number/UPI ID</li>
-          <li><strong>Quick Transfer:</strong> Send money using mobile number</li>
-          <li><strong>QR Code Scanning:</strong> Pay at shops by scanning QR code</li>
-          <li><strong>Request Money:</strong> Send payment requests to others</li>
-          <li><strong>Transaction Alerts:</strong> Real-time notifications</li>
-          <li><strong>Biometric Security:</strong> Fingerprint/face unlock</li>
+          <li><strong>Cheque:</strong> You write it to pay someone. It can bounce if you don't have funds.</li>
+          <li><strong>Demand Draft (DD):</strong> You pay the bank first, and they give you a DD. It <strong>cannot bounce</strong>. Used for college fees and official payments.</li>
         </ul>
 
-        <h4>4. Cheque Services</h4>
-        <ul>
-          <li><strong>Cheque Book:</strong> 10-25 cheque leaves per book</li>
-          <li><strong>Cheque Types:</strong> Bearer, Order, Crossed, Account Payee</li>
-          <li><strong>Post-Dated Cheque:</strong> Cheque with future date</li>
-          <li><strong>Stop Payment:</strong> Cancel issued cheque (charges apply)</li>
-          <li><strong>Clearing Time:</strong> 2-3 working days for clearance</li>
-        </ul>
-        <p><strong>Important:</strong> Always write cheques clearly, never sign blank cheques, and maintain sufficient balance to avoid cheque bounce penalties.</p>
+        <div class="bg-red-900/30 p-4 rounded-lg border-l-4 border-red-500 my-4">
+          <h4 class="text-red-300 m-0">🛡️ The Golden Rules of Security</h4>
+          <ul class="m-0 text-sm mt-2">
+            <li><strong>NEVER</strong> share your OTP, PIN, or Password. Bank officials will NEVER ask for it.</li>
+            <li><strong>NEVER</strong> enter your UPI PIN to <em>receive</em> money. You only enter it to <em>send</em> money.</li>
+            <li><strong>ALWAYS</strong> enable SMS alerts for every transaction.</li>
+          </ul>
+        </div>
 
-        <h4>5. Demand Draft (DD) & Pay Orders</h4>
-        <ul>
-          <li><strong>Demand Draft:</strong> Guaranteed payment instrument for inter-city payments</li>
-          <li><strong>Pay Order:</strong> Similar to DD but for same-city payments</li>
-          <li><strong>Usage:</strong> College fees, security deposits, official payments</li>
-          <li><strong>Charges:</strong> ₹50 - ₹100 per DD/Pay Order</li>
-          <li><strong>Validity:</strong> 3 months from date of issue</li>
-        </ul>
+        <h4>4. Locker Facilities</h4>
+        <p>Need to store gold or property papers? Rent a bank locker! It's safer than keeping valuables at home. You pay an annual rent (₹1,000 - ₹10,000).</p>
 
-        <h4>6. Locker Facilities</h4>
-        <ul>
-          <li><strong>Safe Storage:</strong> Store jewelry, documents, valuables</li>
-          <li><strong>Sizes Available:</strong> Small, Medium, Large</li>
-          <li><strong>Annual Rent:</strong> ₹1,000 - ₹10,000 depending on size and location</li>
-          <li><strong>Access:</strong> Only locker holder can access (with bank staff present)</li>
-          <li><strong>Insurance:</strong> Not automatically covered; consider separate insurance</li>
-        </ul>
-
-        <h4>7. SMS & Email Alerts</h4>
-        <ul>
-          <li><strong>Transaction Alerts:</strong> Every debit/credit notification</li>
-          <li><strong>Balance Alerts:</strong> When balance falls below threshold</li>
-          <li><strong>Card Alerts:</strong> ATM/Card transactions, online payments</li>
-          <li><strong>Bill Reminders:</strong> Credit card bill, loan EMI reminders</li>
-          <li><strong>Security Alerts:</strong> Suspicious activity detection</li>
-        </ul>
-        <p><strong>Pro Tip:</strong> Enable alerts for all transactions – it's the first line of defense against fraud!</p>
-
-        <h4>8. Nomination Facility</h4>
-        <ul>
-          <li><strong>Importance:</strong> Ensures your money goes to the right person after you</li>
-          <li><strong>Who to Nominate:</strong> Spouse, parents, children</li>
-          <li><strong>Multiple Nominees:</strong> Split percentages among nominees</li>
-          <li><strong>Update Anytime:</strong> Change nominee as life circumstances change</li>
-        </ul>
-
-        <h4>9. Foreign Exchange Services</h4>
-        <ul>
-          <li><strong>Currency Exchange:</strong> Buy/sell foreign currency for travel</li>
-          <li><strong>Forex Card:</strong> Prepaid card in foreign currency</li>
-          <li><strong>Traveler's Cheques:</strong> Safe alternative to cash</li>
-          <li><strong>Wire Transfer:</strong> Send money abroad</li>
-          <li><strong>Rates:</strong> Check bank's forex rates before exchange</li>
-        </ul>
-
-        <h4>10. Banking Ombudsman</h4>
-        <ul>
-          <li><strong>Complaint Resolution:</strong> RBI-appointed authority for customer grievances</li>
-          <li><strong>Free Service:</strong> No fees for filing complaints</li>
-          <li><strong>Timeline:</strong> Bank must respond within 30 days</li>
-          <li><strong>Issues Covered:</strong> Unauthorized transactions, service deficiency, charges dispute</li>
-          <li><strong>How to Complain:</strong> First complain to bank, then approach ombudsman if unsatisfied</li>
-        </ul>
-
-        <h4>Digital Banking Security Tips:</h4>
-        <ul>
-          <li>Never share OTP, PIN, or password with anyone (not even bank staff)</li>
-          <li>Use strong passwords with mix of letters, numbers, symbols</li>
-          <li>Enable two-factor authentication for all transactions</li>
-          <li>Logout after every net banking session</li>
-          <li>Don't use public Wi-Fi for banking transactions</li>
-          <li>Check bank statement regularly for unauthorized transactions</li>
-          <li>Update mobile number and email for alerts</li>
-          <li>Install bank's official app only (check developer name)</li>
-        </ul>
+        <h4>5. Nomination (Crucial!)</h4>
+        <p>Ensure every account has a <strong>Nominee</strong> (like your spouse or parent). This ensures that if something happens to you, the money goes to them without legal hassles.</p>
       `,
       keyPoints: [
-        'Net banking and mobile banking offer 24/7 banking convenience',
-        'Enable SMS alerts for all transactions for security',
-        'Use ATMs wisely – 5 free transactions per month',
-        'Never share OTP, PIN, or password with anyone'
+        'Net Banking is for big tasks; UPI is for daily payments',
+        'Demand Drafts (DD) are safer than cheques as they cannot bounce',
+        'NEVER enter your UPI PIN to receive money',
+        'Always add a nominee to your accounts'
       ],
       quiz: [
         {
           type: 'mcq',
-          question: 'How many free ATM transactions per month are allowed at your own bank\'s ATMs?',
+          question: 'You receive a call: "Sir, your KYC is pending. Please share the OTP sent to your phone to unblock your card." What should you do?',
           options: [
-            '3 transactions',
-            '5 transactions',
-            '10 transactions',
-            'Unlimited transactions'
-          ],
-          correct: 1,
-          explanation: 'You get 5 free transactions per month at your own bank\'s ATMs. At other banks\' ATMs, you get 3 free transactions in metro cities and 5 in non-metro cities. After that, ₹20-21 is charged per transaction.'
-        },
-        {
-          type: 'scenario',
-          question: 'Ravi receives an SMS: "Your account will be blocked. Click link and enter OTP to reactivate." What should he do?',
-          context: 'The SMS looks like it\'s from his bank and has a link.',
-          options: [
-            'Click the link and enter OTP immediately',
-            'Call the number in the SMS',
-            'Ignore the SMS and call bank\'s official customer care',
-            'Forward the SMS to friends for advice'
+            'Share the OTP immediately',
+            'Share it only if the caller sounds professional',
+            'Disconnect and report the number',
+            'Ask for their Employee ID then share'
           ],
           correct: 2,
-          explanation: 'This is a phishing scam! Banks NEVER ask for OTP, PIN, or password via SMS/email. Ravi should ignore the SMS and call his bank\'s official customer care number (printed on debit card or passbook) to verify.'
-        },
-        {
-          type: 'mcq',
-          question: 'What is UPI in mobile banking?',
-          options: [
-            'Universal Payment Interface for instant money transfer',
-            'United Payment Integration for bill payments',
-            'User Password Identification for security',
-            'Universal Phone Identification for KYC'
-          ],
-          correct: 0,
-          explanation: 'UPI (Unified Payments Interface) is a real-time payment system that allows instant money transfer between bank accounts using a mobile number, UPI ID, or QR code. It\'s fast, secure, and free!'
+          explanation: 'This is a classic scam! Banks NEVER ask for OTPs or PINs over the phone. Disconnect immediately and report the incident to your bank.'
         },
         {
           type: 'truefalse',
-          question: 'You should enable SMS alerts only for large transactions to avoid too many messages.',
+          question: 'To RECEIVE money on UPI (e.g., selling an old bike), you must enter your UPI PIN.',
           options: ['True', 'False'],
           correct: 1,
-          explanation: 'False! Enable SMS alerts for ALL transactions, no matter how small. This is your first line of defense against fraud. If you see an unauthorized transaction, you can report it immediately and block your card.'
-        },
-        {
-          type: 'mcq',
-          question: 'What is the clearing time for a cheque deposited in your bank account?',
-          options: [
-            'Same day',
-            '1 working day',
-            '2-3 working days',
-            '7 working days'
-          ],
-          correct: 2,
-          explanation: 'Cheques typically take 2-3 working days for clearance. This is the time needed for the bank to verify funds with the issuing bank. Same-city cheques may clear in 1-2 days, while outstation cheques take 3-4 days.'
+          explanation: 'FALSE! You ONLY enter your UPI PIN to deduct money from your account. If someone asks you to enter your PIN to "receive" money, they are trying to steal from you.'
         },
         {
           type: 'scenario',
-          question: 'Priya wants to pay her son\'s college fees of ₹1,50,000. The college doesn\'t accept cash or cheques. What banking service should she use?',
-          context: 'The college wants guaranteed payment with a reference number.',
+          question: 'Priya needs to pay her college admission fee of ₹50,000. The college demands a payment method that "cannot bounce". What should she use?',
+          context: 'Cheques can bounce if funds are low.',
           options: [
-            'Cash deposit at college',
-            'Demand Draft (DD)',
-            'Personal cheque',
-            'ATM transfer'
+            'A personal Cheque',
+            'A Demand Draft (DD)',
+            'Cash',
+            'Credit Card'
           ],
           correct: 1,
-          explanation: 'Demand Draft (DD) is perfect for this situation. It\'s a guaranteed payment instrument that costs ₹50-100, provides a reference number, and is widely accepted for official payments like college fees, security deposits, etc.'
+          explanation: 'A Demand Draft (DD) is a prepaid instrument. Since Priya pays the bank upfront to make the DD, it is guaranteed by the bank and cannot bounce, making it the preferred choice for colleges.'
+        },
+        {
+          type: 'mcq',
+          question: 'How many free ATM transactions do you typically get per month at your own bank\'s ATM?',
+          options: ['3', '5', '10', 'Unlimited'],
+          correct: 1,
+          explanation: 'RBI rules typically mandate 5 free transactions (financial + non-financial) per month at your own bank\'s ATMs. Beyond this, charges apply.'
+        },
+        {
+          type: 'mcq',
+          question: 'What is the primary benefit of adding a "Nominee" to your bank account?',
+          options: [
+            'You get a higher interest rate',
+            'It allows the nominee to use your debit card',
+            'It ensures easy transfer of funds to them after your death',
+            'It is mandatory for opening the account'
+          ],
+          correct: 2,
+          explanation: 'Nomination is a facility that enables the bank to release the funds in your account to the nominated person without hassle in the unfortunate event of your death.'
         }
       ]
     }

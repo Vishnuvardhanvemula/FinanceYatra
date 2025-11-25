@@ -228,6 +228,69 @@ class AuthService {
       throw error;
     }
   }
+
+  /**
+   * Update module progress
+   */
+  async updateModuleProgress(userId, moduleId, lastCompletedLesson, xpEarned = 0, isCompleted = false) {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+
+
+      let moduleProgress = user.moduleProgress.find(m => m.moduleId === moduleId);
+      let isNewLesson = false;
+
+      if (!moduleProgress) {
+        // Start module if not started
+        user.moduleProgress.push({
+          moduleId,
+          completedLessons: [lastCompletedLesson],
+          lastCompletedLesson,
+          startedAt: new Date()
+        });
+        isNewLesson = true;
+      } else {
+        // Update existing progress
+        moduleProgress.lastCompletedLesson = lastCompletedLesson;
+
+        // Add to completed lessons if not already there
+        if (!moduleProgress.completedLessons.includes(lastCompletedLesson)) {
+          moduleProgress.completedLessons.push(lastCompletedLesson);
+          isNewLesson = true;
+        }
+      }
+
+      // Mark as completed if flag is set
+      if (isCompleted) {
+        moduleProgress.completedAt = new Date();
+        console.log(`🏆 Module ${moduleId} completed by user ${user.email}`);
+      }
+
+      // Award XP only if it's a new lesson (prevent farming)
+      if (xpEarned > 0 && isNewLesson) {
+        user.awardXP(xpEarned, 'lesson_quiz');
+        console.log(`✨ Awarded ${xpEarned} XP to ${user.email} for new lesson completion`);
+      } else if (xpEarned > 0) {
+        console.log(`⚠️ No XP awarded to ${user.email} (Lesson already completed)`);
+      }
+
+
+      await user.save();
+      await user.save();
+      return {
+        message: 'Progress updated successfully',
+        xpAwarded: (xpEarned > 0 && isNewLesson) ? xpEarned : 0
+      };
+
+    } catch (error) {
+      console.error('❌ Update progress error:', error.message);
+      throw error;
+    }
+  }
 }
 
 export default new AuthService();

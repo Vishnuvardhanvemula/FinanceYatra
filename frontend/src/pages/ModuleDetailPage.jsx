@@ -1,6 +1,5 @@
 /**
  * Module Detail Page
- * "Mission Briefing" Aesthetic
  */
 
 import React, { useState, useEffect, lazy, Suspense } from 'react';
@@ -33,38 +32,61 @@ const ModuleDetailPage = () => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Load Module  Data
+  const lastModuleIdRef = React.useRef(null);
+
+  // Load Module Data
+  // Effect 1: Load Module & Restore Progress
   useEffect(() => {
-    const loadData = () => {
+    if (!moduleId) {
+      navigate('/modules');
+      return;
+    }
+
+    const moduleData = getModuleById(moduleId);
+    if (!moduleData) {
+      toast.error('Mission not found!');
+      navigate('/modules');
+      return;
+    }
+    setModule(moduleData);
+
+    // Initialize progress only when entering a new module
+    if (lastModuleIdRef.current !== moduleId) {
       setLoading(true);
+      lastModuleIdRef.current = moduleId;
 
-      if (!moduleId) {
-        console.error('[ModuleDetailPage] No moduleId provided');
-        toast.error('Mission not found!');
-        navigate('/modules');
-        return;
+      let startingLessonIndex = 0;
+      if (user?.moduleProgress) {
+        let savedProgress;
+        if (Array.isArray(user.moduleProgress)) {
+          savedProgress = user.moduleProgress.find(m => m.moduleId === moduleId);
+        } else {
+          savedProgress = user.moduleProgress[moduleId];
+        }
+
+        if (savedProgress) {
+          startingLessonIndex = (savedProgress.lastCompletedLesson ?? -1) + 1;
+          if (startingLessonIndex >= moduleData.lessons) {
+            startingLessonIndex = moduleData.lessons - 1;
+          }
+          if (startingLessonIndex > 0) {
+            toast.success(`Resuming from Phase ${startingLessonIndex + 1}`);
+          }
+        }
       }
 
-      const moduleData = getModuleById(moduleId);
+      setCurrentLessonIndex(startingLessonIndex);
+      setLoading(false);
+    }
+  }, [moduleId, user, navigate]);
 
-      if (!moduleData) {
-        console.error('[ModuleDetailPage] Module not found for ID:', moduleId);
-        toast.error('Mission not found!');
-        navigate('/modules');
-        return;
-      }
-
-      setModule(moduleData);
-
-      // Load lesson content
+  // Effect 2: Sync Lesson Content
+  useEffect(() => {
+    if (moduleId) {
       const lessonData = getLessonContent(moduleId, currentLessonIndex);
       setCurrentLesson(lessonData);
-
-      setLoading(false);
-    };
-
-    loadData();
-  }, [moduleId, currentLessonIndex, navigate]);
+    }
+  }, [moduleId, currentLessonIndex]);
 
   const handleNext = () => {
     if (currentLessonIndex < (module?.lessons || 0) - 1) {
@@ -86,10 +108,7 @@ const ModuleDetailPage = () => {
 
   const handleModuleComplete = () => {
     setShowCelebration(true);
-    // Update user progress here
-    if (user && updateUserProgress) {
-      updateUserProgress(moduleId, 'completed');
-    }
+    // Progress is already saved in handleQuizComplete with isCompleted: true
   };
 
   // ... (imports)
@@ -97,7 +116,7 @@ const ModuleDetailPage = () => {
   const handleQuizComplete = (score) => {
     if (score >= 70) {
       // Calculate XP
-      const totalQuestions = currentLesson?.quiz?.length || 5; // Default to 5 if unknown
+      const totalQuestions = currentLesson?.quiz?.length || 5;
       const correctAnswers = Math.round((score / 100) * totalQuestions);
       let xpEarned = correctAnswers * XP_VALUES.QUIZ.PER_QUESTION;
 
@@ -108,12 +127,31 @@ const ModuleDetailPage = () => {
 
       toast.success(`Objective Completed! +${xpEarned} XP`);
 
-      // Pass XP to next handler if needed, or just log it for now since we don't have a direct backend call here yet
-      // In a real app, we'd call updateUserProgress(moduleId, 'completed', xpEarned);
+      // Save progress after passing quiz
+      if (user && updateUserProgress) {
+        const progressData = {
+          moduleId,
+          lastCompletedLesson: currentLessonIndex,
+          timestamp: Date.now(),
+          xpEarned, // Pass calculated XP
+          isCompleted: currentLessonIndex >= (module?.lessons || 0) - 1 // Mark as completed if last lesson
+        };
+        updateUserProgress(progressData);
+      }
 
-      handleNext();
+      // Close quiz modal
+      setShowQuiz(false);
+
+      // Check if this was the last lesson - if so, show celebration
+      if (currentLessonIndex >= (module?.lessons || 0) - 1) {
+        handleModuleComplete(); // Show celebration modal
+      } else {
+        // Not the last lesson - move to next after small delay
+        setTimeout(() => handleNext(), 500);
+      }
     } else {
-      toast.error('Objective Failed. Retrying...');
+      toast.error(`Objective Failed (${score}% < 70% required). Review and retry!`);
+      // Keep quiz open for retry - don't call handleNext or close modal
     }
   };
 
