@@ -56,6 +56,8 @@ export const module1Content = {
           <li><strong>Nomination:</strong> Always add a nominee (family member) who can claim funds in unfortunate events.</li>
         </ol>
 
+        [KYC_DETECTIVE]
+
         <div class="bg-green-900/30 p-4 rounded-lg border border-green-500/30 my-4">
           <h4 class="text-green-300 m-0">🌟 Real Life Example</h4>
           <p class="m-0 text-sm"><strong>Rahul (22)</strong> just got his first job. He opened a <strong>Salary Account</strong> so he doesn't have to worry about maintaining a minimum balance. He also linked his UPI to this account for easy daily payments.</p>
@@ -299,6 +301,8 @@ export const module1Content = {
         </ul>
         <p><strong>Why?</strong> This way, one FD matures every year, giving you liquidity without breaking the investment!</p>
 
+        [INTEREST_LADDER]
+
         <h4>Tax Talk 📝</h4>
         <p>Interest earned on FDs is <strong>fully taxable</strong>. If your interest income exceeds ₹40,000/year (₹50k for seniors), the bank will deduct TDS (Tax Deducted at Source). Submit <strong>Form 15G/15H</strong> if your total income is below the taxable limit to avoid this.</p>
       `,
@@ -499,13 +503,11 @@ export const module1Content = {
         <h3>More Than Just Savings</h3>
         <p>A bank isn't just a place to store money; it's a service hub that makes your life easier. From withdrawing cash at 2 AM to paying bills from your sofa, let's master the essential services.</p>
         
-        <h4>1. ATM Services (Your 24/7 Cash Machine)</h4>
-        <ul>
-          <li><strong>Withdraw Cash:</strong> Anytime, anywhere.</li>
-          <li><strong>Check Balance:</strong> See how much you have.</li>
-          <li><strong>Change PIN:</strong> Keep your card secure.</li>
-        </ul>
-        <p class="text-sm text-gray-400"><strong>Note:</strong> You usually get <strong>5 FREE transactions</strong> per month at your own bank's ATM. After that, they may charge ₹20 per transaction.</p>
+        <h4>1. Cyber Security Cell (Scam Spotter)</h4>
+        <p>Modern banking is digital, but so are the thieves. Instead of pickpockets, we now have <strong>Phishers</strong>. Can you spot a fake message from a real one?</p>
+        <p class="text-sm text-gray-400"><strong>Mission:</strong> You are now a Fraud Analyst. Review the incoming messages and decide whether to <strong>BLOCK</strong> or <strong>TRUST</strong> them.</p>
+
+        [SCAM_SPOTTER]
 
         <h4>2. Digital Banking (Bank from Your Sofa) 📱</h4>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
@@ -524,6 +526,8 @@ export const module1Content = {
           <li><strong>Cheque:</strong> You write it to pay someone. It can bounce if you don't have funds.</li>
           <li><strong>Demand Draft (DD):</strong> You pay the bank first, and they give you a DD. It <strong>cannot bounce</strong>. Used for college fees and official payments.</li>
         </ul>
+
+        [CHEQUE_WRITER]
 
         <div class="bg-red-900/30 p-4 rounded-lg border-l-4 border-red-500 my-4">
           <h4 class="text-red-300 m-0">🛡️ The Golden Rules of Security</h4>

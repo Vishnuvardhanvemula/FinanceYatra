@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useMemo, useState, Suspense } from 'react';
+﻿﻿import React, { useEffect, useRef, useMemo, useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Canvas, useFrame } from '@react-three/fiber';

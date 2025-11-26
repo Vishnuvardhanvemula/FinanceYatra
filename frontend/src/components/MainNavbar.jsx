@@ -33,7 +33,7 @@ export default function MainNavbar() {
 
   return (
     <nav className="fixed w-full top-0 left-0 z-[999]">
-      <div className="bg-[#0b101b]/80 backdrop-blur-xl border-b border-white/5">
+      <div className="bg-[#020617]/80 backdrop-blur-xl border-b border-white/[0.05]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link to="/" className="flex items-center gap-3 group">
@@ -43,16 +43,16 @@ export default function MainNavbar() {
             </Link>
 
             <div className="hidden md:flex space-x-2 items-center">
-              <Link to="/" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 font-medium">Home</Link>
-              {isAuthenticated && <Link to="/dashboard" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 font-medium">Dashboard</Link>}
-              <Link to="/chat" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 font-medium">Chat</Link>
-              <Link to="/modules" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 font-medium">Learn</Link>
-              <Link to="/challenges" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 font-medium">Challenges</Link>
+              <Link to="/" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 text-xs uppercase tracking-widest font-medium">Home</Link>
+              {isAuthenticated && <Link to="/dashboard" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 text-xs uppercase tracking-widest font-medium">Dashboard</Link>}
+              <Link to="/chat" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 text-xs uppercase tracking-widest font-medium">Chat</Link>
+              <Link to="/modules" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 text-xs uppercase tracking-widest font-medium">Learn</Link>
+              <Link to="/challenges" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 text-xs uppercase tracking-widest font-medium">Challenges</Link>
               <div className="relative" onMouseEnter={() => setCalculatorsOpen(true)} onMouseLeave={() => setCalculatorsOpen(false)}>
                 <button
                   ref={buttonRef}
                   onClick={() => navigate('/calculators')}
-                  className="px-3 py-1 flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 font-medium"
+                  className="px-3 py-1 flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 text-xs uppercase tracking-widest font-medium"
                   aria-expanded={calculatorsOpen}
                   aria-haspopup="true"
                 >
@@ -112,7 +112,7 @@ export default function MainNavbar() {
                   )}
                 </AnimatePresence>
               </div>
-              <a href="#about" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 font-medium">About</a>
+              <a href="#about" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 text-xs uppercase tracking-widest font-medium">About</a>
             </div>
 
             <div className="hidden md:flex items-center gap-3">
@@ -135,8 +135,8 @@ export default function MainNavbar() {
                 </>
               ) : (
                 <>
-                  <Link to="/login" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 font-medium">Sign In</Link>
-                  <Link to="/signup" className="btn-gradient text-sm shadow-lg shadow-teal-500/20">Get Started</Link>
+                  <Link to="/login" className="px-3 py-1 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 text-xs uppercase tracking-widest font-medium">Sign In</Link>
+                  <Link to="/signup" className="px-5 py-2 bg-white text-black rounded-full text-xs uppercase tracking-widest font-bold hover:scale-105 transition-transform duration-300 shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)]">Get Started</Link>
                 </>
               )}
             </div>

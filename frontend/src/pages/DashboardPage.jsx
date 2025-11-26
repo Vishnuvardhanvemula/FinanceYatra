@@ -1,13 +1,14 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { API_URL } from '../config/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import TiltCard from '../components/TiltCard';
 import GlowingRing from '../components/GlowingRing';
 import SplineChart from '../components/SplineChart';
-import ParticleBackground from '../components/ParticleBackground'; // Import ParticleBackground
-import { useRankSystem } from '../hooks/useRankSystem'; // Import Hook
-import { motion } from 'framer-motion';
+import ParticleBackground from '../components/ParticleBackground';
+import RankAvatar from '../components/RankAvatar';
+import RankBadge from '../components/RankBadge';
+import { useRankSystem } from '../hooks/useRankSystem';
+import { motion, useMotionTemplate, useMotionValue, useSpring, animate } from 'framer-motion';
 import {
   Trophy,
   Target,
@@ -18,9 +19,94 @@ import {
   Star,
   ChevronRight,
   PieChart,
-  CreditCard,
-  Medal
+  Medal,
+  ArrowUpRight,
+  Lock,
+  BarChart2
 } from 'lucide-react';
+
+// --- Spotlight Card Component (Local Definition for Dashboard) ---
+const SpotlightCard = ({ children, className = "", onClick, variant = "default" }) => {
+  const divRef = useRef(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [opacity, setOpacity] = useState(0);
+
+  const handleMouseMove = (e) => {
+    if (!divRef.current) return;
+    const rect = divRef.current.getBoundingClientRect();
+    setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    setOpacity(1);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    setOpacity(0);
+  };
+
+  const handleMouseEnter = () => {
+    setOpacity(1);
+  };
+
+  const handleMouseLeave = () => {
+    setOpacity(0);
+  };
+
+  // Variant Styles
+  const getBorderColor = () => {
+    if (variant === "legendary") return "border-fuchsia-500/30 shadow-[0_0_15px_rgba(232,121,249,0.15)]";
+    if (variant === "master") return "border-amber-500/20";
+    return "border-white/10";
+  };
+
+  return (
+    <div
+      ref={divRef}
+      onMouseMove={handleMouseMove}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={onClick}
+      className={`relative overflow-hidden rounded-3xl border bg-white/[0.02] transition-all duration-300 ${getBorderColor()} ${className}`}
+    >
+      <div
+        className="pointer-events-none absolute -inset-px opacity-0 transition duration-300"
+        style={{
+          opacity,
+          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, ${variant === 'legendary' ? 'rgba(232,121,249,0.15)' : 'rgba(255,255,255,0.1)'}, transparent 40%)`,
+        }}
+      />
+      <div className="relative h-full">{children}</div>
+    </div>
+  );
+};
+
+// --- Animated Counter Component ---
+const AnimatedCounter = ({ value, duration = 2 }) => {
+  const nodeRef = useRef();
+
+  useEffect(() => {
+    const node = nodeRef.current;
+    if (!node) return;
+
+    const controls = animate(0, value, {
+      duration: duration,
+      onUpdate: (value) => {
+        node.textContent = Math.round(value).toLocaleString();
+      },
+      ease: "easeOut"
+    });
+
+    return () => controls.stop();
+  }, [value, duration]);
+
+  return <span ref={nodeRef} />;
+};
 
 // Animation variants
 const containerVariants = {
@@ -50,7 +136,7 @@ const itemVariants = {
 const DashboardPage = () => {
   const { user, token, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { rank, isLegendary } = useRankSystem(); // Use Hook
+  const { rank, rankTier, isLegendary } = useRankSystem(); // Use rankTier
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState(null);
   const [achievements, setAchievements] = useState(null);
@@ -102,101 +188,140 @@ const DashboardPage = () => {
     { value: 30, label: 'Thu' }, { value: 45, label: 'Fri' }, { value: 20, label: 'Sat' }, { value: 35, label: 'Sun' }
   ];
 
+  // --- Rank-Based Atmosphere Logic ---
+  const getAtmosphere = () => {
+    if (rankTier === 0) return "bg-[#020617]"; // Novice: Clean Slate
+    if (rankTier === 1) return "bg-[#0f172a]"; // Apprentice: Deep Blue
+    if (rankTier === 2) return "bg-[#1e293b]"; // Expert: Slate
+    if (rankTier === 3) return "bg-gradient-to-br from-[#0f172a] to-[#312e81]"; // Master: Indigo Gradient
+    if (rankTier === 4) return "bg-black"; // Legendary: The Void
+    return "bg-[#020617]";
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0B101B] flex items-center justify-center">
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin"></div>
-          <span className="text-teal-500 font-medium tracking-wider text-sm">LOADING FINANCEYATRA...</span>
+          <div className="w-12 h-12 border-4 border-white/10 border-t-white rounded-full animate-spin"></div>
+          <span className="text-white/50 font-medium tracking-wider text-sm">INITIALIZING...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0B101B] text-slate-200 font-sans selection:bg-teal-500/30 overflow-x-hidden transition-colors duration-700">
+    <div className={`min-h-screen ${getAtmosphere()} text-white font-sans selection:bg-amber-500/30 selection:text-amber-100 overflow-x-hidden transition-colors duration-1000`}>
 
-      {/* Background Elements */}
-      {isLegendary && <ParticleBackground />} {/* Legendary Perk */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[var(--fy-surface)] via-[var(--fy-bg)] to-black transition-colors duration-700"></div>
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+      {/* Noise Texture Overlay */}
+      <div className="fixed inset-0 z-[9999] pointer-events-none opacity-[0.03] mix-blend-overlay"
+        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
+      {/* Background Elements (Evolving) */}
+      {rankTier >= 4 && <ParticleBackground />} {/* Legendary Only */}
+
+      <div className="fixed inset-0 z-0 pointer-events-none transition-opacity duration-1000">
+        {/* Novice/Apprentice: Simple Glows */}
+        {rankTier < 2 && (
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#020617]/50 to-[#020617]" />
+        )}
+
+        {/* Expert: Digital Rain / Tech Feel */}
+        {rankTier === 2 && (
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+        )}
+
+        {/* Master: Golden Haze */}
+        {rankTier === 3 && (
+          <>
+            <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-amber-500/10 rounded-full blur-[150px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-600/10 rounded-full blur-[150px]" />
+          </>
+        )}
+
+        {/* Legendary: Aurora & Nebula */}
+        {rankTier === 4 && (
+          <>
+            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-fuchsia-900/20 rounded-full blur-[150px] animate-pulse-slow" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-cyan-600/10 rounded-full blur-[150px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
+            {/* Deep Void Overlay */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000_100%)] opacity-80"></div>
+          </>
+        )}
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
 
         {/* 1. Cinematic Profile Banner */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className={`relative w-full h-64 rounded-3xl overflow-hidden mb-10 border ${rank.border} shadow-2xl group transition-all duration-500`}
+          className={`relative w-full h-72 rounded-[2rem] overflow-hidden mb-12 border ${rank.border} shadow-2xl group transition-all duration-700`}
         >
-          {/* Banner Background */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-[#0f172a] to-slate-900"></div>
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 mix-blend-overlay"></div>
+          {/* Banner Background (Rank Specific) */}
+          <div className={`absolute inset-0 bg-gradient-to-r ${rankTier === 4 ? 'from-slate-950 via-purple-950/20 to-slate-950' : 'from-slate-900 via-[#0f172a] to-slate-900'}`}></div>
 
           {/* Holographic Strokes */}
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-            <div className="absolute -top-[50%] -left-[10%] w-[50%] h-[200%] bg-gradient-to-r from-transparent via-[var(--fy-gradient-start)] to-transparent rotate-12 blur-3xl opacity-20"></div>
-            <div className="absolute -bottom-[50%] -right-[10%] w-[50%] h-[200%] bg-gradient-to-r from-transparent via-[var(--fy-gradient-end)] to-transparent -rotate-12 blur-3xl opacity-20"></div>
+            <div className={`absolute -top-[50%] -left-[10%] w-[50%] h-[200%] bg-gradient-to-r from-transparent ${rankTier >= 3 ? 'via-amber-500/10' : 'via-indigo-500/10'} to-transparent rotate-12 blur-3xl opacity-50`}></div>
+            <div className={`absolute -bottom-[50%] -right-[10%] w-[50%] h-[200%] bg-gradient-to-r from-transparent ${rankTier >= 4 ? 'via-fuchsia-500/10' : 'via-amber-500/10'} to-transparent -rotate-12 blur-3xl opacity-50`}></div>
           </div>
 
           {/* Content */}
           <div className="absolute inset-0 flex items-center justify-between px-10 md:px-16">
             <div className="flex items-center gap-8 z-10">
-              {/* Avatar */}
-              <div className="relative">
-                <div className={`w-24 h-24 rounded-full bg-gradient-to-br from-[var(--fy-gradient-start)] to-[var(--fy-gradient-end)] p-[2px] ${rank.glow}`}>
-                  <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-3xl font-bold text-white overflow-hidden">
-                    {user?.avatar ? <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" /> : user?.name?.charAt(0)}
+              {/* Avatar (Evolving) */}
+              <div className="relative group/avatar">
+                <div className={`w-28 h-28 rounded-full bg-gradient-to-br from-white/10 to-white/5 p-[2px] backdrop-blur-sm ${rank.glow} transition-all duration-500`}>
+                  <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center text-4xl font-bold text-white overflow-hidden relative">
+                    {/* 3D Avatar for Tier 1+ */}
+                    {rankTier > 0 ? (
+                      <RankAvatar tier={rankTier} />
+                    ) : (
+                      user?.avatar ? <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" /> : user?.name?.charAt(0)
+                    )}
                   </div>
                 </div>
-                <div className="absolute bottom-0 right-0 w-6 h-6 bg-[var(--fy-accent)] border-4 border-slate-900 rounded-full"></div>
+                {/* Rank Badge Indicator */}
+                <div className={`absolute bottom-1 right-1 w-8 h-8 ${rankTier === 4 ? 'bg-fuchsia-500' : 'bg-amber-500'} border-4 border-slate-950 rounded-full flex items-center justify-center shadow-lg`}>
+                  <Medal size={14} className="text-black" />
+                </div>
               </div>
 
               {/* User Info */}
               <div>
-                <div className="flex items-center gap-3 mb-1">
-                  <span className={`px-2 py-0.5 rounded-full bg-white/5 border ${rank.border} ${rank.color} text-[10px] font-mono tracking-wider uppercase`}>
-                    System Online
-                  </span>
-                  <span className={`px-2 py-0.5 rounded-full bg-white/5 border ${rank.border} ${rank.color} text-[10px] font-mono tracking-wider uppercase flex items-center gap-1`}>
-                    <Medal size={10} /> {rank.label}
-                  </span>
+                <div className="flex items-center gap-3 mb-2">
+
+                  <RankBadge tier={rankTier} label={rank.label} />
                 </div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-2">
-                  Hello, <span className={`text-transparent bg-clip-text bg-gradient-to-r from-[var(--fy-gradient-start)] to-[var(--fy-gradient-end)]`}>{user?.name?.split(' ')[0]}</span>
+                <h1 className="text-4xl md:text-6xl font-medium text-white tracking-tighter mb-2">
+                  Hello, <span className={`text-transparent bg-clip-text bg-gradient-to-r ${rankTier === 4 ? 'from-white to-fuchsia-300' : 'from-white to-slate-400'} font-serif italic`}>{user?.name?.split(' ')[0]}</span>
                 </h1>
                 <p className="text-slate-400 text-sm md:text-base font-light max-w-md">
-                  Welcome back to FinanceYatra. Your financial command center is ready.
+                  {rankTier === 4 ? "Welcome to the Void, Legend." : "Welcome back. Your financial command center is ready."}
                 </p>
               </div>
             </div>
 
             {/* Right Side Stats (Streak & XP) */}
-            <div className="hidden md:flex items-center gap-8 z-10">
-              <div className="text-right">
-                <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Current Streak</div>
-                <div className="flex items-center justify-end gap-2 text-3xl font-bold text-white">
-                  <Zap className="text-amber-400 fill-amber-400" size={24} />
-                  {stats?.streak || 0}
-                  <span className="text-sm font-normal text-slate-500">days</span>
+            <div className="hidden md:flex items-center gap-12 z-10">
+              <div className="text-right group/stat">
+                <div className="text-xs text-slate-500 uppercase tracking-widest mb-1 group-hover/stat:text-amber-400 transition-colors">Current Streak</div>
+                <div className="flex items-center justify-end gap-3 text-4xl font-medium text-white tracking-tight">
+                  <Zap className="text-amber-400 fill-amber-400" size={28} />
+                  <AnimatedCounter value={stats?.streak || 0} />
+                  <span className="text-sm font-normal text-slate-500 self-end mb-1">days</span>
                 </div>
               </div>
-              <div className="w-px h-12 bg-white/10"></div>
-              <div className="text-right">
-                <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Total XP</div>
-                <div className="flex items-center justify-end gap-2 text-3xl font-bold text-white">
-                  <Star className="text-yellow-400 fill-yellow-400" size={24} />
-                  {user?.xp || 0}
+              <div className="w-px h-16 bg-gradient-to-b from-transparent via-white/10 to-transparent"></div>
+              <div className="text-right group/stat">
+                <div className="text-xs text-slate-500 uppercase tracking-widest mb-1 group-hover/stat:text-yellow-400 transition-colors">Total XP</div>
+                <div className="flex items-center justify-end gap-3 text-4xl font-medium text-white tracking-tight">
+                  <Star className="text-yellow-400 fill-yellow-400" size={28} />
+                  <AnimatedCounter value={user?.xp || 0} />
                 </div>
               </div>
-            </div>
-
-            {/* Decorative Icons (Faint) */}
-            <div className="absolute right-10 top-1/2 -translate-y-1/2 flex gap-8 opacity-5 pointer-events-none">
-              <PieChart size={180} strokeWidth={0.5} />
             </div>
           </div>
         </motion.div>
@@ -206,173 +331,282 @@ const DashboardPage = () => {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-[minmax(160px,auto)]"
+          className="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-[minmax(180px,auto)]"
         >
 
           {/* Block A: Learning Trajectory (Large) - 6 cols, 2 rows */}
           <motion.div variants={itemVariants} className="md:col-span-6 md:row-span-2">
-            <TiltCard className={`h-full bg-slate-900/40 ${rank.border}`}>
-              <div className="p-8 h-full flex flex-col relative overflow-hidden">
+            <SpotlightCard className="h-full" variant={rankTier === 4 ? 'legendary' : rankTier === 3 ? 'master' : 'default'}>
+              <div className="p-10 h-full flex flex-col relative overflow-hidden">
                 {/* Soft Background Glow */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--fy-gradient-start)] opacity-10 blur-[80px] rounded-full pointer-events-none"></div>
+                <div className={`absolute top-0 right-0 w-64 h-64 ${rankTier === 4 ? 'bg-fuchsia-500/10' : 'bg-indigo-500/10'} blur-[80px] rounded-full pointer-events-none`}></div>
 
-                <div className="flex justify-between items-start mb-6 relative z-10">
+                <div className="flex justify-between items-start mb-8 relative z-10">
                   <div>
-                    <h2 className="text-xl font-bold text-white mb-1">Learning Trajectory</h2>
-                    <p className="text-slate-400 text-xs uppercase tracking-wider">Overall Progress</p>
+                    <h2 className="text-2xl font-medium text-white mb-1 tracking-tight">Learning Trajectory</h2>
+                    <p className="text-slate-400 text-xs uppercase tracking-widest">Overall Progress</p>
                   </div>
-                  <Activity className="text-[var(--fy-gradient-start)] opacity-80" size={24} />
+                  <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
+                    <Activity className="text-white/80" size={24} />
+                  </div>
                 </div>
 
-                <div className="flex-1 flex items-center justify-center gap-8">
+                <div className="flex-1 flex items-center justify-center gap-12">
                   <div className="relative">
                     <GlowingRing
                       percentage={analytics?.modules?.completionPercentage || 0}
-                      size={180}
-                      strokeWidth={16}
-                      color="var(--fy-gradient-start)"
+                      size={200}
+                      strokeWidth={12}
+                      color={rankTier === 4 ? "#e879f9" : "#6366f1"} // Fuchsia for Legendary
                     />
                   </div>
 
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-[var(--fy-gradient-start)] shadow-[0_0_8px_var(--fy-gradient-start)]"></div>
+                  <div className="flex flex-col gap-6">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-2 h-2 rounded-full ${rankTier === 4 ? 'bg-fuchsia-500 shadow-[0_0_10px_rgba(232,121,249,0.5)]' : 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]'}`}></div>
                       <div>
-                        <div className="text-lg font-bold text-white">{analytics?.modules?.completedModules || 0}</div>
-                        <div className="text-[10px] text-slate-500 uppercase">Completed</div>
+                        <div className="text-2xl font-medium text-white">{analytics?.modules?.completedModules || 0}</div>
+                        <div className="text-[10px] text-slate-500 uppercase tracking-wider">Completed</div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-[var(--fy-gradient-mid)] shadow-[0_0_8px_var(--fy-gradient-mid)]"></div>
+                    <div className="flex items-center gap-4">
+                      <div className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]"></div>
                       <div>
-                        <div className="text-lg font-bold text-white">{analytics?.modules?.inProgressModules || 0}</div>
-                        <div className="text-[10px] text-slate-500 uppercase">Active</div>
+                        <div className="text-2xl font-medium text-white">{analytics?.modules?.inProgressModules || 0}</div>
+                        <div className="text-[10px] text-slate-500 uppercase tracking-wider">Active</div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-slate-600"></div>
+                    <div className="flex items-center gap-4">
+                      <div className="w-2 h-2 rounded-full bg-slate-700"></div>
                       <div>
-                        <div className="text-lg font-bold text-slate-400">{analytics?.modules?.notStartedModules || 0}</div>
-                        <div className="text-[10px] text-slate-600 uppercase">Locked</div>
+                        <div className="text-2xl font-medium text-slate-500">{analytics?.modules?.notStartedModules || 0}</div>
+                        <div className="text-[10px] text-slate-600 uppercase tracking-wider">Locked</div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </TiltCard>
+            </SpotlightCard>
           </motion.div>
 
-          {/* Block B: Resume Mission (Medium) - 3 cols, 2 rows (Taller to fill gap) */}
+          {/* Block B: Resume Mission (Medium) - 3 cols, 2 rows */}
           <motion.div variants={itemVariants} className="md:col-span-3 md:row-span-2">
-            <TiltCard className="h-full group cursor-pointer" onClick={() => navigate('/modules', { state: { scrollToCurrent: true } })}>
-              <div className="p-6 h-full flex flex-col justify-between relative overflow-hidden">
-                <div className="absolute right-[-20px] bottom-[-20px] text-white/5 transform rotate-12 group-hover:scale-110 transition-transform duration-500">
-                  <BookOpen size={140} />
+            <SpotlightCard className="h-full group cursor-pointer" onClick={() => navigate('/modules', { state: { scrollToCurrent: true } })} variant={rankTier === 4 ? 'legendary' : 'default'}>
+              <div className="p-8 h-full flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute right-[-20px] bottom-[-20px] text-white/[0.02] transform rotate-12 group-hover:scale-110 transition-transform duration-500">
+                  <BookOpen size={160} />
                 </div>
 
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-white/5 rounded-lg text-[var(--fy-accent)]">
-                    <BookOpen size={24} />
+                  <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500 border border-amber-500/20">
+                    <BookOpen size={20} />
                   </div>
-                  <span className="text-xs font-bold text-[var(--fy-accent)] uppercase tracking-wider">Resume</span>
+                  <span className="text-xs font-bold text-amber-500 uppercase tracking-widest">Resume</span>
                 </div>
 
-                <div className="mt-auto">
-                  <h3 className="text-xl font-bold text-white mb-2">Continue Learning</h3>
-                  <p className="text-sm text-slate-400 mb-6">Pick up where you left off in your financial journey.</p>
-                  <button className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold text-white transition-colors flex items-center justify-center gap-2">
-                    RESUME <ChevronRight size={14} />
+                <div className="mt-auto relative z-10">
+                  <h3 className="text-2xl font-medium text-white mb-2 tracking-tight">Continue Learning</h3>
+                  <p className="text-sm text-slate-400 mb-8 font-light leading-relaxed">Pick up where you left off in your financial journey.</p>
+                  <button className="w-full py-4 bg-white text-black hover:bg-gray-200 rounded-xl text-sm font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
+                    Resume <ArrowUpRight size={16} />
                   </button>
                 </div>
               </div>
-            </TiltCard>
+            </SpotlightCard>
           </motion.div>
 
-          {/* Block C: Daily Objective (Small) - 3 cols, 2 rows (Taller to fill gap) */}
+          {/* Block C: Daily Objective (Small) - 3 cols, 2 rows */}
           <motion.div variants={itemVariants} className="md:col-span-3 md:row-span-2">
-            <TiltCard className="h-full">
-              <div className="p-6 h-full flex flex-col justify-between relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-16 bg-[var(--fy-gradient-end)] opacity-10 blur-[50px] rounded-full pointer-events-none"></div>
+            <SpotlightCard className="h-full" variant={rankTier === 4 ? 'legendary' : 'default'}>
+              <div className="p-8 h-full flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-20 bg-emerald-500/10 blur-[60px] rounded-full pointer-events-none"></div>
 
                 <div>
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-2 bg-white/5 rounded-lg text-[var(--fy-gradient-mid)]">
-                      <Target size={24} />
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500 border border-emerald-500/20">
+                      <Target size={20} />
                     </div>
-                    <span className="px-2 py-1 rounded bg-white/5 border border-white/10 text-[var(--fy-gradient-mid)] text-[10px] font-mono">+50 XP</span>
+                    <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-mono">+50 XP</span>
                   </div>
 
-                  <div className="text-xs font-bold text-[var(--fy-gradient-mid)] uppercase tracking-wider mb-2">Daily Objective</div>
-                  <h3 className="text-lg font-bold text-white leading-tight">Complete Daily Challenge</h3>
+                  <div className="text-xs font-bold text-emerald-500 uppercase tracking-widest mb-2">Daily Objective</div>
+                  <h3 className="text-xl font-medium text-white leading-tight">Complete Daily Challenge</h3>
                 </div>
 
                 <button
                   onClick={() => navigate('/challenges')}
-                  className="w-full py-3 mt-4 bg-gradient-to-r from-[var(--fy-gradient-start)] to-[var(--fy-gradient-end)] hover:opacity-90 text-white text-sm font-bold rounded-xl shadow-lg shadow-[var(--fy-gradient-start)]/20 transition-all"
+                  className="w-full py-4 mt-4 bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-bold rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.2)] transition-all uppercase tracking-widest"
                 >
-                  ENGAGE MISSION
+                  Engage Mission
                 </button>
               </div>
-            </TiltCard>
+            </SpotlightCard>
           </motion.div>
 
           {/* Block D: Activity Log (Wide) - 6 cols, 1 row */}
           <motion.div variants={itemVariants} className="md:col-span-6 md:row-span-1">
-            <TiltCard>
-              <div className="p-5 h-full flex items-center gap-6">
+            <SpotlightCard className="h-full" variant={rankTier === 4 ? 'legendary' : 'default'}>
+              <div className="p-8 h-full flex items-center gap-8">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp size={16} className="text-[var(--fy-gradient-start)]" />
-                    <h3 className="text-sm font-bold text-white">Weekly Activity</h3>
+                  <div className="flex items-center gap-2 mb-4">
+                    <TrendingUp size={18} className="text-indigo-400" />
+                    <h3 className="text-sm font-bold text-white uppercase tracking-widest">Weekly Activity</h3>
                   </div>
-                  <div className="h-20 w-full">
-                    <SplineChart data={activityData} height={80} color="var(--fy-gradient-start)" />
+                  <div className="h-24 w-full">
+                    <SplineChart data={activityData} height={100} color="#818cf8" />
                   </div>
                 </div>
-                <div className="w-px h-16 bg-white/5"></div>
-                <div className="flex flex-col gap-3 min-w-[100px]">
+                <div className="w-px h-20 bg-white/10"></div>
+                <div className="flex flex-col gap-6 min-w-[120px]">
                   <div className="text-center">
-                    <div className="text-xs text-slate-500 uppercase">Study Time</div>
-                    <div className="text-lg font-bold text-white">4.2h</div>
+                    <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Study Time</div>
+                    <div className="text-2xl font-medium text-white">4.2h</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xs text-slate-500 uppercase">Modules</div>
-                    <div className="text-lg font-bold text-white">3</div>
+                    <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Modules</div>
+                    <div className="text-2xl font-medium text-white">3</div>
                   </div>
                 </div>
               </div>
-            </TiltCard>
+            </SpotlightCard>
           </motion.div>
 
           {/* Block E: Achievements (New) - 6 cols, 1 row */}
           <motion.div variants={itemVariants} className="md:col-span-6 md:row-span-1">
-            <TiltCard className="h-full" onClick={() => navigate('/achievements')}>
-              <div className="p-5 h-full flex flex-col justify-center cursor-pointer group">
-                <div className="flex items-center justify-between mb-4">
+            <SpotlightCard className="h-full" onClick={() => navigate('/achievements')} variant={rankTier === 4 ? 'legendary' : 'default'}>
+              <div className="p-8 h-full flex flex-col justify-center cursor-pointer group">
+                <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2">
-                    <Trophy size={18} className="text-[var(--fy-accent)]" />
-                    <h3 className="text-sm font-bold text-white">Recent Achievements</h3>
+                    <Trophy size={18} className="text-amber-400" />
+                    <h3 className="text-sm font-bold text-white uppercase tracking-widest">Recent Achievements</h3>
                   </div>
-                  <ChevronRight size={16} className="text-slate-500 group-hover:text-white transition-colors" />
+                  <ChevronRight size={18} className="text-slate-500 group-hover:text-white transition-colors" />
                 </div>
 
                 <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
                   {achievements?.achievements?.filter(a => a.isUnlocked).slice(0, 3).map((achievement, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 min-w-[140px]">
-                      <div className="text-2xl">{achievement.icon}</div>
+                    <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 min-w-[160px] hover:bg-white/10 transition-colors">
+                      <div className="text-3xl filter drop-shadow-md">{achievement.icon}</div>
                       <div>
-                        <div className="text-xs font-bold text-white truncate max-w-[80px]">{achievement.title}</div>
-                        <div className="text-[10px] text-slate-400">+{achievement.points} XP</div>
+                        <div className="text-xs font-bold text-white truncate max-w-[100px] mb-1">{achievement.title}</div>
+                        <div className="text-[10px] text-slate-400 font-mono">+{achievement.points} XP</div>
                       </div>
                     </div>
                   ))}
                   {(!achievements?.achievements?.filter(a => a.isUnlocked).length) && (
-                    <div className="text-xs text-slate-500 italic">No achievements yet. Keep learning!</div>
+                    <div className="text-sm text-slate-500 italic font-light">No achievements yet. Keep learning!</div>
                   )}
                 </div>
               </div>
-            </TiltCard>
+            </SpotlightCard>
           </motion.div>
+
+          {/* Block F: Market Intelligence (Expert+ Only) */}
+          {rankTier >= 2 && (
+            <motion.div variants={itemVariants} className="md:col-span-12 md:row-span-1">
+              <SpotlightCard className="h-full" variant={rankTier === 4 ? 'legendary' : 'default'}>
+                <div className="p-6 flex flex-col gap-6">
+                  {/* Row 1: Standard Market Data */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-cyan-500/10 rounded-xl border border-cyan-500/20">
+                        <BarChart2 className="text-cyan-400" size={24} />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-white">Market Intelligence</h3>
+                        <p className="text-xs text-cyan-400 uppercase tracking-widest">Exclusive Expert Insight</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-8 text-right">
+                      <div>
+                        <div className="text-xs text-slate-500 uppercase">NIFTY 50</div>
+                        <div className="text-lg font-mono text-emerald-400">+1.2% ▲</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-500 uppercase">SENSEX</div>
+                        <div className="text-lg font-mono text-emerald-400">+0.8% ▲</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-500 uppercase">GOLD</div>
+                        <div className="text-lg font-mono text-rose-400">-0.3% ▼</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Row 2: Insider Signals (Legendary Only) */}
+                  {rankTier === 4 && (
+                    <>
+                      <div className="w-full h-px bg-white/10"></div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Zap size={16} className="text-fuchsia-400" />
+                          <span className="text-sm font-bold text-fuchsia-400 uppercase tracking-widest">Insider Signals</span>
+                        </div>
+                        <div className="flex gap-8">
+                          <div className="flex items-center gap-3 bg-fuchsia-500/10 px-4 py-2 rounded-lg border border-fuchsia-500/20">
+                            <span className="text-xs text-fuchsia-300 uppercase">Whale Alert</span>
+                            <span className="text-sm font-mono text-white">BTC Accumulation</span>
+                          </div>
+                          <div className="flex items-center gap-3 bg-fuchsia-500/10 px-4 py-2 rounded-lg border border-fuchsia-500/20">
+                            <span className="text-xs text-fuchsia-300 uppercase">Sentiment</span>
+                            <span className="text-sm font-mono text-emerald-400">Extreme Greed (85)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </SpotlightCard>
+            </motion.div>
+          )}
+
+          {/* Block G: AI Wealth Manager (Legendary Exclusive) */}
+          {rankTier === 4 && (
+            <motion.div variants={itemVariants} className="md:col-span-12 md:row-span-1">
+              <SpotlightCard className="h-full" variant="legendary">
+                <div className="p-8 flex items-center justify-between relative overflow-hidden">
+                  {/* Holographic Background */}
+                  <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
+                  <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-l from-fuchsia-900/20 to-transparent"></div>
+
+                  <div className="flex items-center gap-6 relative z-10">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-purple-600 p-[1px] shadow-[0_0_20px_rgba(217,70,239,0.4)]">
+                      <div className="w-full h-full rounded-2xl bg-black flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-fuchsia-500 animate-pulse"></div>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white mb-1">AI Wealth Manager</h3>
+                      <p className="text-sm text-fuchsia-300 font-mono">System Status: <span className="text-emerald-400">OPTIMIZED</span></p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-12 relative z-10">
+                    <div className="text-right">
+                      <div className="text-xs text-slate-400 uppercase tracking-widest mb-1">Portfolio Health</div>
+                      <div className="text-2xl font-mono text-white">98.5%</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs text-slate-400 uppercase tracking-widest mb-1">Next Best Move</div>
+                      <div className="text-lg font-medium text-white bg-white/10 px-4 py-1 rounded-lg border border-white/10">
+                        Rebalance Sector B
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </SpotlightCard>
+            </motion.div>
+          )}
+
+          {/* Locked Widget Placeholder (For Novice/Apprentice) */}
+          {rankTier < 2 && (
+            <motion.div variants={itemVariants} className="md:col-span-12 md:row-span-1 opacity-50 grayscale pointer-events-none select-none">
+              <div className="h-full p-6 rounded-3xl border border-white/5 bg-white/[0.01] flex items-center justify-center gap-3">
+                <Lock size={16} className="text-slate-500" />
+                <span className="text-sm text-slate-500 font-mono uppercase tracking-widest">Reach Expert Rank to Unlock Market Intelligence</span>
+              </div>
+            </motion.div>
+          )}
 
         </motion.div>
       </div>

@@ -717,6 +717,8 @@ export const module2Content = {
           </ul>
           <p><strong>Protection:</strong> NEVER enter UPI PIN to "receive" money. Money comes automatically without PIN!</p>
 
+          [UPI_SCANNER]
+
           <h5>4. Remote Access Scams</h5>
           <p><strong>What it is:</strong> Fraudsters ask you to install apps like TeamViewer, AnyDesk claiming to "fix" issues.</p>
           <p><strong>Example:</strong> "Your KYC is incomplete. Install this app so our agent can help you update it."</p>

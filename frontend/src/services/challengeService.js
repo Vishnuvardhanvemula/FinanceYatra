@@ -6,7 +6,7 @@ const http = axios.create({ baseURL: API_URL, timeout: 8000 });
 
 // Request interceptor to attach auth header
 http.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('authToken');
   if (token) config.headers = { ...config.headers, Authorization: `Bearer ${token}` };
   return config;
 }, (err) => Promise.reject(err));
@@ -22,7 +22,7 @@ http.interceptors.response.use((res) => res, (error) => {
 
 class ChallengeService {
   getAuthToken() {
-    return localStorage.getItem('token');
+    return localStorage.getItem('authToken');
   }
 
   async getDailyQuestion() {

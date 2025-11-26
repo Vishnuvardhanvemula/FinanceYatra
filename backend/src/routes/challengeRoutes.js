@@ -94,7 +94,9 @@ router.get('/leaderboard', optionalAuth, async (req, res) => {
 
 router.get('/daily', optionalAuth, async (req, res) => {
   try {
-    const todayIndex = Math.abs(new Date().getDate() % dailyQuestions.length);
+    // Deterministic daily rotation based on days since epoch
+    const dayIndex = Math.floor(Date.now() / 86400000);
+    const todayIndex = dayIndex % dailyQuestions.length;
     const question = dailyQuestions[todayIndex];
 
     let answeredToday = false;
@@ -117,7 +119,9 @@ router.post('/daily/submit', authenticate, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-    const todayIndex = Math.abs(new Date().getDate() % dailyQuestions.length);
+    // Deterministic daily rotation based on days since epoch
+    const dayIndex = Math.floor(Date.now() / 86400000);
+    const todayIndex = dayIndex % dailyQuestions.length;
     const question = dailyQuestions[todayIndex];
 
     if (!user.dailyChallenge) user.dailyChallenge = {};
@@ -128,6 +132,7 @@ router.post('/daily/submit', authenticate, async (req, res) => {
 
     const { answer, questionId } = req.body;
     if (!questionId || questionId !== question.id) {
+      console.warn(`Daily submit mismatch: expected ${question.id}, got ${questionId}`);
       return res.status(400).json({ success: false, message: 'Invalid or mismatched questionId' });
     }
 
@@ -153,8 +158,42 @@ router.post('/daily/submit', authenticate, async (req, res) => {
       user.dailyChallenge.lastQuestionId = question.id;
     }
 
+    // Check for achievements (Streak, Points, First Win)
+    // Import achievement service dynamically to avoid circular deps
+    const { checkUnlockedAchievements, getNewAchievements } = await import('../services/achievementService.js');
+    const { learningModules } = await import('../data/learningModules.js'); // Needed for checkUnlockedAchievements signature
+
+    const allUnlockedIds = checkUnlockedAchievements(user, learningModules);
+    const currentAchievementIds = (user.achievements || []).map(a => a.id);
+    const newlyUnlocked = getNewAchievements(currentAchievementIds, allUnlockedIds);
+
+    let newAchievementData = [];
+    if (newlyUnlocked.length > 0) {
+      let achievementPoints = 0;
+      newlyUnlocked.forEach(achievement => {
+        user.achievements.push({
+          id: achievement.id,
+          name: achievement.title,
+          unlockedAt: new Date()
+        });
+        achievementPoints += (achievement.points || 0);
+        newAchievementData.push({ id: achievement.id, name: achievement.title, points: achievement.points });
+      });
+
+      if (achievementPoints > 0) {
+        await user.awardXP(achievementPoints, 'achievement');
+      }
+      console.log(`🏆 User ${user.name} unlocked ${newlyUnlocked.length} achievement(s) from Daily Challenge`);
+    }
+
     await user.save();
-    res.json({ success: true, correct, bonus, currentStreak: user.dailyChallenge.currentStreak });
+    res.json({
+      success: true,
+      correct,
+      bonus,
+      currentStreak: user.dailyChallenge.currentStreak,
+      newAchievements: newAchievementData
+    });
   } catch (error) {
     console.error('❌ Error submitting daily answer:', error);
     res.status(500).json({ success: false, message: 'Daily submit failed', error: error.message });

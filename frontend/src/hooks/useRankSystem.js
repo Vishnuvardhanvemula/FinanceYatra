@@ -4,11 +4,11 @@ import { useTheme } from '../contexts/ThemeContext';
 import { XP_VALUES } from '../config/xpConfig';
 
 export const RANKS = {
-    NOVICE: { ...XP_VALUES.RANKS.NOVICE, theme: 'default', color: 'text-teal-400', border: 'border-teal-500/30', glow: 'shadow-teal-500/20' },
-    APPRENTICE: { ...XP_VALUES.RANKS.APPRENTICE, theme: 'bronze', color: 'text-amber-600', border: 'border-amber-600/30', glow: 'shadow-amber-600/20' },
-    EXPERT: { ...XP_VALUES.RANKS.EXPERT, theme: 'silver', color: 'text-slate-300', border: 'border-slate-400/30', glow: 'shadow-slate-400/20' },
-    MASTER: { ...XP_VALUES.RANKS.MASTER, theme: 'gold', color: 'text-yellow-400', border: 'border-yellow-500/30', glow: 'shadow-yellow-500/20' },
-    LEGENDARY: { ...XP_VALUES.RANKS.LEGENDARY, theme: 'platinum', color: 'text-fuchsia-400', border: 'border-fuchsia-500/30', glow: 'shadow-fuchsia-500/20' }
+    NOVICE: { ...XP_VALUES.RANKS.NOVICE, theme: 'default', color: 'text-teal-400', border: 'border-teal-500/30', glow: 'shadow-teal-500/20', tier: 0 },
+    APPRENTICE: { ...XP_VALUES.RANKS.APPRENTICE, theme: 'bronze', color: 'text-amber-600', border: 'border-amber-600/30', glow: 'shadow-amber-600/20', tier: 1 },
+    EXPERT: { ...XP_VALUES.RANKS.EXPERT, theme: 'silver', color: 'text-slate-300', border: 'border-slate-400/30', glow: 'shadow-slate-400/20', tier: 2 },
+    MASTER: { ...XP_VALUES.RANKS.MASTER, theme: 'gold', color: 'text-yellow-400', border: 'border-yellow-500/30', glow: 'shadow-yellow-500/20', tier: 3 },
+    LEGENDARY: { ...XP_VALUES.RANKS.LEGENDARY, theme: 'platinum', color: 'text-fuchsia-400', border: 'border-fuchsia-500/30', glow: 'shadow-fuchsia-500/20', tier: 4 }
 };
 
 export const useRankSystem = () => {
@@ -44,6 +44,7 @@ export const useRankSystem = () => {
 
     return {
         rank: currentRank,
+        rankTier: currentRank.tier,
         nextRank: getNextRank(currentRank),
         progressToNext: getProgressToNext(xp, currentRank),
         isLegendary: currentRank.label === 'Legendary'

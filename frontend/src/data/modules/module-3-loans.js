@@ -518,6 +518,8 @@ n</li>
         <h4>Quick EMI Calculation (Approximate):</h4>
         <p>For rough estimate: <strong>EMI ≈ Loan Amount × [Interest% ÷ 12] × 1.5</strong></p>
         
+        [EMI_CALCULATOR]
+
         <div class="example-box">
           <h4>Example Calculations:</h4>
           

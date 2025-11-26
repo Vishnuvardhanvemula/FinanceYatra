@@ -120,6 +120,7 @@ router.post('/:moduleId/lessons/:lessonIndex/complete', authenticate, async (req
 
     // Update user achievements if there are new ones
     if (newlyUnlockedAchievements.length > 0) {
+      let achievementPoints = 0;
       // Add new achievements to existing ones
       newlyUnlockedAchievements.forEach(achievement => {
         user.achievements.push({
@@ -127,10 +128,17 @@ router.post('/:moduleId/lessons/:lessonIndex/complete', authenticate, async (req
           name: achievement.title,
           unlockedAt: new Date()
         });
+        achievementPoints += (achievement.points || 0);
       });
+
+      // Award XP for achievements
+      if (achievementPoints > 0) {
+        await user.awardXP(achievementPoints, 'achievement');
+      }
+
       await user.save();
       console.log(`🏆 User ${user.name} unlocked ${newlyUnlockedAchievements.length} achievement(s) after completing lesson ${lessonIndex}`);
-      console.log(`🏆 Achievement details:`, newlyUnlockedAchievements.map(a => ({ id: a.id, name: a.title })));
+      console.log(`🏆 Achievement details:`, newlyUnlockedAchievements.map(a => ({ id: a.id, name: a.title, points: a.points })));
     }
 
     const moduleProgress = user.getModuleProgress(moduleId);
@@ -225,6 +233,7 @@ router.post('/:moduleId/complete', authenticate, async (req, res) => {
 
     // Update user achievements if there are new ones
     if (newlyUnlocked.length > 0) {
+      let achievementPoints = 0;
       // Add new achievements to existing ones
       newlyUnlocked.forEach(achievement => {
         user.achievements.push({
@@ -232,10 +241,17 @@ router.post('/:moduleId/complete', authenticate, async (req, res) => {
           name: achievement.title,
           unlockedAt: new Date()
         });
+        achievementPoints += (achievement.points || 0);
       });
+
+      // Award XP for achievements
+      if (achievementPoints > 0) {
+        await user.awardXP(achievementPoints, 'achievement');
+      }
+
       await user.save();
       console.log(`🏆 New achievements unlocked: ${newlyUnlocked.map(a => a.title).join(', ')}`);
-      console.log(`🏆 Achievement details:`, newlyUnlocked.map(a => ({ id: a.id, name: a.title })));
+      console.log(`🏆 Achievement details:`, newlyUnlocked.map(a => ({ id: a.id, name: a.title, points: a.points })));
     } else {
       // Still need to save the module completion even if no new achievements
       await user.save();

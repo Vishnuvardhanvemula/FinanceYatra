@@ -202,7 +202,7 @@ userSchema.virtual('streak').get(function () {
 });
 
 // Index for faster queries
-userSchema.index({ email: 1 });
+// userSchema.index({ email: 1 }); // Already indexed by unique: true
 userSchema.index({ proficiencyLevel: 1 });
 userSchema.index({ totalPoints: -1 }); // For leaderboard
 

@@ -921,6 +921,8 @@ export const module4Content = {
         <strong>Expected Returns:</strong> 12% (equity mutual funds)<br>
         <strong>Monthly SIP Needed:</strong> ₹14,500</p>
 
+        [COMPOUND_INTEREST_CALCULATOR]
+
         <h4>Prioritizing Multiple Goals:</h4>
         
         <h5>Priority 1: Essential Goals (Must Do)</h5>

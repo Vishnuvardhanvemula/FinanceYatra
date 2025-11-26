@@ -280,7 +280,6 @@ class AuthService {
 
 
       await user.save();
-      await user.save();
       return {
         message: 'Progress updated successfully',
         xpAwarded: (xpEarned > 0 && isNewLesson) ? xpEarned : 0

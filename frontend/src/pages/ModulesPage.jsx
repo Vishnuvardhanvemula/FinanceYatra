@@ -3,10 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { learningModules, getModuleStats } from '../data/learningModules';
 import ModuleNode from '../components/ModuleNode';
-import RoadmapPath from '../components/RoadmapPath';
 import ParticleBackground from '../components/ParticleBackground';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Star, Target, Zap, ChevronDown, ArrowDown } from 'lucide-react';
+import { Trophy, Star, Target, Zap, ArrowDown, Sparkles, Rocket, Activity } from 'lucide-react';
 
 const ModulesPage = () => {
   const navigate = useNavigate();
@@ -63,15 +62,12 @@ const ModulesPage = () => {
     });
     if (firstAvailable) return firstAvailable.id;
 
-    // Or just the last completed + 1 (which is basically first available)
-    // If all completed, return null or last one
     return null;
   }, [completedModules, user?.moduleProgress]);
 
   // Auto-scroll logic
   useEffect(() => {
     if (location.state?.scrollToCurrent && currentModuleId) {
-      // Small delay to ensure rendering
       setTimeout(() => {
         const element = document.getElementById(currentModuleId);
         if (element) {
@@ -84,7 +80,6 @@ const ModulesPage = () => {
   // Scroll button visibility logic
   useEffect(() => {
     const handleScroll = () => {
-      // If user is at the top, show button (if not auto-scrolled)
       if (window.scrollY < 200 && currentModuleId) {
         setShowScrollButton(true);
       } else {
@@ -93,7 +88,6 @@ const ModulesPage = () => {
     };
 
     window.addEventListener('scroll', handleScroll);
-    // Initial check
     handleScroll();
 
     return () => window.removeEventListener('scroll', handleScroll);
@@ -133,89 +127,82 @@ const ModulesPage = () => {
   }, [totalXP]);
 
   return (
-    <div className="min-h-screen bg-[#0b101b] text-white relative overflow-hidden selection:bg-cyan-500/30">
-      {/* Background Effects */}
+    <div className="min-h-screen bg-[#020617] text-slate-200 relative overflow-hidden selection:bg-amber-500/30">
+      {/* Background Effects (Celestial Gold) */}
       <ParticleBackground />
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1px] h-full bg-gradient-to-b from-transparent via-cyan-500/20 to-transparent"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#020617] to-[#020617]"></div>
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-15 brightness-100 contrast-150 mix-blend-overlay"></div>
+        {/* Subtle Golden Haze */}
+        <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-amber-500/5 rounded-full blur-[150px] animate-pulse-slow" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-slate-500/5 rounded-full blur-[150px] animate-pulse-slow" />
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-12 relative z-10">
+      <div className="max-w-5xl mx-auto px-4 py-20 relative z-10">
 
-        {/* Stats HUD */}
-        <motion.div
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12"
-        >
-          <div className="bg-gray-900/50 border border-cyan-500/30 p-4 rounded-xl backdrop-blur-md flex items-center gap-3">
-            <div className="p-2 bg-cyan-500/20 rounded-lg"><Trophy className="text-cyan-400" size={20} /></div>
-            <div>
-              <div className="text-xs text-gray-400 font-mono">CURRENT_RANK</div>
-              <div className="font-bold text-cyan-100">{currentRank}</div>
-            </div>
-          </div>
-          <div className="bg-gray-900/50 border border-purple-500/30 p-4 rounded-xl backdrop-blur-md flex items-center gap-3">
-            <div className="p-2 bg-purple-500/20 rounded-lg"><Star className="text-purple-400" size={20} /></div>
-            <div>
-              <div className="text-xs text-gray-400 font-mono">TOTAL_XP</div>
-              <div className="font-bold text-purple-100">{totalXP}</div>
-            </div>
-          </div>
-          <div className="bg-gray-900/50 border border-emerald-500/30 p-4 rounded-xl backdrop-blur-md flex items-center gap-3">
-            <div className="p-2 bg-emerald-500/20 rounded-lg"><Target className="text-emerald-400" size={20} /></div>
-            <div>
-              <div className="text-xs text-gray-400 font-mono">MISSIONS_DONE</div>
-              <div className="font-bold text-emerald-100">{stats?.completed || 0}/{stats?.total || 0}</div>
-            </div>
-          </div>
-          <div className="bg-gray-900/50 border border-yellow-500/30 p-4 rounded-xl backdrop-blur-md flex items-center gap-3">
-            <div className="p-2 bg-yellow-500/20 rounded-lg"><Zap className="text-yellow-400" size={20} /></div>
-            <div>
-              <div className="text-xs text-gray-400 font-mono">STREAK</div>
-              <div className="font-bold text-yellow-100">3 DAYS</div>
-            </div>
-          </div>
-        </motion.div>
-
-        <div className="text-center mb-16 relative">
+        {/* Hero Title (Gold/Platinum) */}
+        <div className="text-center mb-32 relative">
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="inline-block mb-2 px-3 py-1 rounded-full bg-cyan-950/30 border border-cyan-500/30 text-cyan-400 text-xs font-mono tracking-widest"
-          >
-            SYSTEM_READY
-          </motion.div>
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1 }}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[100px] pointer-events-none"
+          />
           <motion.h1
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 mb-4 font-sans tracking-tight"
+            className="text-5xl md:text-7xl font-bold text-white mb-6 font-sans tracking-tighter relative z-10"
           >
-            Mission Roadmap
+            THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-slate-300">CURRICULUM</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-gray-400 text-lg max-w-2xl mx-auto"
+            className="text-slate-400 text-xl max-w-2xl mx-auto font-light"
           >
-            Navigate through the financial galaxy. Complete missions to unlock new sectors and upgrade your rank.
+            Master the architecture of modern wealth.
           </motion.p>
         </div>
 
-        <div className="relative">
-          {/* Vertical SVG Path */}
-          <RoadmapPath totalModules={learningModules.length} />
+        {/* Glassmorphic Stats HUD (Refined) */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-20"
+        >
+          {[
+            { label: 'CURRENT RANK', value: currentRank, icon: Trophy, color: 'amber', border: 'border-amber-500/20', bg: 'bg-amber-500/10' },
+            { label: 'TOTAL XP', value: totalXP, icon: Star, color: 'slate', border: 'border-slate-500/20', bg: 'bg-slate-500/10' },
+            { label: 'MISSIONS', value: `${stats?.completed || 0}/${stats?.total || 0}`, icon: Target, color: 'emerald', border: 'border-emerald-500/20', bg: 'bg-emerald-500/10' },
+            { label: 'STREAK', value: '3 DAYS', icon: Zap, color: 'yellow', border: 'border-yellow-500/20', bg: 'bg-yellow-500/10' }
+          ].map((stat, index) => (
+            <div key={index} className={`relative group overflow-hidden rounded-2xl border ${stat.border} bg-slate-900/40 backdrop-blur-xl p-4 transition-all duration-300 hover:bg-slate-800/60`}>
+              <div className={`absolute inset-0 bg-gradient-to-br from-${stat.color}-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity`} />
+              <div className="relative z-10 flex items-center gap-4">
+                <div className={`p-3 rounded-xl ${stat.bg} text-${stat.color}-400`}>
+                  <stat.icon size={20} />
+                </div>
+                <div>
+                  <div className="text-[10px] text-slate-400 font-mono tracking-wider mb-0.5">{stat.label}</div>
+                  <div className="font-bold text-slate-100 text-lg">{stat.value}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </motion.div>
 
+        <div className="relative">
           {/* Modules List */}
-          <div className="relative z-10 space-y-8">
+          <div className="relative z-10 space-y-12">
             {learningModules.map((module, index) => {
               const status = getModuleStatus(module);
               const prereqTitles = module.prerequisites.map(id => {
                 const m = learningModules.find(lm => lm.id === id);
                 return m ? m.title : id;
               });
+              const isLast = index === learningModules.length - 1;
 
               return (
                 <ModuleNode
@@ -225,6 +212,7 @@ const ModulesPage = () => {
                   status={status}
                   prereqTitles={prereqTitles}
                   onClick={handleModuleClick}
+                  isLast={isLast}
                 />
               );
             })}
@@ -236,15 +224,15 @@ const ModulesPage = () => {
       <AnimatePresence>
         {showScrollButton && currentModuleId && (
           <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
             onClick={scrollToCurrent}
-            className="fixed bottom-8 right-8 z-50 p-4 bg-cyan-500 hover:bg-cyan-400 text-white rounded-full shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-colors group"
+            className="fixed bottom-8 right-8 z-50 p-4 bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-full shadow-[0_0_30px_rgba(245,158,11,0.4)] transition-all hover:scale-110 group"
           >
             <ArrowDown size={24} className="group-hover:animate-bounce" />
-            <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-900/80 text-cyan-400 text-xs font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-              Jump to Current
+            <span className="absolute right-full mr-4 top-1/2 -translate-y-1/2 bg-slate-900/90 border border-slate-700 text-amber-400 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0 pointer-events-none backdrop-blur-md">
+              Resume Mission
             </span>
           </motion.button>
         )}

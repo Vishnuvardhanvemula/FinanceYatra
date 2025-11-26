@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -8,6 +9,7 @@ import ScrollToTop from './components/ScrollToTop';
 import MainNavbar from './components/MainNavbar';
 import MainFooter from './components/MainFooter';
 import HomePage from './pages/HomePage';
+import HomePage2 from './pages/HomePage2';
 import ChatPage from './pages/ChatPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -30,12 +32,106 @@ import EmergencyFund from './pages/EmergencyFund';
 import NotFoundPage from './pages/NotFoundPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
+function CustomCursor() {
+  const cursorX = useMotionValue(-100);
+  const cursorY = useMotionValue(-100);
+
+  // Spring physics for the trailing ring - "fluid" feel
+  // Lower stiffness = more lag/drag. Higher damping = less bounce.
+  const springConfig = { damping: 20, stiffness: 150, mass: 0.8 };
+  const cursorXSpring = useSpring(cursorX, springConfig);
+  const cursorYSpring = useSpring(cursorY, springConfig);
+
+  const [isPointer, setIsPointer] = useState(false);
+  const [isClicking, setIsClicking] = useState(false);
+
+  useEffect(() => {
+    const moveCursor = (e) => {
+      cursorX.set(e.clientX);
+      cursorY.set(e.clientY);
+
+      const target = e.target;
+      // Check for pointer cursor or interactive elements
+      const isInteractive =
+        window.getComputedStyle(target).cursor === 'pointer' ||
+        target.tagName === 'BUTTON' ||
+        target.tagName === 'A' ||
+        target.closest('button') ||
+        target.closest('a');
+
+      setIsPointer(isInteractive);
+    };
+
+    const handleMouseDown = () => setIsClicking(true);
+    const handleMouseUp = () => setIsClicking(false);
+
+    window.addEventListener('mousemove', moveCursor);
+    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', moveCursor);
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [cursorX, cursorY]);
+
+  return (
+    <>
+      {/* Main Dot - Instant follow */}
+      <motion.div
+        className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference bg-white rounded-full"
+        style={{
+          x: cursorX,
+          y: cursorY,
+          translateX: "-50%",
+          translateY: "-50%",
+        }}
+        animate={{
+          scale: isClicking ? 0.8 : 1,
+          width: isPointer ? 8 : 8,
+          height: isPointer ? 8 : 8,
+        }}
+        transition={{ duration: 0.1 }}
+      >
+        <div className="w-2 h-2 bg-white rounded-full" />
+      </motion.div>
+
+      {/* Trailing Ring - Laggy follow */}
+      <motion.div
+        className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference border border-white rounded-full"
+        style={{
+          x: cursorXSpring,
+          y: cursorYSpring,
+          translateX: "-50%",
+          translateY: "-50%",
+        }}
+        animate={{
+          width: isPointer ? 80 : 24,
+          height: isPointer ? 80 : 24,
+          opacity: isPointer ? 1 : 0.6,
+          backgroundColor: isPointer ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0)',
+          scale: isClicking ? 0.9 : 1,
+          borderWidth: isPointer ? '1px' : '2px',
+        }}
+        transition={{
+          type: "spring",
+          stiffness: 150,
+          damping: 20,
+          mass: 0.8
+        }}
+      />
+    </>
+  );
+}
+
 function Layout({ children }) {
   const location = useLocation();
   const showFooter = location.pathname !== '/chat';
 
   return (
     <div className="min-h-screen flex flex-col">
+      <CustomCursor />
       <MainNavbar />
       {/* Add top padding equal to navbar height so content doesn't sit under the fixed navbar */}
       <main className="flex-1 pt-20">{children}</main>
@@ -64,7 +160,7 @@ export default function App() {
 
           <Layout>
             <Routes>
-              <Route path="/" element={<HomePage />} />
+              <Route path="/" element={<HomePage2 />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/onboarding" element={<OnboardingPage />} />
