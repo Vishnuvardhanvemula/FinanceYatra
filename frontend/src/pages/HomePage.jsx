@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, PerspectiveCamera, Stars, Sparkles, Environment, useProgress, Html, Grid, ContactShadows } from '@react-three/drei';
+import { Float, PerspectiveCamera, Stars, Sparkles, Environment, useProgress, Html, Grid, ContactShadows, Text3D, Center, Text, Trail, MeshTransmissionMaterial } from '@react-three/drei';
 import { EffectComposer, Bloom, Noise, Vignette, DepthOfField } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { motion, useScroll, useSpring, useInView, useMotionValue, useTransform } from 'framer-motion';
@@ -68,51 +68,152 @@ const isLowEndDevice = () => {
 /**
  * 3D COMPONENT: ORBITING ELEMENTS (Growth & AI Context)
  */
-const OrbitingElements = () => {
-  const group = useRef();
+/**
+ * 3D COMPONENT: ORBITING ELEMENTS (Growth & AI Context)
+ */
+const FloatingElement = ({ children, position, rotation, speed = 1, floatIntensity = 1 }) => {
+  const meshRef = useRef();
+
   useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    if (group.current) {
-      group.current.rotation.y = t * 0.1;
+    if (!meshRef.current) return;
+
+    // Mouse Repulsion
+    const mouseX = state.mouse.x * 10;
+    const mouseY = state.mouse.y * 10;
+    const distance = meshRef.current.position.distanceTo(new THREE.Vector3(mouseX, mouseY, 0));
+
+    if (distance < 3) {
+      const dir = meshRef.current.position.clone().sub(new THREE.Vector3(mouseX, mouseY, 0)).normalize();
+      meshRef.current.position.add(dir.multiplyScalar(0.05));
     }
+
+    // Return to original position (lerp)
+    meshRef.current.position.lerp(new THREE.Vector3(...position), 0.02);
   });
 
   return (
-    <group ref={group}>
-      {/* Upward Arrows (Growth) */}
-      <Float speed={2} rotationIntensity={1} floatIntensity={1}>
-        <mesh position={[4, 1, -2]} rotation={[0, 0, -0.2]}>
-          <coneGeometry args={[0.2, 0.8, 4]} />
-          <meshStandardMaterial color="#34d399" emissive="#059669" emissiveIntensity={2} toneMapped={false} />
-        </mesh>
-      </Float>
-      <Float speed={1.5} rotationIntensity={1.5} floatIntensity={1}>
-        <mesh position={[-3, 2, 1]} rotation={[0, 0, 0.2]}>
-          <coneGeometry args={[0.15, 0.6, 4]} />
-          <meshStandardMaterial color="#34d399" emissive="#059669" emissiveIntensity={2} toneMapped={false} />
-        </mesh>
-      </Float>
+    <Float speed={speed} rotationIntensity={floatIntensity} floatIntensity={floatIntensity}>
+      <group ref={meshRef} position={position} rotation={rotation}>
+        {children}
+      </group>
+    </Float>
+  );
+};
 
-      {/* Data Nodes (AI/Tech) */}
-      <Float speed={3} rotationIntensity={2} floatIntensity={0.5}>
-        <mesh position={[-4, -1, -2]}>
-          <icosahedronGeometry args={[0.3, 0]} />
-          <meshStandardMaterial color="#60a5fa" wireframe emissive="#2563eb" emissiveIntensity={2} />
-        </mesh>
-      </Float>
-      <Float speed={2.5} rotationIntensity={2} floatIntensity={0.5}>
-        <mesh position={[3, -2, 2]}>
-          <octahedronGeometry args={[0.25, 0]} />
-          <meshStandardMaterial color="#60a5fa" wireframe emissive="#2563eb" emissiveIntensity={2} />
-        </mesh>
+/**
+ * 3D COMPONENT: FLOATING FINANCE ELEMENTS (Quant Finance Icons)
+ */
+const HolographicMaterial = ({ hovered }) => (
+  <MeshTransmissionMaterial
+    color="#00ffa3"
+    transmission={1}
+    thickness={0.5}
+    roughness={0.1}
+    chromaticAberration={0.05}
+    anisotropy={0.1}
+    distortion={0.1}
+    distortionScale={0.1}
+    temporalDistortion={0.1}
+    toneMapped={false}
+    emissive="#00ffcc"
+    emissiveIntensity={hovered ? 0.8 : 0.2}
+  />
+);
+
+const FinanceIcon = ({ position, rotation, speed, type, scale = 1 }) => {
+  const group = useRef();
+  const [hovered, setHovered] = useState(false);
+
+  useFrame((state) => {
+    if (!group.current || hovered) return;
+    const t = state.clock.getElapsedTime();
+
+    // Orbit logic
+    const angle = t * speed * 0.2;
+    const radius = Math.sqrt(position[0] ** 2 + position[2] ** 2);
+    const initialAngle = Math.atan2(position[2], position[0]);
+
+    group.current.position.x = Math.cos(angle + initialAngle) * radius;
+    group.current.position.z = Math.sin(angle + initialAngle) * radius;
+
+    // Self rotation
+    group.current.rotation.y += 0.01;
+    group.current.rotation.x = Math.sin(t * 0.5) * 0.1;
+  });
+
+  const fontUrl = 'https://threejs.org/examples/fonts/helvetiker_bold.typeface.json';
+
+  return (
+    <group
+      ref={group}
+      position={position}
+      rotation={rotation}
+      scale={scale}
+      onPointerOver={() => { document.body.style.cursor = 'pointer'; setHovered(true); }}
+      onPointerOut={() => { document.body.style.cursor = 'auto'; setHovered(false); }}
+    >
+      <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
+        <Center>
+          {type === 'percent' && (
+            <Text3D font={fontUrl} size={0.5} height={0.1} curveSegments={12} bevelEnabled bevelThickness={0.02} bevelSize={0.02} bevelOffset={0} bevelSegments={5}>
+              %
+              <HolographicMaterial hovered={hovered} />
+            </Text3D>
+          )}
+          {type === 'dollar' && (
+            <Text3D font={fontUrl} size={0.5} height={0.1} curveSegments={12} bevelEnabled bevelThickness={0.02} bevelSize={0.02} bevelOffset={0} bevelSegments={5}>
+              $
+              <HolographicMaterial hovered={hovered} />
+            </Text3D>
+          )}
+          {type === 'plus' && (
+            <Text3D font={fontUrl} size={0.5} height={0.1} curveSegments={12} bevelEnabled bevelThickness={0.02} bevelSize={0.02} bevelOffset={0} bevelSegments={5}>
+              +
+              <HolographicMaterial hovered={hovered} />
+            </Text3D>
+          )}
+          {type === 'arrow' && (
+            <group rotation={[0, 0, Math.PI / 2]}>
+              <mesh position={[0, 0.2, 0]}>
+                <coneGeometry args={[0.2, 0.4, 4]} />
+                <HolographicMaterial hovered={hovered} />
+              </mesh>
+              <mesh position={[0, -0.2, 0]}>
+                <cylinderGeometry args={[0.08, 0.08, 0.4, 8]} />
+                <HolographicMaterial hovered={hovered} />
+              </mesh>
+            </group>
+          )}
+          {type === 'padlock' && (
+            <group>
+              <mesh position={[0, -0.15, 0]}>
+                <boxGeometry args={[0.4, 0.3, 0.1]} />
+                <HolographicMaterial hovered={hovered} />
+              </mesh>
+              <mesh position={[0, 0.1, 0]}>
+                <torusGeometry args={[0.12, 0.04, 8, 16, Math.PI]} />
+                <HolographicMaterial hovered={hovered} />
+              </mesh>
+            </group>
+          )}
+        </Center>
       </Float>
     </group>
   );
 };
 
-/**
- * 3D COMPONENT: EXTRUDED RUPEE SYMBOL
- */
+const FloatingFinanceElements = () => {
+  return (
+    <group>
+      <FinanceIcon type="percent" position={[3.5, 1.5, -2]} rotation={[0, -0.2, 0]} speed={0.8} />
+      <FinanceIcon type="arrow" position={[-3, 2, 1]} rotation={[0, 0.2, 0]} speed={0.7} />
+      <FinanceIcon type="dollar" position={[-4, -1, -2]} rotation={[0, 0.1, 0]} speed={0.9} />
+      <FinanceIcon type="padlock" position={[3, -2, 2]} rotation={[0, -0.1, 0]} speed={0.6} />
+      <FinanceIcon type="plus" position={[0, 3, -3]} rotation={[0, 0, 0]} speed={0.5} />
+    </group>
+  );
+};
+
 const RupeeSymbol = ({ scrollProgress, lowEnd = false, isMobile = false }) => {
   const groupRef = useRef();
 
@@ -137,6 +238,8 @@ const RupeeSymbol = ({ scrollProgress, lowEnd = false, isMobile = false }) => {
       : { depth: 0.6, bevelEnabled: true, bevelThickness: 0.1, bevelSize: 0.1, bevelSegments: 10, curveSegments: 48 }
   ), [useLow]);
 
+  const baseScale = isMobile ? 1.05 : (lowEnd ? 0.7 : 0.85);
+
   useFrame((state) => {
     if (!groupRef.current) return;
     const progress = scrollProgress?.get() || 0;
@@ -147,11 +250,20 @@ const RupeeSymbol = ({ scrollProgress, lowEnd = false, isMobile = false }) => {
     const mouseY = state.mouse.y * 0.5;
 
     // SCROLL LOGIC
-    // Oscillate X to avoid text collision (Right -> Left -> Right -> Left)
-    const targetX = 4 * Math.cos(progress * Math.PI * 3.5);
+    // Move slightly left as we scroll (Right -> Center-Left)
+    let targetX = 3.5 - (progress * 4);
 
     // Fix Crop: Raise base position and reduce scroll influence
-    const targetY = 0.5 + Math.sin(time * 0.5) * 0.1 - (progress * 0.5);
+    let targetY = 0.5 + Math.sin(time * 0.5) * 0.1 - (progress * 0.5);
+
+    let targetScale = baseScale;
+
+    // FOOTER LOGIC (Fix Clipping)
+    if (progress > 0.93) {
+      targetScale = baseScale * 0.6;
+      targetX = 0;
+      targetY = 0; // Center
+    }
 
     const targetRotX = (progress * Math.PI * 2) + (mouseY * 0.2);
     const targetRotY = (0.3 + (time * 0.1)) + (mouseX * 0.3);
@@ -160,13 +272,18 @@ const RupeeSymbol = ({ scrollProgress, lowEnd = false, isMobile = false }) => {
     groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, targetX, 0.04);
     groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetY, 0.04);
 
+    // Scale Lerp
+    const currentScale = groupRef.current.scale.x;
+    const newScale = THREE.MathUtils.lerp(currentScale, targetScale, 0.04);
+    groupRef.current.scale.set(newScale, newScale, newScale);
+
     groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotX, 0.04);
     groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, 0.04);
   });
 
   return (
     <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
-      <group ref={groupRef} scale={isMobile ? 1.05 : (lowEnd ? 0.7 : 0.85)}>
+      <group ref={groupRef}>
         <mesh position={[0, 1.6, 0]} castShadow receiveShadow>
           <extrudeGeometry args={[topBarShape, extrudeSettings]} />
           <meshPhysicalMaterial
@@ -194,8 +311,8 @@ const RupeeSymbol = ({ scrollProgress, lowEnd = false, isMobile = false }) => {
           />
         </mesh>
 
-        {/* Orbiting Elements now follow the Rupee */}
-        <OrbitingElements />
+        {/* Floating Finance Elements now follow the Rupee */}
+        <FloatingFinanceElements />
       </group>
     </Float>
   );
@@ -208,6 +325,7 @@ const Scene = ({ scrollProgress, lowEnd = false, isMobile = false }) => {
   const compact = lowEnd || isMobile;
   return (
     <>
+      <fog attach="fog" args={['#0b101b', 5, 20]} />
       <PerspectiveCamera makeDefault position={[0, 0, 13]} fov={35} />
 
       {/* CINEMATIC LIGHTING */}
@@ -275,7 +393,7 @@ const HeroSection = ({ isAuthenticated, navigate }) => (
         viewport={{ once: true }}
         transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-teal-300 text-[10px] font-bold uppercase tracking-[0.2em] mb-8 backdrop-blur-md">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white text-[10px] font-bold uppercase tracking-[0.2em] mb-8 backdrop-blur-md backdrop-brightness-50">
           <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
           AI-Powered Financial Intelligence
         </div>
@@ -373,13 +491,14 @@ const ToolsShowcase = ({ navigate }) => (
 
 // --- 3D VIGNETTE: GAMIFICATION SHOWCASE ---
 
-const GoldPedestal = () => {
+const GoldPedestal = ({ isHovered = false }) => {
   const meshRef = useRef();
 
   useFrame((state) => {
     if (!meshRef.current) return;
     const t = state.clock.getElapsedTime();
-    meshRef.current.rotation.y = t * 0.2;
+    const rotationSpeed = isHovered ? 0.02 : 0.2; // 10x slower when hovered
+    meshRef.current.rotation.y = t * rotationSpeed;
     meshRef.current.rotation.x = Math.sin(t * 0.5) * 0.1;
     meshRef.current.position.y = Math.sin(t * 1) * 0.1;
   });
@@ -398,145 +517,180 @@ const GoldPedestal = () => {
   );
 };
 
-const EnergyVortex = () => {
-  const groupRef = useRef();
-
+const VolumetricRing = () => {
+  const ref = useRef();
   useFrame((state) => {
-    if (!groupRef.current) return;
-    const t = state.clock.getElapsedTime();
-    groupRef.current.rotation.y = -t * 0.5; // Swirling motion
+    if (ref.current) {
+      // Swirling motion (rotate around Z axis which is the ring's normal)
+      ref.current.rotation.z -= 0.002;
+    }
   });
 
   return (
-    <group ref={groupRef} position={[0, -1.5, 0]}>
-      {/* Inner Core Ring */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[3, 0.05, 16, 100]} />
-        <meshStandardMaterial
+    <group ref={ref} scale={[2, 2, 2]} position={[0, -2.5, 0]} rotation={[Math.PI / 2, 0, 0]}>
+      {/* Dense Particle Field Ring (Swirling Gold Dust) */}
+      <points>
+        <torusGeometry args={[3.2, 0.6, 64, 500]} />
+        <pointsMaterial
+          size={0.04}
           color="#fbbf24"
-          emissive="#fbbf24"
-          emissiveIntensity={2}
           transparent
-          opacity={0.8}
+          opacity={0.6}
+          blending={THREE.AdditiveBlending}
+          sizeAttenuation={true}
         />
-      </mesh>
+      </points>
 
-      {/* Swirling Particles Layers */}
-      <Sparkles
-        count={200}
-        scale={[7, 1, 7]}
-        size={4}
-        speed={2}
-        opacity={0.8}
-        color="#fbbf24"
-        noise={1}
-      />
-      <Sparkles
-        count={100}
-        scale={[5, 2, 5]}
-        size={6}
-        speed={1.5}
-        opacity={0.5}
-        color="#ff8c00"
-        noise={2}
-      />
+      {/* Secondary Finer Dust for Depth */}
+      <points rotation={[0, 0, 1]}>
+        <torusGeometry args={[3.0, 0.8, 48, 300]} />
+        <pointsMaterial
+          size={0.02}
+          color="#FCD34D"
+          transparent
+          opacity={0.4}
+          blending={THREE.AdditiveBlending}
+          sizeAttenuation={true}
+        />
+      </points>
     </group>
   );
 };
 
-const FloatingBadge = ({ position, icon: Icon, label, delay, blur = false }) => {
+const FloatingBadge = ({ label, delay, radiusX = 6, radiusZ = 6, phase = 0, speed = 0.2, yOffset = 0 }) => {
+  const ref = useRef();
+
+  useFrame((state) => {
+    if (!ref.current) return;
+    const t = state.clock.getElapsedTime();
+
+    // Horizontal Planetary Orbit
+    const angle = (t * speed) + phase;
+    const x = Math.cos(angle) * radiusX;
+    const z = Math.sin(angle) * radiusZ;
+
+    // Gentle Bobbing
+    const y = yOffset + Math.sin((t * 1) + phase) * 0.2;
+
+    ref.current.position.set(x, y, z);
+    ref.current.lookAt(state.camera.position);
+  });
+
   return (
-    <Html position={position} center transform sprite>
-      <motion.div
-        initial={{ opacity: 0, z: -100 }}
-        whileInView={{ opacity: 1, z: 0 }}
-        transition={{ delay, duration: 1.5, ease: "easeOut" }}
-        className={`flex flex-col items-center gap-2 ${blur ? 'blur-[2px] opacity-70' : ''}`}
-      >
-        <div className="w-12 h-12 rounded-full bg-black/60 border border-amber-500/30 backdrop-blur-md flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-          <Icon size={20} className="text-amber-400" />
-        </div>
-        <span className="text-xs font-bold text-amber-200 uppercase tracking-wider bg-black/40 px-2 py-1 rounded-md backdrop-blur-sm border border-white/5">
-          {label}
-        </span>
-      </motion.div>
-    </Html>
+    <group ref={ref}>
+      {/* Glass Card Container */}
+      <mesh>
+        <boxGeometry args={[2.2, 0.8, 0.05]} />
+        <MeshTransmissionMaterial
+          color="#10b981"
+          transmission={0.95}
+          thickness={0.2}
+          roughness={0.1}
+          chromaticAberration={0.06}
+          anisotropy={0.2}
+          distortion={0.2}
+          distortionScale={0.2}
+          temporalDistortion={0.1}
+          toneMapped={false}
+          clearcoat={1}
+        />
+      </mesh>
+
+      {/* Gold Border */}
+      <mesh>
+        <boxGeometry args={[2.22, 0.82, 0.04]} />
+        <meshStandardMaterial color="#fbbf24" metalness={1} roughness={0.2} />
+      </mesh>
+
+      {/* Text Label */}
+      <Text
+        position={[0, 0, 0.06]}
+        fontSize={0.25}
+        color="#ffffff"
+        font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
+        anchorX="center"
+        anchorY="middle"
+        outlineWidth={0.01}
+        outlineColor="#000000"
+      >{label}</Text>
+    </group>
   );
 };
 
 const GamificationShowcase = () => {
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
-    <section className="relative w-full h-[800px] overflow-hidden">
+    <section
+      className="relative w-full h-[800px] overflow-hidden bg-[#050910]"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div className="absolute inset-0 z-0">
-        <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 2, 12], fov: 45 }}>
+        <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 2, 14], fov: 40 }}>
           <Suspense fallback={null}>
-            <PerspectiveCamera makeDefault position={[0, 1, 14]} />
+            <PerspectiveCamera makeDefault position={[0, 1, 16]} />
             <Environment preset="city" />
 
-            {/* Lighting Hierarchy: Central Focus */}
-            <ambientLight intensity={0.2} />
+            {/* --- LIGHTING UPGRADE: GOD RAY --- */}
+            <ambientLight intensity={0.3} />
+            {/* Main Spotlight (God Ray) */}
             <spotLight
-              position={[0, 10, 0]}
-              angle={0.6}
+              position={[0, 15, 0]}
+              angle={0.3}
               penumbra={0.5}
-              intensity={30}
+              intensity={50}
               castShadow
               color="#fbbf24"
-              distance={20}
+              distance={30}
+              decay={2}
             />
-            <pointLight position={[0, 2, 2]} intensity={5} color="#fbbf24" distance={5} />
+            {/* Rim Light */}
+            <pointLight position={[5, 2, -5]} intensity={10} color="#34d399" distance={10} />
+            <pointLight position={[-5, 2, -5]} intensity={10} color="#fbbf24" distance={10} />
 
-            <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-              <GoldPedestal />
+            {/* --- HERO COMPOSITION --- */}
+            <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
+              <GoldPedestal isHovered={isHovered} />
             </Float>
 
-            <EnergyVortex />
+            {/* Volumetric Energy Ring */}
+            <VolumetricRing />
 
-            <Sparkles count={150} scale={15} size={3} speed={0.4} opacity={0.4} color="#FCD34D" />
+            {/* Subtle Gold Dust (No Rain) */}
+            <Sparkles count={80} scale={12} size={2} speed={0.2} opacity={0.5} color="#FCD34D" />
 
-            {/* Floating UI Elements in 3D Space */}
+            {/* --- UI ELEMENTS --- */}
 
             {/* Center Top: Rank (Primary Focus) */}
-            <Html position={[0, 3.5, 0]} center distanceFactor={10} zIndexRange={[100, 0]}>
+            <Html position={[0, 3.8, 0]} center distanceFactor={10} zIndexRange={[100, 0]}>
               <motion.div
-                initial={{ opacity: 0, scale: 0.5 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8 }}
+                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 1, ease: "easeOut" }}
                 className="flex flex-col items-center text-center"
               >
-                <Crown size={64} className="text-amber-400 drop-shadow-[0_0_30px_rgba(251,191,36,1)] mb-2" />
-                <h3 className="text-6xl font-black text-white tracking-tighter drop-shadow-[0_0_40px_rgba(251,191,36,0.8)]">
+                <Crown size={56} className="text-amber-400 drop-shadow-[0_0_30px_rgba(251,191,36,0.8)] mb-4" />
+                <h3 className="text-7xl font-black text-white tracking-tighter drop-shadow-[0_0_50px_rgba(251,191,36,0.6)]">
                   LEGENDARY
                 </h3>
-                <div className="text-sm font-mono text-amber-300 tracking-[0.5em] mt-2 uppercase drop-shadow-md">Current Rank</div>
+                <div className="flex items-center gap-3 mt-3">
+                  <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-amber-500/50"></div>
+                  <div className="text-xs font-mono text-amber-200 tracking-[0.4em] uppercase">Current Rank</div>
+                  <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-amber-500/50"></div>
+                </div>
               </motion.div>
             </Html>
 
-            {/* Left Side: Headline (Blurred Background) */}
-            <Html position={[-6, 0, -2]} center distanceFactor={12} className="w-[300px] text-right pointer-events-none blur-[1px] opacity-80">
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                whileInView={{ opacity: 0.8, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-              >
-                <h2 className="text-5xl font-bold text-white mb-4 leading-tight">
-                  Rise to <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500">Glory.</span>
-                </h2>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  Your financial journey is a quest. Earn XP, unlock rare badges, and dominate the leaderboard.
-                </p>
-              </motion.div>
-            </Html>
+            {/* --- REFINED ORBITING BADGES (Glass Cards) --- */}
+            <FloatingBadge label="Strategist" delay={0} radiusX={9.5} radiusZ={9.5} phase={0} speed={0.15} yOffset={0} />
+            <FloatingBadge label="Wealth Tycoon" delay={0} radiusX={9.5} radiusZ={9.5} phase={2.1} speed={0.15} yOffset={0} />
+            <FloatingBadge label="Risk Manager" delay={0} radiusX={9.5} radiusZ={9.5} phase={4.2} speed={0.15} yOffset={0} />
 
-            {/* Right Side: Badges (Floating with Depth) */}
-            <FloatingBadge position={[5, 1.5, 0]} icon={Trophy} label="Strategist" delay={0.4} />
-            <FloatingBadge position={[6, 0, 1]} icon={Target} label="Wealth Tycoon" delay={0.6} />
-            <FloatingBadge position={[5, -1.5, -1]} icon={Zap} label="Risk Manager" delay={0.8} blur={true} />
-
-            {/* Post Processing for Depth of Field */}
+            {/* Post Processing */}
             <EffectComposer>
-              <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} radius={0.4} />
+              <Bloom luminanceThreshold={1} mipmapBlur intensity={1.2} radius={0.6} />
+              <Vignette eskil={false} offset={0.1} darkness={1.1} />
               <DepthOfField focusDistance={0} focalLength={0.02} bokehScale={2} height={480} />
             </EffectComposer>
 
@@ -688,7 +842,8 @@ const SecurityVisual = () => (
   </div>
 );
 
-const FeatureSection = ({ align = 'left', title, subtitle, icon: Icon, description, color = 'teal', renderVisual }) => {
+const FeatureSection = ({ align = 'left', title, subtitle, icon, description, color = 'teal', renderVisual }) => {
+  const Icon = icon;
   const ref = useRef(null);
   const isInView = useInView(ref, { margin: "-20% 0px -20% 0px" });
 
@@ -770,7 +925,7 @@ export default function App() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { scrollYProgress } = useScroll();
-  const smoothProgress = useSpring(scrollYProgress, { mass: 0.1, stiffness: 100, damping: 20 });
+  const smoothProgress = useSpring(scrollYProgress, { mass: 0.5, stiffness: 40, damping: 15 });
   const [lowEnd, setLowEnd] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [webglSupported, setWebglSupported] = useState(true);
