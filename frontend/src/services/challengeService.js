@@ -36,18 +36,8 @@ class ChallengeService {
   }
 
   async getWeeklyChallenges() {
-    try {
-      const res = await http.get('/challenges/weekly');
-      return res.data;
-    } catch (err) {
-      // Retry once for transient server errors
-      if (err.response && err.response.status >= 500) {
-        await new Promise(r => setTimeout(r, 700));
-        const res = await http.get('/challenges/weekly');
-        return res.data;
-      }
-      throw err;
-    }
+    const res = await http.get('/challenges/weekly');
+    return res.data;
   }
 
   async createWeeklyChallenge(payload) {

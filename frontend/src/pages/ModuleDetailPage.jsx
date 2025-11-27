@@ -6,8 +6,7 @@ import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
-import { getModuleById } from '../data/learningModules';
-import { getLessonContent } from '../data/lessonContent';
+import { moduleService } from '../services/moduleService';
 import LessonContentRenderer from '../components/LessonContentRenderer';
 import { ChevronLeft, ChevronRight, CheckCircle, Terminal, Shield, Activity, BookOpen, XCircle, Lightbulb, Sparkles } from 'lucide-react';
 import { QuizSkeleton, ModalSkeleton } from '../components/LoadingSkeletons';
@@ -41,50 +40,60 @@ const ModuleDetailPage = () => {
       return;
     }
 
-    const moduleData = getModuleById(moduleId);
-    if (!moduleData) {
-      toast.error('Mission not found!');
-      navigate('/modules');
-      return;
-    }
-    setModule(moduleData);
+    const fetchModuleData = async () => {
+      try {
+        const response = await moduleService.getModuleById(moduleId);
+        if (response.success) {
+          const moduleData = response.data;
+          setModule(moduleData);
 
-    if (lastModuleIdRef.current !== moduleId) {
-      setLoading(true);
-      lastModuleIdRef.current = moduleId;
+          // Restore progress
+          if (lastModuleIdRef.current !== moduleId) {
+            lastModuleIdRef.current = moduleId;
 
-      let startingLessonIndex = 0;
-      if (user?.moduleProgress) {
-        let savedProgress;
-        if (Array.isArray(user.moduleProgress)) {
-          savedProgress = user.moduleProgress.find(m => m.moduleId === moduleId);
+            let startingLessonIndex = 0;
+            if (user?.moduleProgress) {
+              let savedProgress;
+              if (Array.isArray(user.moduleProgress)) {
+                savedProgress = user.moduleProgress.find(m => m.moduleId === moduleId);
+              } else {
+                savedProgress = user.moduleProgress[moduleId];
+              }
+
+              if (savedProgress) {
+                startingLessonIndex = (savedProgress.lastCompletedLesson ?? -1) + 1;
+                // Ensure index doesn't exceed available lessons
+                if (moduleData.lessons && startingLessonIndex >= moduleData.lessons.length) {
+                  startingLessonIndex = moduleData.lessons.length - 1;
+                }
+                if (startingLessonIndex > 0) {
+                  toast.success(`Resuming from Phase ${startingLessonIndex + 1}`);
+                }
+              }
+            }
+            setCurrentLessonIndex(startingLessonIndex);
+          }
         } else {
-          savedProgress = user.moduleProgress[moduleId];
+          toast.error('Mission not found!');
+          navigate('/modules');
         }
-
-        if (savedProgress) {
-          startingLessonIndex = (savedProgress.lastCompletedLesson ?? -1) + 1;
-          if (startingLessonIndex >= moduleData.lessons) {
-            startingLessonIndex = moduleData.lessons - 1;
-          }
-          if (startingLessonIndex > 0) {
-            toast.success(`Resuming from Phase ${startingLessonIndex + 1}`);
-          }
-        }
+      } catch (error) {
+        console.error('Error loading module:', error);
+        toast.error('Failed to load mission data');
+      } finally {
+        setLoading(false);
       }
+    };
 
-      setCurrentLessonIndex(startingLessonIndex);
-      setLoading(false);
-    }
+    fetchModuleData();
   }, [moduleId, user, navigate]);
 
   // Effect 2: Sync Lesson Content
   useEffect(() => {
-    if (moduleId) {
-      const lessonData = getLessonContent(moduleId, currentLessonIndex);
-      setCurrentLesson(lessonData);
+    if (module && module.lessons && module.lessons[currentLessonIndex]) {
+      setCurrentLesson(module.lessons[currentLessonIndex]);
     }
-  }, [moduleId, currentLessonIndex]);
+  }, [module, currentLessonIndex]);
 
   const handleNext = () => {
     if (currentLessonIndex < (module?.lessons || 0) - 1) {
@@ -246,7 +255,7 @@ const ModuleDetailPage = () => {
               <div className="flex items-center gap-3 text-[10px] text-slate-500 font-mono mt-1">
                 <span className="tracking-widest">ID: {module?.id.toUpperCase()}</span>
                 <span className="w-1 h-1 rounded-full bg-slate-700" />
-                <span className="text-amber-400">SECTOR {currentLessonIndex + 1}/{module?.lessons}</span>
+                <span className="text-amber-400">SECTOR {currentLessonIndex + 1}/{module?.lessons?.length || 0}</span>
               </div>
             </div>
           </div>
@@ -258,7 +267,7 @@ const ModuleDetailPage = () => {
                 <motion.div
                   className="h-full bg-gradient-to-r from-amber-500 to-white"
                   initial={{ width: 0 }}
-                  animate={{ width: `${((currentLessonIndex + 1) / module?.lessons) * 100}%` }}
+                  animate={{ width: `${((currentLessonIndex + 1) / (module?.lessons?.length || 1)) * 100}%` }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
                 />
               </div>
@@ -357,7 +366,7 @@ const ModuleDetailPage = () => {
                 onClick={handlePhaseTransition}
                 className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-900 rounded-xl font-bold shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all hover:scale-[1.02] active:scale-[0.98] tracking-wide"
               >
-                {currentLessonIndex === (module?.lessons || 0) - 1 ? 'COMPLETE MISSION' : 'NEXT PHASE'}
+                {currentLessonIndex === (module?.lessons?.length || 0) - 1 ? 'COMPLETE MISSION' : 'NEXT PHASE'}
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>

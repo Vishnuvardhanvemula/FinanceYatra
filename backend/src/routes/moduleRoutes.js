@@ -5,10 +5,43 @@
 
 import express from 'express';
 import { authenticate } from '../middleware/authMiddleware.js';
-import User from '../models/User.js';
-import { learningModules } from '../data/learningModules.js';
+import moduleService from '../services/moduleService.js';
 
 const router = express.Router();
+
+/**
+ * GET /api/modules
+ * Get all available modules
+ */
+router.get('/', async (req, res) => {
+  try {
+    const modules = await moduleService.getAllModules();
+    res.json({ success: true, data: modules });
+  } catch (error) {
+    console.error('Error fetching modules:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch modules' });
+  }
+});
+
+/**
+ * GET /api/modules/:id
+ * Get a specific module by ID
+ */
+router.get('/:id', async (req, res, next) => {
+  // Skip if the route matches other specific paths like 'progress' or 'stats'
+  if (['progress', 'stats'].includes(req.params.id)) return next();
+
+  try {
+    const module = await moduleService.getModuleById(req.params.id);
+    res.json({ success: true, data: module });
+  } catch (error) {
+    console.error('Error fetching module:', error);
+    if (error.message === 'Module not found') {
+      return res.status(404).json({ success: false, message: 'Module not found' });
+    }
+    res.status(500).json({ success: false, message: 'Failed to fetch module' });
+  }
+});
 
 /**
  * GET /api/modules/progress
@@ -16,19 +49,13 @@ const router = express.Router();
  */
 router.get('/progress', authenticate, async (req, res) => {
   try {
-    const user = await User.findById(req.userId);
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({
-      moduleProgress: user.moduleProgress,
-      totalPoints: user.totalPoints,
-      achievements: user.achievements
-    });
+    const stats = await moduleService.getUserStats(req.userId);
+    res.json(stats);
   } catch (error) {
     console.error('Error fetching module progress:', error);
+    if (error.message === 'User not found') {
+      return res.status(404).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Failed to fetch module progress' });
   }
 });
@@ -40,26 +67,13 @@ router.get('/progress', authenticate, async (req, res) => {
 router.get('/:moduleId/progress', authenticate, async (req, res) => {
   try {
     const { moduleId } = req.params;
-    const user = await User.findById(req.userId);
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    const moduleProgress = user.getModuleProgress(moduleId);
-
-    res.json({
-      moduleId,
-      progress: moduleProgress || {
-        moduleId,
-        completedLessons: [],
-        startedAt: null,
-        completedAt: null,
-        quizScore: null
-      }
-    });
+    const result = await moduleService.getModuleProgress(req.userId, moduleId);
+    res.json(result);
   } catch (error) {
     console.error('Error fetching module progress:', error);
+    if (error.message === 'User not found') {
+      return res.status(404).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Failed to fetch module progress' });
   }
 });
@@ -71,23 +85,13 @@ router.get('/:moduleId/progress', authenticate, async (req, res) => {
 router.post('/:moduleId/start', authenticate, async (req, res) => {
   try {
     const { moduleId } = req.params;
-    const user = await User.findById(req.userId);
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    await user.startModule(moduleId);
-
-    console.log(`📚 User ${user.name} started module: ${moduleId}`);
-
-    res.json({
-      success: true,
-      message: 'Module started',
-      moduleId
-    });
+    const result = await moduleService.startModule(req.userId, moduleId);
+    res.json(result);
   } catch (error) {
     console.error('Error starting module:', error);
+    if (error.message === 'User not found') {
+      return res.status(404).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Failed to start module' });
   }
 });
@@ -99,60 +103,13 @@ router.post('/:moduleId/start', authenticate, async (req, res) => {
 router.post('/:moduleId/lessons/:lessonIndex/complete', authenticate, async (req, res) => {
   try {
     const { moduleId, lessonIndex } = req.params;
-    const user = await User.findById(req.userId);
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Store current achievements before completing lesson
-    const currentAchievements = [...user.achievements];
-
-    await user.completeLesson(moduleId, parseInt(lessonIndex));
-
-    console.log(`✅ User ${user.name} completed lesson ${lessonIndex} in module ${moduleId}`);
-
-    // Check for newly unlocked achievements - pass learningModules data
-    const { checkUnlockedAchievements, getNewAchievements, ACHIEVEMENTS } = await import('../services/achievementService.js');
-    const allUnlockedIds = checkUnlockedAchievements(user, learningModules);
-    const currentAchievementIds = currentAchievements.map(a => a.id);
-    const newlyUnlockedAchievements = getNewAchievements(currentAchievementIds, allUnlockedIds);
-
-    // Update user achievements if there are new ones
-    if (newlyUnlockedAchievements.length > 0) {
-      let achievementPoints = 0;
-      // Add new achievements to existing ones
-      newlyUnlockedAchievements.forEach(achievement => {
-        user.achievements.push({
-          id: achievement.id,
-          name: achievement.title,
-          unlockedAt: new Date()
-        });
-        achievementPoints += (achievement.points || 0);
-      });
-
-      // Award XP for achievements
-      if (achievementPoints > 0) {
-        await user.awardXP(achievementPoints, 'achievement');
-      }
-
-      await user.save();
-      console.log(`🏆 User ${user.name} unlocked ${newlyUnlockedAchievements.length} achievement(s) after completing lesson ${lessonIndex}`);
-      console.log(`🏆 Achievement details:`, newlyUnlockedAchievements.map(a => ({ id: a.id, name: a.title, points: a.points })));
-    }
-
-    const moduleProgress = user.getModuleProgress(moduleId);
-
-    res.json({
-      success: true,
-      message: 'Lesson marked as complete',
-      moduleId,
-      lessonIndex: parseInt(lessonIndex),
-      completedLessons: moduleProgress.completedLessons,
-      newAchievements: newlyUnlockedAchievements
-    });
+    const result = await moduleService.completeLesson(req.userId, moduleId, lessonIndex);
+    res.json(result);
   } catch (error) {
     console.error('Error completing lesson:', error);
+    if (error.message === 'User not found') {
+      return res.status(404).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Failed to complete lesson' });
   }
 });
@@ -164,27 +121,13 @@ router.post('/:moduleId/lessons/:lessonIndex/complete', authenticate, async (req
 router.post('/:moduleId/lessons/:lessonIndex/uncomplete', authenticate, async (req, res) => {
   try {
     const { moduleId, lessonIndex } = req.params;
-    const user = await User.findById(req.userId);
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    await user.uncompleteLesson(moduleId, parseInt(lessonIndex));
-
-    console.log(`❌ User ${user.name} unmarked lesson ${lessonIndex} in module ${moduleId}`);
-
-    const moduleProgress = user.getModuleProgress(moduleId);
-
-    res.json({
-      success: true,
-      message: 'Lesson marked as incomplete',
-      moduleId,
-      lessonIndex: parseInt(lessonIndex),
-      completedLessons: moduleProgress?.completedLessons || []
-    });
+    const result = await moduleService.uncompleteLesson(req.userId, moduleId, lessonIndex);
+    res.json(result);
   } catch (error) {
     console.error('Error uncompleting lesson:', error);
+    if (error.message === 'User not found') {
+      return res.status(404).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Failed to uncomplete lesson' });
   }
 });
@@ -196,97 +139,13 @@ router.post('/:moduleId/lessons/:lessonIndex/uncomplete', authenticate, async (r
 router.post('/:moduleId/complete', authenticate, async (req, res) => {
   try {
     const { moduleId } = req.params;
-    const { quizScore, correctAnswers, totalQuestions, difficulty } = req.body;
-
-    const user = await User.findById(req.userId);
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Store current achievements before completing module
-    const currentAchievements = [...user.achievements];
-
-    // Find module difficulty from learningModules if not provided
-    let moduleDifficulty = difficulty || 'beginner';
-    if (!difficulty) {
-      const module = learningModules.find(m => m.id === moduleId);
-      moduleDifficulty = module?.difficulty || 'beginner';
-    }
-
-    // Complete module with XP config parameters
-    await user.completeModule(
-      moduleId,
-      moduleDifficulty,
-      quizScore || null,
-      correctAnswers || 0,
-      totalQuestions || 0
-    );
-
-    // Import achievement service dynamically
-    const { checkUnlockedAchievements, getNewAchievements, ACHIEVEMENTS } = await import('../services/achievementService.js');
-
-    // Check for newly unlocked achievements - pass learningModules data
-    const allUnlockedIds = checkUnlockedAchievements(user, learningModules);
-    const currentAchievementIds = currentAchievements.map(a => a.id);
-    const newlyUnlocked = getNewAchievements(currentAchievementIds, allUnlockedIds);
-
-    // Update user achievements if there are new ones
-    if (newlyUnlocked.length > 0) {
-      let achievementPoints = 0;
-      // Add new achievements to existing ones
-      newlyUnlocked.forEach(achievement => {
-        user.achievements.push({
-          id: achievement.id,
-          name: achievement.title,
-          unlockedAt: new Date()
-        });
-        achievementPoints += (achievement.points || 0);
-      });
-
-      // Award XP for achievements
-      if (achievementPoints > 0) {
-        await user.awardXP(achievementPoints, 'achievement');
-      }
-
-      await user.save();
-      console.log(`🏆 New achievements unlocked: ${newlyUnlocked.map(a => a.title).join(', ')}`);
-      console.log(`🏆 Achievement details:`, newlyUnlocked.map(a => ({ id: a.id, name: a.title, points: a.points })));
-    } else {
-      // Still need to save the module completion even if no new achievements
-      await user.save();
-    }
-
-    console.log(`🎉 User ${user.name} completed module: ${moduleId} (${moduleDifficulty})`);
-
-    const moduleProgress = user.getModuleProgress(moduleId);
-
-    // Calculate XP earned
-    const moduleXP = {
-      beginner: 100,
-      intermediate: 250,
-      expert: 500
-    };
-    const baseModuleXP = moduleXP[moduleDifficulty] || 100;
-    let quizXP = (correctAnswers || 0) * 10;
-    if (quizScore === 100 || (totalQuestions > 0 && correctAnswers === totalQuestions)) {
-      quizXP += 50;
-    }
-    const totalXPEarned = baseModuleXP + quizXP;
-
-    res.json({
-      success: true,
-      message: 'Module completed! Congratulations! 🎉',
-      moduleId,
-      completedAt: moduleProgress.completedAt,
-      quizScore: moduleProgress.quizScore,
-      pointsEarned: totalXPEarned,
-      totalPoints: user.totalPoints,
-      xp: user.totalPoints, // Alias for compatibility
-      newAchievements: newlyUnlocked
-    });
+    const result = await moduleService.completeModule(req.userId, moduleId, req.body);
+    res.json(result);
   } catch (error) {
     console.error('Error completing module:', error);
+    if (error.message === 'User not found') {
+      return res.status(404).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Failed to complete module' });
   }
 });
@@ -297,30 +156,47 @@ router.post('/:moduleId/complete', authenticate, async (req, res) => {
  */
 router.get('/stats', authenticate, async (req, res) => {
   try {
-    const user = await User.findById(req.userId);
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    const totalModules = 15; // From learningModules.js
-    const completedModules = user.moduleProgress.filter(m => m.completedAt).length;
-    const inProgressModules = user.moduleProgress.filter(m => !m.completedAt).length;
-
-    res.json({
-      totalModules,
-      completedModules,
-      inProgressModules,
-      remainingModules: totalModules - completedModules - inProgressModules,
-      completionPercentage: Math.round((completedModules / totalModules) * 100),
-      totalPoints: user.totalPoints,
-      achievements: user.achievements.length,
-      currentStreak: user.currentStreak,
-      longestStreak: user.longestStreak
-    });
+    const stats = await moduleService.getUserStats(req.userId);
+    res.json(stats);
   } catch (error) {
     console.error('Error fetching module stats:', error);
+    if (error.message === 'User not found') {
+      return res.status(404).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Failed to fetch module stats' });
+  }
+});
+
+// Admin Routes
+import { isAdmin } from '../middleware/adminMiddleware.js';
+
+// Create a new module
+router.post('/', authenticate, isAdmin, async (req, res) => {
+  try {
+    const module = await moduleService.createModule(req.body);
+    res.status(201).json({ success: true, data: module });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+// Update a module
+router.put('/:id', authenticate, isAdmin, async (req, res) => {
+  try {
+    const module = await moduleService.updateModule(req.params.id, req.body);
+    res.json({ success: true, data: module });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+// Delete a module
+router.delete('/:id', authenticate, isAdmin, async (req, res) => {
+  try {
+    const result = await moduleService.deleteModule(req.params.id);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 });
 

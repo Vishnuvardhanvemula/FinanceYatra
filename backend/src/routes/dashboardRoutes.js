@@ -19,11 +19,11 @@ const router = express.Router();
 router.get('/analytics', authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
-    
+
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
       });
     }
 
@@ -31,7 +31,7 @@ router.get('/analytics', authenticate, async (req, res) => {
     const analytics = analyticsService.generateAnalyticsSummary(user, learningModules);
 
     console.log(`📊 Analytics retrieved - User: ${req.userId}`);
-    
+
     res.json({
       success: true,
       data: analytics
@@ -39,10 +39,10 @@ router.get('/analytics', authenticate, async (req, res) => {
 
   } catch (error) {
     console.error('❌ Error fetching analytics:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to fetch analytics',
-      error: error.message 
+      error: error.message
     });
   }
 });
@@ -54,28 +54,28 @@ router.get('/analytics', authenticate, async (req, res) => {
 router.get('/achievements', authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
-    
+
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
       });
     }
 
     // Check unlocked achievements
     const unlockedIds = achievementService.checkUnlockedAchievements(user, learningModules);
-    
+
     // Get all achievements with status
     const achievements = achievementService.getAllAchievementsWithStatus(unlockedIds);
-    
+
     // Get achievement progress
     const progress = achievementService.getAchievementProgress(user, learningModules);
-    
+
     // Calculate achievement points
     const achievementPoints = achievementService.calculateAchievementPoints(unlockedIds);
 
     console.log(`🏆 Achievements retrieved - User: ${req.userId}, Unlocked: ${unlockedIds.length}`);
-    
+
     res.json({
       success: true,
       data: {
@@ -92,10 +92,10 @@ router.get('/achievements', authenticate, async (req, res) => {
 
   } catch (error) {
     console.error('❌ Error fetching achievements:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to fetch achievements',
-      error: error.message 
+      error: error.message
     });
   }
 });
@@ -107,23 +107,23 @@ router.get('/achievements', authenticate, async (req, res) => {
 router.post('/check-achievements', authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
-    
+
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
       });
     }
 
     // Get current achievement IDs
     const currentAchievementIds = user.achievements.map(a => a.id);
-    
+
     // Check newly unlocked achievements
     const unlockedIds = achievementService.checkUnlockedAchievements(user, learningModules);
-    
+
     // Get new achievements
     const newAchievements = achievementService.getNewAchievements(
-      currentAchievementIds, 
+      currentAchievementIds,
       unlockedIds
     );
 
@@ -135,13 +135,13 @@ router.post('/check-achievements', authenticate, async (req, res) => {
           name: achievement.title,
           unlockedAt: new Date()
         });
-        
+
         // Award achievement points
         user.totalPoints += achievement.points;
       }
-      
+
       await user.save();
-      
+
       console.log(`🎉 New achievements unlocked - User: ${req.userId}, Count: ${newAchievements.length}`);
     }
 
@@ -156,10 +156,10 @@ router.post('/check-achievements', authenticate, async (req, res) => {
 
   } catch (error) {
     console.error('❌ Error checking achievements:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to check achievements',
-      error: error.message 
+      error: error.message
     });
   }
 });
@@ -171,26 +171,26 @@ router.post('/check-achievements', authenticate, async (req, res) => {
 router.get('/stats', authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
-    
+
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
       });
     }
 
     // Calculate key statistics
     const streak = analyticsService.calculateStreak(user.activityLog || []);
     const moduleStats = analyticsService.calculateModuleStats(
-      user.moduleProgress || [], 
+      user.moduleProgress || [],
       learningModules
     );
     const learningTime = analyticsService.calculateLearningTime(
-      user.moduleProgress || [], 
+      user.moduleProgress || [],
       learningModules
     );
     const unlockedAchievements = achievementService.checkUnlockedAchievements(
-      user, 
+      user,
       learningModules
     );
 
@@ -207,7 +207,7 @@ router.get('/stats', authenticate, async (req, res) => {
     };
 
     console.log(`📈 Quick stats retrieved - User: ${req.userId}`);
-    
+
     res.json({
       success: true,
       data: stats
@@ -215,10 +215,10 @@ router.get('/stats', authenticate, async (req, res) => {
 
   } catch (error) {
     console.error('❌ Error fetching stats:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to fetch stats',
-      error: error.message 
+      error: error.message
     });
   }
 });
@@ -230,60 +230,29 @@ router.get('/stats', authenticate, async (req, res) => {
 router.post('/activity', authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
-    
+
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
       });
     }
 
-    // Add activity log entry
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Check if already logged today
-    const alreadyLogged = user.activityLog?.some(date => {
-      const logDate = new Date(date);
-      logDate.setHours(0, 0, 0, 0);
-      return logDate.getTime() === today.getTime();
-    });
+    const result = await analyticsService.logActivity(user);
 
-    if (!alreadyLogged) {
-      if (!user.activityLog) {
-        user.activityLog = [];
-      }
-      user.activityLog.push(new Date());
-      
-      // Update streak
-      const streak = analyticsService.calculateStreak(user.activityLog);
-      user.currentStreak = streak;
-      
-      if (streak > user.longestStreak) {
-        user.longestStreak = streak;
-      }
-      
-      user.lastActiveDate = new Date();
-      await user.save();
-      
-      console.log(`✅ Activity logged - User: ${req.userId}, Streak: ${streak}`);
-    }
+    console.log(`✅ Activity logged - User: ${req.userId}, Streak: ${result.currentStreak}`);
 
     res.json({
       success: true,
-      data: {
-        currentStreak: user.currentStreak,
-        longestStreak: user.longestStreak,
-        activityLogged: !alreadyLogged
-      }
+      data: result
     });
 
   } catch (error) {
     console.error('❌ Error logging activity:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to log activity',
-      error: error.message 
+      error: error.message
     });
   }
 });

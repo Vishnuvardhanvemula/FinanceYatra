@@ -1,5 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { API_URL } from '../config/api';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import GlowingRing from '../components/GlowingRing';
@@ -7,8 +6,12 @@ import SplineChart from '../components/SplineChart';
 import ParticleBackground from '../components/ParticleBackground';
 import RankAvatar from '../components/RankAvatar';
 import RankBadge from '../components/RankBadge';
+import SpotlightCard from '../components/SpotlightCard';
+import AnimatedCounter from '../components/AnimatedCounter';
+import MarketTicker from '../components/dashboard/MarketTicker';
+import { dashboardService } from '../services/dashboardService';
 import { useRankSystem } from '../hooks/useRankSystem';
-import { motion, useMotionTemplate, useMotionValue, useSpring, animate } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Trophy,
   Target,
@@ -18,95 +21,11 @@ import {
   Zap,
   Star,
   ChevronRight,
-  PieChart,
   Medal,
   ArrowUpRight,
   Lock,
   BarChart2
 } from 'lucide-react';
-
-// --- Spotlight Card Component (Local Definition for Dashboard) ---
-const SpotlightCard = ({ children, className = "", onClick, variant = "default" }) => {
-  const divRef = useRef(null);
-  const [isFocused, setIsFocused] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [opacity, setOpacity] = useState(0);
-
-  const handleMouseMove = (e) => {
-    if (!divRef.current) return;
-    const rect = divRef.current.getBoundingClientRect();
-    setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-  };
-
-  const handleFocus = () => {
-    setIsFocused(true);
-    setOpacity(1);
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
-    setOpacity(0);
-  };
-
-  const handleMouseEnter = () => {
-    setOpacity(1);
-  };
-
-  const handleMouseLeave = () => {
-    setOpacity(0);
-  };
-
-  // Variant Styles
-  const getBorderColor = () => {
-    if (variant === "legendary") return "border-fuchsia-500/30 shadow-[0_0_15px_rgba(232,121,249,0.15)]";
-    if (variant === "master") return "border-amber-500/20";
-    return "border-white/10";
-  };
-
-  return (
-    <div
-      ref={divRef}
-      onMouseMove={handleMouseMove}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onClick={onClick}
-      className={`relative overflow-hidden rounded-3xl border bg-white/[0.02] transition-all duration-300 ${getBorderColor()} ${className}`}
-    >
-      <div
-        className="pointer-events-none absolute -inset-px opacity-0 transition duration-300"
-        style={{
-          opacity,
-          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, ${variant === 'legendary' ? 'rgba(232,121,249,0.15)' : 'rgba(255,255,255,0.1)'}, transparent 40%)`,
-        }}
-      />
-      <div className="relative h-full">{children}</div>
-    </div>
-  );
-};
-
-// --- Animated Counter Component ---
-const AnimatedCounter = ({ value, duration = 2 }) => {
-  const nodeRef = useRef();
-
-  useEffect(() => {
-    const node = nodeRef.current;
-    if (!node) return;
-
-    const controls = animate(0, value, {
-      duration: duration,
-      onUpdate: (value) => {
-        node.textContent = Math.round(value).toLocaleString();
-      },
-      ease: "easeOut"
-    });
-
-    return () => controls.stop();
-  }, [value, duration]);
-
-  return <span ref={nodeRef} />;
-};
 
 // Animation variants
 const containerVariants = {
@@ -127,8 +46,7 @@ const itemVariants = {
     opacity: 1,
     transition: {
       type: "spring",
-      stiffness: 120,
-      damping: 20
+      stiffness: 120
     }
   }
 };
@@ -136,11 +54,13 @@ const itemVariants = {
 const DashboardPage = () => {
   const { user, token, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { rank, rankTier, isLegendary } = useRankSystem(); // Use rankTier
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState(null);
-  const [achievements, setAchievements] = useState(null);
+  const [achievements, setAchievements] = useState([]);
   const [stats, setStats] = useState(null);
+  const [marketData, setMarketData] = useState([]);
+
+  const { rank, rankTier } = useRankSystem(user?.xp || 0);
 
   // Memoize user progress
   const userProgressKey = useMemo(() =>
@@ -160,21 +80,17 @@ const DashboardPage = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [analyticsRes, achievementsRes, statsRes] = await Promise.all([
-        fetch(`${API_URL}/dashboard/analytics`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API_URL}/dashboard/achievements`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API_URL}/dashboard/stats`, { headers: { Authorization: `Bearer ${token}` } })
-      ]);
-
-      const [analyticsData, achievementsData, statsData] = await Promise.all([
-        analyticsRes.json(),
-        achievementsRes.json(),
-        statsRes.json()
+      const [analyticsData, achievementsData, statsData, marketRes] = await Promise.all([
+        dashboardService.getAnalytics(token),
+        dashboardService.getAchievements(token),
+        dashboardService.getStats(token),
+        dashboardService.getMarketData(token)
       ]);
 
       if (analyticsData.success) setAnalytics(analyticsData.data);
       if (achievementsData.success) setAchievements(achievementsData.data);
       if (statsData.success) setStats(statsData.data);
+      if (marketRes.success) setMarketData(marketRes.data);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -243,37 +159,74 @@ const DashboardPage = () => {
         {rankTier === 4 && (
           <>
             <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-fuchsia-900/20 rounded-full blur-[150px] animate-pulse-slow" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-cyan-600/10 rounded-full blur-[150px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-cyan-600/10 rounded-full blur-[150px]" style={{ animationDelay: '2s' }} />
             {/* Deep Void Overlay */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000_100%)] opacity-80"></div>
           </>
         )}
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
+      <div className="pt-16 relative z-20">
+        <MarketTicker userRankTier={rankTier} />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 pb-12 pt-6 relative z-10">
 
         {/* 1. Cinematic Profile Banner */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className={`relative w-full h-72 rounded-[2rem] overflow-hidden mb-12 border ${rank.border} shadow-2xl group transition-all duration-700`}
+          whileHover={{ scale: 1.01 }}
+          className={`relative w-full h-72 rounded-[2rem] overflow-hidden mb-12 border ${rank.border} shadow-2xl hover:shadow-[0_20px_80px_-15px] hover:shadow-${rankTier >= 3 ? 'amber' : 'indigo'}-500/20 group transition-all duration-700`}
         >
-          {/* Banner Background (Rank Specific) */}
-          <div className={`absolute inset-0 bg-gradient-to-r ${rankTier === 4 ? 'from-slate-950 via-purple-950/20 to-slate-950' : 'from-slate-900 via-[#0f172a] to-slate-900'}`}></div>
+          {/* Banner Background (Rank Specific) - Enhanced with Animation */}
+          <motion.div
+            animate={{
+              backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+            }}
+            transition={{
+              duration: 15,
+              repeat: Infinity,
+              ease: "linear"
+            }}
+            className={`absolute inset-0 bg-gradient-to-r ${rankTier === 4 ? 'from-slate-950 via-purple-950/20 to-slate-950' : 'from-slate-900 via-[#0f172a] to-slate-900'} bg-[size:200%_100%]`}
+          />
 
-          {/* Holographic Strokes */}
+          {/* Holographic Strokes - Animated */}
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-            <div className={`absolute -top-[50%] -left-[10%] w-[50%] h-[200%] bg-gradient-to-r from-transparent ${rankTier >= 3 ? 'via-amber-500/10' : 'via-indigo-500/10'} to-transparent rotate-12 blur-3xl opacity-50`}></div>
-            <div className={`absolute -bottom-[50%] -right-[10%] w-[50%] h-[200%] bg-gradient-to-r from-transparent ${rankTier >= 4 ? 'via-fuchsia-500/10' : 'via-amber-500/10'} to-transparent -rotate-12 blur-3xl opacity-50`}></div>
+            <motion.div
+              animate={{ x: [-100, 100], opacity: [0.3, 0.6, 0.3] }}
+              transition={{ duration: 8, repeat: Infinity, repeatType: 'reverse' }}
+              className={`absolute -top-[50%] -left-[10%] w-[50%] h-[200%] bg-gradient-to-r from-transparent ${rankTier >= 3 ? 'via-amber-500/10' : 'via-indigo-500/10'} to-transparent rotate-12 blur-3xl`}
+            />
+            <motion.div
+              animate={{ x: [100, -100], opacity: [0.3, 0.6, 0.3] }}
+              transition={{ duration: 10, repeat: Infinity, repeatType: 'reverse' }}
+              className={`absolute -bottom-[50%] -right-[10%] w-[50%] h-[200%] bg-gradient-to-r from-transparent ${rankTier >= 4 ? 'via-fuchsia-500/10' : 'via-amber-500/10'} to-transparent -rotate-12 blur-3xl`}
+            />
           </div>
 
           {/* Content */}
           <div className="absolute inset-0 flex items-center justify-between px-10 md:px-16">
             <div className="flex items-center gap-8 z-10">
-              {/* Avatar (Evolving) */}
-              <div className="relative group/avatar">
-                <div className={`w-28 h-28 rounded-full bg-gradient-to-br from-white/10 to-white/5 p-[2px] backdrop-blur-sm ${rank.glow} transition-all duration-500`}>
+              {/* Avatar (Evolving) - Enhanced with Pulse */}
+              <motion.div
+                className="relative group/avatar"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <motion.div
+                  animate={{
+                    boxShadow: [
+                      `0 0 20px ${rankTier >= 3 ? 'rgba(251, 191, 36, 0.2)' : 'rgba(99, 102, 241, 0.2)'}`,
+                      `0 0 40px ${rankTier >= 3 ? 'rgba(251, 191, 36, 0.4)' : 'rgba(99, 102, 241, 0.4)'}`,
+                      `0 0 20px ${rankTier >= 3 ? 'rgba(251, 191, 36, 0.2)' : 'rgba(99, 102, 241, 0.2)'}`
+                    ]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className={`w-28 h-28 rounded-full bg-gradient-to-br from-white/10 to-white/5 p-[2px] backdrop-blur-sm transition-all duration-500`}
+                >
                   <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center text-4xl font-bold text-white overflow-hidden relative">
                     {/* 3D Avatar for Tier 1+ */}
                     {rankTier > 0 ? (
@@ -282,12 +235,12 @@ const DashboardPage = () => {
                       user?.avatar ? <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" /> : user?.name?.charAt(0)
                     )}
                   </div>
-                </div>
+                </motion.div>
                 {/* Rank Badge Indicator */}
                 <div className={`absolute bottom-1 right-1 w-8 h-8 ${rankTier === 4 ? 'bg-fuchsia-500' : 'bg-amber-500'} border-4 border-slate-950 rounded-full flex items-center justify-center shadow-lg`}>
                   <Medal size={14} className="text-black" />
                 </div>
-              </div>
+              </motion.div>
 
               {/* User Info */}
               <div>
@@ -389,9 +342,14 @@ const DashboardPage = () => {
             </SpotlightCard>
           </motion.div>
 
-          {/* Block B: Resume Mission (Medium) - 3 cols, 2 rows */}
-          <motion.div variants={itemVariants} className="md:col-span-3 md:row-span-2">
-            <SpotlightCard className="h-full group cursor-pointer" onClick={() => navigate('/modules', { state: { scrollToCurrent: true } })} variant={rankTier === 4 ? 'legendary' : 'default'}>
+          {/* Block B: Resume Mission (Medium) - 3 cols, 2 rows - Enhanced */}
+          <motion.div
+            variants={itemVariants}
+            className="md:col-span-3 md:row-span-2"
+            whileHover={{ y: -4, scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <SpotlightCard className="h-full group cursor-pointer hover:border-amber-500/30 transition-all duration-300" onClick={() => navigate('/modules', { state: { scrollToCurrent: true } })} variant={rankTier === 4 ? 'legendary' : 'default'}>
               <div className="p-8 h-full flex flex-col justify-between relative overflow-hidden">
                 <div className="absolute right-[-20px] bottom-[-20px] text-white/[0.02] transform rotate-12 group-hover:scale-110 transition-transform duration-500">
                   <BookOpen size={160} />
@@ -415,11 +373,20 @@ const DashboardPage = () => {
             </SpotlightCard>
           </motion.div>
 
-          {/* Block C: Daily Objective (Small) - 3 cols, 2 rows */}
-          <motion.div variants={itemVariants} className="md:col-span-3 md:row-span-2">
-            <SpotlightCard className="h-full" variant={rankTier === 4 ? 'legendary' : 'default'}>
+          {/* Block C: Daily Objective (Small) - 3 cols, 2 rows - Enhanced */}
+          <motion.div
+            variants={itemVariants}
+            className="md:col-span-3 md:row-span-2"
+            whileHover={{ y: -4 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <SpotlightCard className="h-full group/daily hover:border-emerald-500/30 transition-all duration-300" variant={rankTier === 4 ? 'legendary' : 'default'}>
               <div className="p-8 h-full flex flex-col justify-between relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-20 bg-emerald-500/10 blur-[60px] rounded-full pointer-events-none"></div>
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                  className="absolute top-0 right-0 p-20 bg-emerald-500/10 blur-[60px] rounded-full pointer-events-none"
+                />
 
                 <div>
                   <div className="flex justify-between items-start mb-6">
@@ -443,59 +410,27 @@ const DashboardPage = () => {
             </SpotlightCard>
           </motion.div>
 
-          {/* Block D: Activity Log (Wide) - 6 cols, 1 row */}
-          <motion.div variants={itemVariants} className="md:col-span-6 md:row-span-1">
-            <SpotlightCard className="h-full" variant={rankTier === 4 ? 'legendary' : 'default'}>
-              <div className="p-8 h-full flex items-center gap-8">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-4">
-                    <TrendingUp size={18} className="text-indigo-400" />
-                    <h3 className="text-sm font-bold text-white uppercase tracking-widest">Weekly Activity</h3>
-                  </div>
-                  <div className="h-24 w-full">
-                    <SplineChart data={activityData} height={100} color="#818cf8" />
-                  </div>
-                </div>
-                <div className="w-px h-20 bg-white/10"></div>
-                <div className="flex flex-col gap-6 min-w-[120px]">
-                  <div className="text-center">
-                    <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Study Time</div>
-                    <div className="text-2xl font-medium text-white">4.2h</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Modules</div>
-                    <div className="text-2xl font-medium text-white">3</div>
-                  </div>
-                </div>
-              </div>
-            </SpotlightCard>
-          </motion.div>
-
-          {/* Block E: Achievements (New) - 6 cols, 1 row */}
+          {/* Block E: Recent Badges (New) - 6 cols, 1 row */}
           <motion.div variants={itemVariants} className="md:col-span-6 md:row-span-1">
             <SpotlightCard className="h-full" onClick={() => navigate('/achievements')} variant={rankTier === 4 ? 'legendary' : 'default'}>
               <div className="p-8 h-full flex flex-col justify-center cursor-pointer group">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2">
                     <Trophy size={18} className="text-amber-400" />
-                    <h3 className="text-sm font-bold text-white uppercase tracking-widest">Recent Achievements</h3>
+                    <h3 className="text-sm font-bold text-white uppercase tracking-widest">Recent Badges</h3>
                   </div>
                   <ChevronRight size={18} className="text-slate-500 group-hover:text-white transition-colors" />
                 </div>
 
                 <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                  {achievements?.achievements?.filter(a => a.isUnlocked).slice(0, 3).map((achievement, i) => (
-                    <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 min-w-[160px] hover:bg-white/10 transition-colors">
-                      <div className="text-3xl filter drop-shadow-md">{achievement.icon}</div>
-                      <div>
-                        <div className="text-xs font-bold text-white truncate max-w-[100px] mb-1">{achievement.title}</div>
-                        <div className="text-[10px] text-slate-400 font-mono">+{achievement.points} XP</div>
-                      </div>
-                    </div>
-                  ))}
-                  {(!achievements?.achievements?.filter(a => a.isUnlocked).length) && (
-                    <div className="text-sm text-slate-500 italic font-light">No achievements yet. Keep learning!</div>
-                  )}
+                  {/* We need to fetch badges here or pass them. For now, let's assume we might need to fetch them or use a placeholder if data isn't available yet. 
+                      Ideally, useDashboard hook should return badges. 
+                      Since we haven't updated useDashboard, let's use a temporary placeholder or fetch.
+                      Actually, let's just link to the collection for now or show a static preview if no data.
+                  */}
+                  <div className="flex items-center gap-4 text-slate-400 text-sm italic">
+                    Check your collection to see earned badges!
+                  </div>
                 </div>
               </div>
             </SpotlightCard>
@@ -518,18 +453,18 @@ const DashboardPage = () => {
                       </div>
                     </div>
                     <div className="flex gap-8 text-right">
-                      <div>
-                        <div className="text-xs text-slate-500 uppercase">NIFTY 50</div>
-                        <div className="text-lg font-mono text-emerald-400">+1.2% ▲</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-slate-500 uppercase">SENSEX</div>
-                        <div className="text-lg font-mono text-emerald-400">+0.8% ▲</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-slate-500 uppercase">GOLD</div>
-                        <div className="text-lg font-mono text-rose-400">-0.3% ▼</div>
-                      </div>
+                      {marketData.length > 0 ? (
+                        marketData.map((item, idx) => (
+                          <div key={idx}>
+                            <div className="text-xs text-slate-500 uppercase">{item.symbol}</div>
+                            <div className={`text-lg font-mono ${item.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                              {item.change >= 0 ? '+' : ''}{item.changePercent ? item.changePercent.toFixed(2) : '0.00'}% {item.change >= 0 ? '▲' : '▼'}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-sm text-slate-500">Loading market data...</div>
+                      )}
                     </div>
                   </div>
 
@@ -609,8 +544,8 @@ const DashboardPage = () => {
           )}
 
         </motion.div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 

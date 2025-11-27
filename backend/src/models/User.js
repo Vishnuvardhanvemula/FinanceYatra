@@ -119,6 +119,26 @@ const userSchema = new mongoose.Schema({
     }
   }],
 
+  // Gamification 2.0: Shop & Inventory
+  inventory: [{
+    itemId: { type: String, required: true },
+    purchasedAt: { type: Date, default: Date.now },
+    isEquipped: { type: Boolean, default: false }
+  }],
+  equippedItems: {
+    frame: { type: String, default: null },
+    accessory: { type: String, default: null },
+    theme: { type: String, default: null },
+    effect: { type: String, default: null }
+  },
+
+  // Gamification 2.0: Badges
+  badges: [{
+    badgeId: { type: String, required: true },
+    earnedAt: { type: Date, default: Date.now },
+    isDisplayed: { type: Boolean, default: false }
+  }],
+
   // Gamification
   achievements: [{
     id: String,

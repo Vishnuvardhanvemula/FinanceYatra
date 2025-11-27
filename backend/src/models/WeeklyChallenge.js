@@ -1,21 +1,63 @@
 import mongoose from 'mongoose';
 
-const TaskSchema = new mongoose.Schema({
-  id: { type: String, required: true },
-  title: { type: String, required: true },
-  description: { type: String },
-  points: { type: Number, default: 10 }
-}, { _id: false });
+const taskSchema = new mongoose.Schema({
+  id: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  type: {
+    type: String,
+    enum: ['quiz', 'module', 'login', 'streak', 'other'],
+    default: 'other'
+  },
+  target: {
+    type: Number,
+    default: 1
+  },
+  points: {
+    type: Number,
+    default: 50
+  }
+});
 
-const WeeklySchema = new mongoose.Schema({
-  weekId: { type: String, required: true, unique: true, index: true },
-  theme: { type: String, default: 'Weekly' },
-  description: { type: String },
-  startDate: { type: Date },
-  endDate: { type: Date },
-  tasks: { type: [TaskSchema], default: [] },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
-}, { timestamps: true });
+const weeklyChallengeSchema = new mongoose.Schema({
+  id: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  weekId: {
+    type: String, // e.g., "2023-W45"
+    required: true
+  },
+  title: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String
+  },
+  tasks: [taskSchema],
+  startDate: {
+    type: Date,
+    required: true
+  },
+  endDate: {
+    type: Date,
+    required: true
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  }
+}, {
+  timestamps: true
+});
 
-const WeeklyChallenge = mongoose.models.WeeklyChallenge || mongoose.model('WeeklyChallenge', WeeklySchema);
+const WeeklyChallenge = mongoose.model('WeeklyChallenge', weeklyChallengeSchema);
+
 export default WeeklyChallenge;

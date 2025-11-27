@@ -203,7 +203,7 @@ export const AuthProvider = ({ children }) => {
         setUser(user);
         applyServerThemeIfPresent(user);
         localStorage.setItem('authToken', token);
-        return { success: true };
+        return { success: true, user };
       }
 
       return { success: false, message: response.data.message };
@@ -231,7 +231,7 @@ export const AuthProvider = ({ children }) => {
         setUser(user);
         applyServerThemeIfPresent(user);
         localStorage.setItem('authToken', token);
-        return { success: true };
+        return { success: true, user };
       }
 
       return { success: false, message: response.data.message };

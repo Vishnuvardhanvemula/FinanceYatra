@@ -23,6 +23,7 @@ import DailyQuizPage from './pages/DailyQuizPage';
 import WeeklyChallengesPage from './pages/WeeklyChallengesPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ChallengesPage from './pages/ChallengesPage';
+import ShopPage from './pages/ShopPage';
 import EMICalculatorPage from './pages/EMICalculatorPage';
 import Calculators from './pages/Calculators';
 import SIPCalculator from './pages/SIPCalculator';
@@ -31,6 +32,9 @@ import TaxCalculator from './pages/TaxCalculator';
 import EmergencyFund from './pages/EmergencyFund';
 import NotFoundPage from './pages/NotFoundPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import ModuleEditorPage from './pages/admin/ModuleEditorPage';
 
 function CustomCursor() {
   const cursorX = useMotionValue(-100);
@@ -164,25 +168,38 @@ export default function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/onboarding" element={<OnboardingPage />} />
-              <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-              <Route path="/modules" element={<ModulesPage />} />
-              <Route path="/modules/:id" element={<ErrorBoundary><ModuleDetailPage /></ErrorBoundary>} />
-              <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-              <Route path="/achievements" element={<AchievementsPage />} />
-              <Route path="/share/achievement/:achievementId" element={<ShareAchievementPage />} />
-              <Route path="/daily-quiz" element={<DailyQuizPage />} />
-              <Route path="/weekly-challenges" element={<WeeklyChallengesPage />} />
-              <Route path="/leaderboard" element={<LeaderboardPage />} />
-              <Route path="/challenges" element={<ChallengesPage />} />
-              <Route path="/calculators/emi" element={<ProtectedRoute><EMICalculatorPage /></ProtectedRoute>} />
-              <Route path="/calculators" element={<ProtectedRoute><Calculators /></ProtectedRoute>} />
-              <Route path="/calculators/emergency" element={<ProtectedRoute><EmergencyFund /></ProtectedRoute>} />
-              <Route path="/calculators/retirement" element={<ProtectedRoute><RetirementCalculator /></ProtectedRoute>} />
-              <Route path="/calculators/sip" element={<ProtectedRoute><SIPCalculator /></ProtectedRoute>} />
-              <Route path="/calculators/tax" element={<ProtectedRoute><TaxCalculator /></ProtectedRoute>} />
+
+              <Route element={<ProtectedRoute />}>
+                <Route path="/chat" element={<ChatPage />} />
+                <Route path="/modules" element={<ModulesPage />} />
+                <Route path="/modules/:id" element={<ErrorBoundary><ModuleDetailPage /></ErrorBoundary>} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/achievements" element={<AchievementsPage />} />
+                <Route path="/share/achievement/:achievementId" element={<ShareAchievementPage />} />
+                <Route path="/daily-quiz" element={<DailyQuizPage />} />
+                <Route path="/weekly-challenges" element={<WeeklyChallengesPage />} />
+                <Route path="/leaderboard" element={<LeaderboardPage />} />
+                <Route path="/challenges" element={<ChallengesPage />} />
+                <Route path="/shop" element={<ShopPage />} />
+                <Route path="/calculators/emi" element={<EMICalculatorPage />} />
+                <Route path="/calculators" element={<Calculators />} />
+                <Route path="/calculators/emergency" element={<EmergencyFund />} />
+                <Route path="/calculators/retirement" element={<RetirementCalculator />} />
+                <Route path="/calculators/sip" element={<SIPCalculator />} />
+                <Route path="/calculators/tax" element={<TaxCalculator />} />
+              </Route>
+
               <Route path="/sip" element={<SIPCalculator />} />
               <Route path="/emi" element={<EMICalculatorPage />} />
               <Route path="/retirement" element={<RetirementCalculator />} />
+
+              {/* Admin Routes */}
+              <Route path="/admin" element={<AdminRoute />}>
+                <Route path="dashboard" element={<AdminDashboardPage />} />
+                <Route path="modules/new" element={<ModuleEditorPage />} />
+                <Route path="modules/edit/:id" element={<ModuleEditorPage />} />
+              </Route>
+
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Layout>

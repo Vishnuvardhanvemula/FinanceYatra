@@ -67,7 +67,7 @@ export function calculateModuleStats(moduleProgress, allModules) {
   const quizScores = moduleProgress
     .filter(mp => mp.quizScore !== undefined && mp.quizScore !== null)
     .map(mp => mp.quizScore);
-  
+
   const avgQuizScore = quizScores.length > 0
     ? Math.round(quizScores.reduce((sum, score) => sum + score, 0) / quizScores.length)
     : 0;
@@ -78,13 +78,13 @@ export function calculateModuleStats(moduleProgress, allModules) {
   const expertModules = allModules.filter(m => m.difficulty === 'expert');
 
   const completedByDifficulty = {
-    beginner: moduleProgress.filter(mp => 
+    beginner: moduleProgress.filter(mp =>
       mp.completedAt && beginnerModules.some(m => m.id === mp.moduleId)
     ).length,
-    intermediate: moduleProgress.filter(mp => 
+    intermediate: moduleProgress.filter(mp =>
       mp.completedAt && intermediateModules.some(m => m.id === mp.moduleId)
     ).length,
-    expert: moduleProgress.filter(mp => 
+    expert: moduleProgress.filter(mp =>
       mp.completedAt && expertModules.some(m => m.id === mp.moduleId)
     ).length,
   };
@@ -143,13 +143,13 @@ export function calculateLearningTime(moduleProgress, allModules) {
 export function calculateWeeklyActivity(activityLog) {
   const weekData = [];
   const today = new Date();
-  
+
   // Create array for last 7 days
   for (let i = 6; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
     date.setHours(0, 0, 0, 0);
-    
+
     weekData.push({
       date: date.toISOString().split('T')[0],
       day: date.toLocaleDateString('en-US', { weekday: 'short' }),
@@ -163,7 +163,7 @@ export function calculateWeeklyActivity(activityLog) {
       const activityDate = new Date(activity);
       activityDate.setHours(0, 0, 0, 0);
       const dateStr = activityDate.toISOString().split('T')[0];
-      
+
       const dayData = weekData.find(d => d.date === dateStr);
       if (dayData) {
         dayData.count++;
@@ -227,9 +227,9 @@ export function calculateProficiencyTrend(proficiencyHistory) {
   }
 
   return proficiencyHistory.map(assessment => ({
-    date: new Date(assessment.assessedAt).toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric' 
+    date: new Date(assessment.assessedAt).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
     }),
     level: assessment.level,
     score: assessment.score,
@@ -282,22 +282,69 @@ function formatLearningTime(minutes) {
   if (minutes < 60) {
     return `${minutes} mins`;
   }
-  
+
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  
+
   if (hours < 24) {
     return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
   }
-  
+
   const days = Math.floor(hours / 24);
   const remainingHours = hours % 24;
-  
+
   if (remainingHours > 0) {
     return `${days}d ${remainingHours}h`;
   }
-  
+
   return `${days}d`;
+}
+
+/**
+ * Log user activity and update streak
+ * @param {Object} user - User object
+ * @returns {Object} Updated streak info
+ */
+export async function logActivity(user) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Check if already logged today
+  const alreadyLogged = user.activityLog?.some(date => {
+    const logDate = new Date(date);
+    logDate.setHours(0, 0, 0, 0);
+    return logDate.getTime() === today.getTime();
+  });
+
+  if (!alreadyLogged) {
+    if (!user.activityLog) {
+      user.activityLog = [];
+    }
+    user.activityLog.push(new Date());
+
+    // Update streak
+    const streak = calculateStreak(user.activityLog);
+    user.currentStreak = streak;
+
+    if (streak > user.longestStreak) {
+      user.longestStreak = streak;
+    }
+
+    user.lastActiveDate = new Date();
+    await user.save();
+
+    return {
+      currentStreak: user.currentStreak,
+      longestStreak: user.longestStreak,
+      activityLogged: true
+    };
+  }
+
+  return {
+    currentStreak: user.currentStreak,
+    longestStreak: user.longestStreak,
+    activityLogged: false
+  };
 }
 
 export default {
@@ -308,4 +355,6 @@ export default {
   getRecentActivity,
   calculateProficiencyTrend,
   generateAnalyticsSummary,
+  logActivity
 };
+

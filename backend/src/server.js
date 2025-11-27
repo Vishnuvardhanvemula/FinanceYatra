@@ -11,8 +11,10 @@ import ttsRoutes from './routes/ttsRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import moduleRoutes from './routes/moduleRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
-// Use minimal challenge routes while refactoring the original file
 import challengeRoutes from './routes/challengeRoutes.js';
+import marketRoutes from './routes/marketRoutes.js';
+import shopRoutes from './routes/shopRoutes.js';
+import badgeRoutes from './routes/badgeRoutes.js';
 import llmService from './services/llmService.js';
 import pythonRagService from './services/pythonRagService.js';
 
@@ -24,7 +26,8 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true
 }));
-// Optional security headers and rate limiting — try to dynamically import to avoid crash if not installed
+
+// Optional security headers and rate limiting
 (async () => {
   try {
     const helmetModule = await import('helmet');
@@ -48,6 +51,7 @@ app.use(cors({
     console.warn('express-rate-limit not installed; skipping rate limiter');
   }
 })();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -64,11 +68,14 @@ app.use('/api/auth', authRoutes);
 app.use('/api/modules', moduleRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/challenges', challengeRoutes);
+app.use('/api/market', marketRoutes);
+app.use('/api/shop', shopRoutes);
+app.use('/api/badges', badgeRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     message: 'financeYatra backend is running',
     timestamp: new Date().toISOString()
   });
@@ -91,9 +98,9 @@ app.get('/', (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Internal server error',
-    message: err.message 
+    message: err.message
   });
 });
 
@@ -101,7 +108,7 @@ app.use((err, req, res, next) => {
 async function connectDatabase() {
   try {
     const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/financeyatra';
-    
+
     await mongoose.connect(mongoUri);
     console.log('✅ Connected to MongoDB');
     console.log(`📊 Database: ${mongoUri}`);
