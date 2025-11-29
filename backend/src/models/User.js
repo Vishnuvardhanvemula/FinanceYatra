@@ -60,6 +60,13 @@ const userSchema = new mongoose.Schema({
     type: String
   }],
 
+  // UI Preferences
+  preferences: {
+    theme: { type: String, default: 'default' },
+    isDarkMode: { type: Boolean, default: false },
+    notifications: { type: Boolean, default: true }
+  },
+
   // Progress tracking
   totalQuestionsAsked: {
     type: Number,

@@ -166,6 +166,41 @@ router.put('/profile', authenticate, async (req, res) => {
 });
 
 /**
+ * PATCH /api/auth/preferences
+ * Update user UI preferences
+ */
+router.patch('/preferences', authenticate, async (req, res) => {
+  try {
+    const { theme, isDarkMode, notifications } = req.body;
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Initialize preferences if missing
+    if (!user.preferences) {
+      user.preferences = {};
+    }
+
+    if (theme !== undefined) user.preferences.theme = theme;
+    if (isDarkMode !== undefined) user.preferences.isDarkMode = isDarkMode;
+    if (notifications !== undefined) user.preferences.notifications = notifications;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Preferences updated',
+      preferences: user.preferences
+    });
+  } catch (error) {
+    console.error('❌ Update preferences error:', error.message);
+    res.status(500).json({ success: false, message: 'Failed to update preferences' });
+  }
+});
+
+/**
  * POST /api/auth/change-password
  * Change user password
  */

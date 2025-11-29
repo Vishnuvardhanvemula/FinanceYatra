@@ -1,0 +1,42 @@
+{
+    "dashboard": {
+        "greeting": "नमस्ते, {{name}}",
+        "welcome": "वापसी पर स्वागत है। आपका वित्तीय कमांड सेंटर तैयार है।",
+        "welcome_legend": "शून्य में आपका स्वागत है, लीजेंड।",
+        "streak": "वर्तमान लकीर",
+        "total_xp": "कुल XP",
+        "learning_trajectory": "सीखने का प्रक्षेपवक्र",
+        "overall_progress": "समग्र प्रगति",
+        "completed": "पूर्ण",
+        "active": "सक्रिय",
+        "locked": "बंद",
+        "resume": "फिर से शुरू करें",
+        "continue_learning": "सीखना जारी रखें",
+        "continue_desc": "अपनी वित्तीय यात्रा वहीं से शुरू करें जहाँ आपने छोड़ी थी।",
+        "daily_objective": "दैनिक उद्देश्य",
+        "complete_daily": "दैनिक चुनौती पूरी करें",
+        "engage_mission": "मिशन शुरू करें",
+        "recent_badges": "हाल के बैज",
+        "market_intelligence": "बाजार खुफिया",
+        "exclusive_insight": "विशेष विशेषज्ञ अंतर्दृष्टि",
+        "insider_signals": "अंदरूनी संकेत",
+        "ai_wealth_manager": "एआई वेल्थ मैनेजर",
+        "system_status": "सिस्टम स्थिति",
+        "portfolio_health": "पोर्टफोलियो स्वास्थ्य",
+        "next_move": "अगला सर्वोत्तम कदम",
+        "locked_market": "बाजार खुफिया अनलॉक करने के लिए विशेषज्ञ रैंक तक पहुंचें"
+    },
+    "nav": {
+        "home": "होम",
+        "dashboard": "डैशबोर्ड",
+        "modules": "मॉड्यूल",
+        "challenges": "चुनौतियां",
+        "leaderboard": "लीडरबोर्ड",
+        "shop": "दुकान",
+        "calculators": "कैलकुलेटर",
+        "chat": "एआई चैट",
+        "login": "लॉग इन करें",
+        "signup": "साइन अप करें",
+        "logout": "लॉग आउट"
+    }
+}

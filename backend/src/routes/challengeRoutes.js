@@ -75,7 +75,7 @@ router.post('/daily/submit', authenticate, async (req, res) => {
 // Weekly Challenge: Get Current
 router.get('/weekly', optionalAuth, async (req, res) => {
   try {
-    const result = await challengeService.getWeeklyChallenge(req.user);
+    const result = await challengeService.getWeeklyChallenges(req.userId);
     res.json({ success: true, ...result });
   } catch (error) {
     console.error('❌ Error fetching weekly challenges:', error);

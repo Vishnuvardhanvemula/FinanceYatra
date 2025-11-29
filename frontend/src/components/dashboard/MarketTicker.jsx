@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, TrendingDown, Lock, Sparkles } from 'lucide-react';
-import { fetchMarketOverview } from '../../services/marketService';
+import { getMarketPrices } from '../../services/marketService';
 
 const MINIMUM_RANK_TIER = 2; // Expert and above
 
@@ -18,8 +18,17 @@ const MarketTicker = ({ userRankTier = 0 }) => {
 
         const loadData = async () => {
             try {
-                const data = await fetchMarketOverview();
-                setMarketData(data);
+                const data = await getMarketPrices();
+                // Map API data to Ticker format
+                const formattedData = data.map(item => ({
+                    symbol: item.symbol,
+                    name: item.name,
+                    currency: 'USD',
+                    price: item.currentPrice,
+                    change: item.change24h,
+                    changePercent: item.change24h
+                }));
+                setMarketData(formattedData);
             } catch (error) {
                 console.error('Failed to load market data', error);
             } finally {
@@ -88,45 +97,45 @@ const MarketTicker = ({ userRankTier = 0 }) => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="w-full bg-[#020617] border-b border-white/5 overflow-hidden relative"
+            className="w-full bg-transparent border-b border-white/[0.03] overflow-hidden relative backdrop-blur-sm"
         >
             {/* Gradient fade edges */}
-            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-[#020617] to-transparent z-10 pointer-events-none" />
-            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-[#020617] to-transparent z-10 pointer-events-none" />
+            <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[#020617] to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#020617] to-transparent z-10 pointer-events-none" />
 
-            <div className="flex items-center py-3 overflow-x-auto no-scrollbar">
+            <div className="flex items-center py-2 overflow-hidden">
                 <motion.div
-                    className="flex items-center gap-8 px-8 min-w-full"
+                    className="flex items-center gap-12 px-8 min-w-full"
                     animate={{ x: [0, -1000] }}
                     transition={{
                         x: {
                             repeat: Infinity,
                             repeatType: "loop",
-                            duration: 40,
+                            duration: 60,
                             ease: "linear",
                         },
                     }}
                 >
                     {/* Duplicate data for seamless loop */}
                     {[...marketData, ...marketData, ...marketData].map((item, index) => (
-                        <div key={`${item.symbol}-${index}`} className="flex items-center gap-3 shrink-0 group cursor-default">
+                        <div key={`${item.symbol}-${index}`} className="flex items-center gap-3 shrink-0 group cursor-default opacity-70 hover:opacity-100 transition-opacity duration-300">
                             <div className="flex flex-col">
-                                <span className="text-xs font-bold text-slate-400 group-hover:text-white transition-colors uppercase tracking-wider">
+                                <span className="text-[10px] font-bold text-slate-500 group-hover:text-slate-300 transition-colors uppercase tracking-widest">
                                     {item.name}
                                 </span>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm font-mono font-medium text-white">
+                                    <span className="text-sm font-mono font-medium text-slate-200">
                                         {item.currency === 'INR' ? '₹' : item.currency === 'USD' ? '$' : ''}
                                         {item.price ? item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A'}
                                     </span>
-                                    <span className={`text-xs font-bold flex items-center ${item.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        {item.change >= 0 ? <TrendingUp size={12} className="mr-0.5" /> : <TrendingDown size={12} className="mr-0.5" />}
+                                    <span className={`text-[10px] font-bold flex items-center ${item.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                        {item.change >= 0 ? <TrendingUp size={10} className="mr-1" /> : <TrendingDown size={10} className="mr-1" />}
                                         {item.changePercent ? Math.abs(item.changePercent).toFixed(2) : '0.00'}%
                                     </span>
                                 </div>
                             </div>
                             {index !== (marketData.length * 3) - 1 && (
-                                <div className="w-px h-8 bg-white/5 mx-2" />
+                                <div className="w-px h-6 bg-white/5 mx-2" />
                             )}
                         </div>
                     ))}

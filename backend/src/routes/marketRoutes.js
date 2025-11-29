@@ -1,9 +1,12 @@
 import express from 'express';
-import { getMarketData } from '../controllers/marketController.js';
+import { getMarketPrices, getPortfolio, executeTrade, getLeaderboard } from '../controllers/marketController.js';
+import { authenticate as protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Public route - no auth required for ticker
-router.get('/overview', getMarketData);
+router.get('/prices', getMarketPrices);
+router.get('/portfolio', protect, getPortfolio);
+router.post('/trade', protect, executeTrade);
+router.get('/leaderboard', protect, getLeaderboard);
 
 export default router;

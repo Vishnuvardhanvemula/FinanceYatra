@@ -4,9 +4,9 @@ const THEME_STORAGE_KEY = 'fy_selected_theme';
 
 const ThemeContext = createContext({
   theme: 'default',
-  setTheme: (_theme, _opts) => {},
+  setTheme: (_theme, _opts) => { },
   isDarkMode: false,
-  toggleTheme: () => {},
+  toggleTheme: () => { },
 });
 
 export const ThemeProvider = ({ children, defaultTheme = 'default' }) => {
@@ -29,7 +29,7 @@ export const ThemeProvider = ({ children, defaultTheme = 'default' }) => {
     try {
       const saved = localStorage.getItem('fy_dark_mode');
       setDarkMode(saved === 'true');
-    } catch (e) {}
+    } catch (e) { }
   }, []);
 
   useEffect(() => {
@@ -70,15 +70,16 @@ export const ThemeProvider = ({ children, defaultTheme = 'default' }) => {
   const persistToServer = async (userId, newTheme) => {
     if (!userId) return false;
     try {
-      const url = `/api/users/${encodeURIComponent(userId)}/preferences`;
-      const headers = { 'Content-Type': 'application/json' };
-      // If the app exposes an auth token globally, include it
-      if (window?.__AUTH_TOKEN__) headers.Authorization = `Bearer ${window.__AUTH_TOKEN__}`;
+      const url = `/api/auth/preferences`;
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+      };
+
       const res = await fetch(url, {
         method: 'PATCH',
         headers,
         body: JSON.stringify({ theme: newTheme }),
-        credentials: 'include',
       });
       return res.ok;
     } catch (err) {
@@ -167,7 +168,7 @@ export const ThemeProvider = ({ children, defaultTheme = 'default' }) => {
   const toggleTheme = () => {
     setDarkMode((s) => {
       const next = !s;
-      try { localStorage.setItem('fy_dark_mode', String(next)); } catch(e) {}
+      try { localStorage.setItem('fy_dark_mode', String(next)); } catch (e) { }
       return next;
     });
   };
@@ -182,4 +183,3 @@ export const ThemeProvider = ({ children, defaultTheme = 'default' }) => {
 export const useTheme = () => useContext(ThemeContext);
 
 export default ThemeContext;
-

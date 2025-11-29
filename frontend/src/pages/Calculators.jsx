@@ -1,12 +1,21 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calculator, TrendingUp, Umbrella, FileText, ShieldAlert, ArrowRight, PieChart } from 'lucide-react';
+import { Calculator, TrendingUp, Umbrella, FileText, ShieldAlert, ArrowRight, PieChart, Wallet } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Calculators() {
   const navigate = useNavigate();
 
   const cards = [
+    {
+      key: 'budget',
+      title: 'Budget Planner',
+      subtitle: 'Track expenses, set goals, and earn XP for saving.',
+      path: '/budget-planner',
+      Icon: Wallet,
+      gradient: 'from-emerald-500 to-green-600',
+      shadow: 'shadow-emerald-500/20'
+    },
     {
       key: 'emi',
       title: 'EMI Calculator',

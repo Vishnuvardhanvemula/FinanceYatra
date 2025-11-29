@@ -46,7 +46,15 @@ const ParticleBackground = () => {
 
         const init = () => {
             particles = [];
-            for (let i = 0; i < 100; i++) {
+            // Check for reduced motion preference
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // Adjust particle count based on screen size and motion preference
+            let particleCount = 100;
+            if (window.innerWidth < 768) particleCount = 50; // Mobile
+            if (prefersReducedMotion) particleCount = 20; // Reduced motion
+
+            for (let i = 0; i < particleCount; i++) {
                 particles.push(new Particle());
             }
         };

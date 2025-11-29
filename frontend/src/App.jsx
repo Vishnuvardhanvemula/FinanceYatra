@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
@@ -31,6 +31,10 @@ import RetirementCalculator from './pages/RetirementCalculator';
 import TaxCalculator from './pages/TaxCalculator';
 import EmergencyFund from './pages/EmergencyFund';
 import NotFoundPage from './pages/NotFoundPage';
+import BudgetPlannerPage from './pages/BudgetPlannerPage';
+import MarketPage from './pages/MarketPage';
+import CommunityPage from './pages/CommunityPage';
+import ForumThreadDetail from './pages/ForumThreadDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
@@ -181,6 +185,11 @@ export default function App() {
                 <Route path="/leaderboard" element={<LeaderboardPage />} />
                 <Route path="/challenges" element={<ChallengesPage />} />
                 <Route path="/shop" element={<ShopPage />} />
+                <Route path="/budget-planner" element={<BudgetPlannerPage />} />
+                {/* Stock Market Simulator Route */}
+                <Route path="/market-simulator" element={<MarketPage />} />
+                <Route path="/community" element={<CommunityPage />} />
+                <Route path="/community/post/:id" element={<ForumThreadDetail />} />
                 <Route path="/calculators/emi" element={<EMICalculatorPage />} />
                 <Route path="/calculators" element={<Calculators />} />
                 <Route path="/calculators/emergency" element={<EmergencyFund />} />

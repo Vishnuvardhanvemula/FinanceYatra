@@ -78,8 +78,10 @@ class ChallengeService {
     // --- Weekly Challenges ---
 
     async getWeeklyChallenges(userId) {
-        const user = await User.findById(userId);
-        if (!user) throw new Error('User not found');
+        let user = null;
+        if (userId) {
+            user = await User.findById(userId);
+        }
 
         // Get active weekly challenge
         const now = new Date();
@@ -93,8 +95,8 @@ class ChallengeService {
             return { message: 'No active weekly challenges at the moment.' };
         }
 
-        // Get user progress for this week
-        const userProgress = user.weeklyProgress?.find(p => p.weekId === activeChallenge.weekId) || {
+        // Get user progress for this week (or default if no user)
+        const userProgress = user?.weeklyProgress?.find(p => p.weekId === activeChallenge.weekId) || {
             weekId: activeChallenge.weekId,
             claimedTasks: [],
             pointsEarned: 0

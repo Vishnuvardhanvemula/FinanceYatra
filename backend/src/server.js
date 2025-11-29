@@ -15,6 +15,8 @@ import challengeRoutes from './routes/challengeRoutes.js';
 import marketRoutes from './routes/marketRoutes.js';
 import shopRoutes from './routes/shopRoutes.js';
 import badgeRoutes from './routes/badgeRoutes.js';
+import budgetRoutes from './routes/budgetRoutes.js';
+import forumRoutes from './routes/forumRoutes.js';
 import llmService from './services/llmService.js';
 import pythonRagService from './services/pythonRagService.js';
 
@@ -71,6 +73,8 @@ app.use('/api/challenges', challengeRoutes);
 app.use('/api/market', marketRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/badges', badgeRoutes);
+app.use('/api/budget', budgetRoutes);
+app.use('/api/forum', forumRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

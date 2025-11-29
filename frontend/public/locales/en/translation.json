@@ -1,0 +1,42 @@
+{
+  "dashboard": {
+    "greeting": "Hello, {{name}}",
+    "welcome": "Welcome back. Your financial command center is ready.",
+    "welcome_legend": "Welcome to the Void, Legend.",
+    "streak": "Current Streak",
+    "total_xp": "Total XP",
+    "learning_trajectory": "Learning Trajectory",
+    "overall_progress": "Overall Progress",
+    "completed": "Completed",
+    "active": "Active",
+    "locked": "Locked",
+    "resume": "Resume",
+    "continue_learning": "Continue Learning",
+    "continue_desc": "Pick up where you left off in your financial journey.",
+    "daily_objective": "Daily Objective",
+    "complete_daily": "Complete Daily Challenge",
+    "engage_mission": "Engage Mission",
+    "recent_badges": "Recent Badges",
+    "market_intelligence": "Market Intelligence",
+    "exclusive_insight": "Exclusive Expert Insight",
+    "insider_signals": "Insider Signals",
+    "ai_wealth_manager": "AI Wealth Manager",
+    "system_status": "System Status",
+    "portfolio_health": "Portfolio Health",
+    "next_move": "Next Best Move",
+    "locked_market": "Reach Expert Rank to Unlock Market Intelligence"
+  },
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "modules": "Modules",
+    "challenges": "Challenges",
+    "leaderboard": "Leaderboard",
+    "shop": "Shop",
+    "calculators": "Calculators",
+    "chat": "AI Chat",
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout"
+  }
+}
