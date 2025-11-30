@@ -28,5 +28,12 @@ export const dashboardService = {
             headers: { Authorization: `Bearer ${token}` }
         });
         return res.data;
+    },
+
+    getMarketSentiment: async (token) => {
+        // Token is optional for this public-ish data, but good practice
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await axios.get(`${API_URL}/market/sentiment`, { headers });
+        return res.data;
     }
 };

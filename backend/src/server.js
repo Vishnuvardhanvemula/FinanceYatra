@@ -17,6 +17,7 @@ import shopRoutes from './routes/shopRoutes.js';
 import badgeRoutes from './routes/badgeRoutes.js';
 import budgetRoutes from './routes/budgetRoutes.js';
 import forumRoutes from './routes/forumRoutes.js';
+import quizRoutes from './routes/quizRoutes.js';
 import llmService from './services/llmService.js';
 import pythonRagService from './services/pythonRagService.js';
 
@@ -75,6 +76,7 @@ app.use('/api/shop', shopRoutes);
 app.use('/api/badges', badgeRoutes);
 app.use('/api/budget', budgetRoutes);
 app.use('/api/forum', forumRoutes);
+app.use('/api/quiz', quizRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

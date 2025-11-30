@@ -65,6 +65,11 @@ const moduleSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
+    },
+    // Vector embedding for RAG
+    embedding: {
+        type: [Number],
+        select: false // Don't return by default to save bandwidth
     }
 }, {
     timestamps: true

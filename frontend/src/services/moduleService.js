@@ -64,6 +64,20 @@ export const moduleService = {
         }
     },
 
+    // Generate AI Quiz
+    generateQuiz: async (token, moduleId, lessonIndex) => {
+        try {
+            // Note: Using a different base URL for quizzes since it's a separate route file
+            const response = await axios.get(`http://localhost:5000/api/quiz/generate/${moduleId}/${lessonIndex}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error generating quiz:', error);
+            return { success: false, message: error.message };
+        }
+    },
+
     // Admin: Create Module
     createModule: async (token, data) => {
         try {

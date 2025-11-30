@@ -443,279 +443,287 @@ body,
   }
 
   /* Smooth scrolling */
-  .smooth-scroll {
-    scroll-behavior: smooth;
-  }
-
-  /* Elegant Custom Scrollbar */
-  .scrollbar-custom::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  .scrollbar-custom::-webkit-scrollbar-track {
-    background: #f0fdfa;
-    border-radius: 9999px;
-  }
-
-  .scrollbar-custom::-webkit-scrollbar-thumb {
-    @apply text-2xl font-bold text-gray-900 dark:text-gray-100 mt-8 mb-4;
-  }
-
-  .lesson-content h4 {
-    @apply text-xl font-semibold text-gray-800 dark:text-gray-200 mt-6 mb-3;
-  }
-
-  .lesson-content p {
-    @apply text-gray-700 dark:text-gray-300 mb-4 leading-relaxed;
-  }
-
-  .lesson-content ul {
-    @apply list-disc list-inside space-y-2 mb-4 text-gray-700 dark:text-gray-300;
-  }
-
-  .lesson-content ol {
-    @apply list-decimal list-inside space-y-2 mb-4 text-gray-700 dark:text-gray-300;
-  }
-
-  .lesson-content li {
-    @apply ml-2 pl-2;
-  }
-
-  .lesson-content strong {
-    @apply font-semibold text-gray-900 dark:text-gray-100;
-  }
-
-  .lesson-content table {
-    @apply w-full border-collapse border border-gray-300 dark:border-gray-600 my-4;
-  }
-
-  .lesson-content th {
-    @apply bg-teal-50 dark:bg-teal-900/20 border border-gray-300 dark:border-gray-600 px-4 py-2 text-left font-semibold text-gray-900 dark:text-gray-100;
-  }
-
-  .lesson-content td {
-    @apply border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-700 dark:text-gray-300;
-  }
-
-  .lesson-content tr:nth-child(even) {
-    @apply bg-gray-50 dark:bg-gray-800/50;
-  }
-
-  .lesson-content a {
-    @apply text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 underline;
-  }
-
-  .lesson-content code {
-    @apply bg-gray-100 dark:bg-gray-800 text-teal-600 dark:text-teal-400 px-2 py-1 rounded text-sm font-mono;
-  }
-
-  .lesson-content blockquote {
-    @apply border-l-4 border-teal-500 dark:border-teal-600 pl-4 italic text-gray-600 dark:text-gray-400 my-4;
-  }
 }
 
-/* Achievement Toast Animations */
-@keyframes enter {
+.neo-card {
+  background: linear-gradient(180deg, rgba(16, 24, 32, 0.6), rgba(12, 18, 24, 0.6));
+  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.task-tile {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.task-tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
+}
+
+.task-tile.done {
+  opacity: 0.9;
+  filter: saturate(0.9);
+}
+
+.glow-progress {
+  background-size: 200% 100%;
+  animation: progress-glow 2.5s linear infinite;
+}
+
+@keyframes progress-glow {
   0% {
-    transform: translateX(100%) scale(0.95);
-    opacity: 0;
-  }
-
-  100% {
-    transform: translateX(0) scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes leave {
-  0% {
-    transform: translateX(0) scale(1);
-    opacity: 1;
-  }
-
-  100% {
-
-    /* Challenges page specific styles: glass / neo / progress */
-    .glass-card {
-      background: rgba(10, 10, 15, 0.6);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-    }
-
-    .neo-card {
-      background: linear-gradient(180deg, rgba(16, 24, 32, 0.6), rgba(12, 18, 24, 0.6));
-      box-shadow: 0 8px 20px rgba(2, 6, 23, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.03);
-    }
-
-    .task-tile {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
-      border: 1px solid rgba(255, 255, 255, 0.03);
-      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-    }
-
-    .task-tile:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
-    }
-
-    .task-tile.done {
-      opacity: 0.9;
-      filter: saturate(0.9);
-    }
-
-    .glow-progress {
-      background-size: 200% 100%;
-      animation: progress-glow 2.5s linear infinite;
-    }
-
-    @keyframes progress-glow {
-      0% {
-        background-position: 0% 50%;
-      }
-
-      50% {
-        background-position: 100% 50%;
-      }
-
-      100% {
-        background-position: 0% 50%;
-      }
-    }
-
-    /* Small gradient button outlines used in page */
-    .btn-gradient-outline {
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      color: rgba(255, 255, 255, 0.95);
-      padding: .45rem .75rem;
-      border-radius: .5rem;
-    }
-
-    /* Buttons consistent with theme */
-    .btn-gradient {
-      background: linear-gradient(90deg, #06b6d4, #12b8a2);
-      color: white;
-      padding: .55rem .9rem;
-      border-radius: .7rem;
-      box-shadow: 0 8px 30px rgba(6, 182, 212, 0.08);
-    }
-
-    /* small accessibility: reduce motion for prefers-reduced-motion */
-    @media (prefers-reduced-motion: reduce) {
-
-      .animate-blob,
-      .glow-progress {
-        animation: none !important;
-      }
-    }
-
-    /* Leaderboard neon badges */
-    .leader-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 26px;
-      height: 26px;
-      margin-right: 8px;
-      border-radius: 6px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 12px currentColor;
-    }
-
-    .top-1 {
-      box-shadow: 0 8px 30px rgba(251, 191, 36, 0.12), 0 0 18px rgba(251, 191, 36, 0.12);
-    }
-
-    .top-2 {
-      box-shadow: 0 8px 30px rgba(45, 212, 191, 0.08), 0 0 14px rgba(45, 212, 191, 0.08);
-    }
-
-    .top-3 {
-      box-shadow: 0 8px 30px rgba(167, 139, 250, 0.07), 0 0 12px rgba(167, 139, 250, 0.07);
-    }
-
-    /* Focus visible for interactive tiles and buttons */
-    .task-tile:focus-within,
-    .task-tile:focus {
-      outline: none;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-      border-color: rgba(255, 255, 255, 0.06);
-    }
-
-    .glass-card button:focus,
-    .neo-card button:focus,
-    .btn-gradient:focus,
-    .btn-gradient-outline:focus {
-      outline: none;
-      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.12);
-    }
-
-    /* small spinner for in-button */
-    .inline-spinner {
-      border: 2px solid rgba(255, 255, 255, 0.12);
-      border-top: 2px solid rgba(255, 255, 255, 0.9);
-      border-radius: 50%;
-      width: 14px;
-      height: 14px;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    transform: translateX(100%) scale(0.95);
-    opacity: 0;
-  }
-}
-
-@keyframes achievement-glow {
-
-  0%,
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    background-position: 0% 50%;
   }
 
   50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    background-position: 100% 50%;
   }
-}
 
-@keyframes celebration-float {
-
-  0%,
   100% {
-    transform: translateY(0) rotate(0deg);
-  }
-
-  25% {
-    transform: translateY(-8px) rotate(-5deg);
-  }
-
-  75% {
-    transform: translateY(-4px) rotate(5deg);
+    background-position: 0% 50%;
   }
 }
 
-.animate-enter {
-  animation: enter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+/* Small gradient button outlines used in page */
+.btn-gradient-outline {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.95);
+  padding: .45rem .75rem;
+  border-radius: .5rem;
 }
 
-.animate-leave {
-  animation: leave 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+/* Buttons consistent with theme */
+.btn-gradient {
+  background: linear-gradient(90deg, #06b6d4, #12b8a2);
+  color: white;
+  padding: .55rem .9rem;
+  border-radius: .7rem;
+  box-shadow: 0 8px 30px rgba(6, 182, 212, 0.08);
 }
 
-.animate-achievement-glow {
-  animation: achievement-glow 2s ease-in-out infinite;
+/* small accessibility: reduce motion for prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+
+  .animate-blob,
+  .glow-progress {
+    animation: none !important;
+  }
 }
 
-.animate-celebration-float {
+/* Leaderboard neon badges */
+.leader-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-right: 8px;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 12px currentColor;
+}
+
+.top-1 {
+  box-shadow: 0 8px 30px rgba(251, 191, 36, 0.12), 0 0 18px rgba(251, 191, 36, 0.12);
+}
+
+.top-2 {
+  box-shadow: 0 8px 30px rgba(45, 212, 191, 0.08), 0 0 14px rgba(45, 212, 191, 0.08);
+}
+
+.top-3 {
+  box-shadow: 0 8px 30px rgba(167, 139, 250, 0.07), 0 0 12px rgba(167, 139, 250, 0.07);
+}
+
+/* Focus visible for interactive tiles and buttons */
+.task-tile:focus-within,
+.task-tile:focus {
+  outline: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  animation: celebration-float 3s ease-in-out infinite;
+}
+
+@keyframes wave {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  10% {
+    transform: rotate(14deg);
+  }
+
+  20% {
+    transform: rotate(-8deg);
+  }
+
+  30% {
+    transform: rotate(14deg);
+  }
+
+  40% {
+    transform: rotate(-4deg);
+  }
+
+  50% {
+    transform: rotate(10deg);
+  }
+
+  60% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-wave {
+  animation: wave 2.5s ease-in-out infinite;
+  transform-origin: 70% 70%;
+  display: inline-block;
+}
+
+/* Custom Scrollbar Styles */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(156, 163, 175, 0.1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+/* Range slider - thicker, glassmorphic track with moving gradient fill */
+.range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 14px;
+  /* slightly thicker */
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #06b6d4 0%, rgba(255, 255, 255, 0.04) 0%);
+  outline: none;
+  transition: background 0.12s linear;
+  cursor: pointer;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.range-slider::-webkit-slider-runnable-track {
+  height: 14px;
+  border-radius: 9999px;
+  background: transparent;
+}
+
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 3px solid #06b6d4;
+  margin-top: -3px;
+}
+
+.task-tile {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.task-tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
+}
+
+.task-tile.done {
+  opacity: 0.9;
+  filter: saturate(0.9);
+}
+
+.glow-progress {
+  background-size: 200% 100%;
+  animation: progress-glow 2.5s linear infinite;
+}
+
+@keyframes progress-glow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Small gradient button outlines used in page */
+.btn-gradient-outline {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.95);
+  padding: .45rem .75rem;
+  border-radius: .5rem;
+}
+
+/* Buttons consistent with theme */
+.btn-gradient {
+  background: linear-gradient(90deg, #06b6d4, #12b8a2);
+  color: white;
+  padding: .55rem .9rem;
+  border-radius: .7rem;
+  box-shadow: 0 8px 30px rgba(6, 182, 212, 0.08);
+}
+
+/* small accessibility: reduce motion for prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+
+  .animate-blob,
+  .glow-progress {
+    animation: none !important;
+  }
+}
+
+/* Leaderboard neon badges */
+.leader-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-right: 8px;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 12px currentColor;
+}
+
+.top-1 {
+  box-shadow: 0 8px 30px rgba(251, 191, 36, 0.12), 0 0 18px rgba(251, 191, 36, 0.12);
+}
+
+.top-2 {
+  box-shadow: 0 8px 30px rgba(45, 212, 191, 0.08), 0 0 14px rgba(45, 212, 191, 0.08);
+}
+
+.top-3 {
+  box-shadow: 0 8px 30px rgba(167, 139, 250, 0.07), 0 0 12px rgba(167, 139, 250, 0.07);
+}
+
+/* Focus visible for interactive tiles and buttons */
+.task-tile:focus-within,
+.task-tile:focus {
+  outline: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
   animation: celebration-float 3s ease-in-out infinite;
 }
 
@@ -834,4 +842,74 @@ body,
   position: sticky;
   top: 96px;
   align-self: start;
+}
+
+/* =========================================
+   Redesigned Lesson Content UI (Scoped)
+   ========================================= */
+
+.lesson-content-styled h3 {
+  @apply text-2xl font-bold mt-8 mb-4 bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent inline-block tracking-tight;
+}
+
+.lesson-content-styled h4 {
+  @apply text-xl font-semibold text-gray-200 mt-6 mb-3;
+}
+
+.lesson-content-styled p {
+  @apply text-slate-300 mb-6 leading-relaxed text-lg font-light tracking-wide;
+}
+
+.lesson-content-styled ul {
+  @apply space-y-3 mb-6 text-slate-300;
+}
+
+.lesson-content-styled li {
+  @apply relative pl-6;
+}
+
+.lesson-content-styled li::before {
+  content: "•";
+  @apply absolute left-0 text-teal-400 font-bold text-xl -top-1;
+}
+
+.lesson-content-styled strong {
+  @apply font-semibold text-white;
+}
+
+/* Glassmorphic Pro Tip Box */
+.lesson-content-styled .pro-tip-box {
+  @apply relative overflow-hidden rounded-xl p-6 my-8 border-l-4 border-amber-500 bg-slate-800/40 backdrop-blur-sm shadow-lg transition-all duration-300 hover:bg-slate-800/60;
+}
+
+.lesson-content-styled .pro-tip-icon {
+  @apply text-2xl mr-3 align-middle filter drop-shadow-md inline-block transform -translate-y-0.5;
+}
+
+.lesson-content-styled table {
+  @apply w-full border-collapse border border-slate-700/50 my-6 rounded-lg overflow-hidden;
+}
+
+.lesson-content-styled th {
+  @apply bg-slate-800/80 border border-slate-700/50 px-4 py-3 text-left font-semibold text-teal-400;
+}
+
+.lesson-content-styled td {
+  @apply border border-slate-700/50 px-4 py-3 text-slate-300;
+}
+
+.lesson-content-styled tr:nth-child(even) {
+  @apply bg-slate-800/30;
+}
+
+.lesson-content-styled a {
+  @apply text-teal-400 hover:text-teal-300 underline decoration-teal-500/30 underline-offset-4 transition-colors;
+}
+
+.lesson-content-styled code {
+  @apply bg-slate-900/80 text-teal-300 px-2 py-1 rounded text-sm font-mono border border-slate-700/50;
+}
+
+.lesson-content-styled blockquote {
+  @apply border-l-4 border-teal-500/50 pl-6 italic text-slate-400 my-6 text-lg bg-slate-800/20 py-2 pr-4 rounded-r-lg;
 }

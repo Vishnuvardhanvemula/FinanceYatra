@@ -39,6 +39,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ModuleEditorPage from './pages/admin/ModuleEditorPage';
+import ChatWidget from './components/chat/ChatWidget';
 
 function CustomCursor() {
   const cursorX = useMotionValue(-100);
@@ -211,6 +212,7 @@ export default function App() {
 
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
+            <ChatWidget />
           </Layout>
         </AuthProvider>
       </ThemeProvider>

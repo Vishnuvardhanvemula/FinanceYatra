@@ -30,6 +30,8 @@ const ModuleDetailPage = () => {
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [quizQuestions, setQuizQuestions] = useState(null);
+  const [loadingQuiz, setLoadingQuiz] = useState(false);
 
   const lastModuleIdRef = React.useRef(null);
 
@@ -218,6 +220,33 @@ const ModuleDetailPage = () => {
       setShowQuiz(true);
     }
   };
+
+  // Function to fetch quiz when needed
+  const fetchQuiz = async () => {
+    setLoadingQuiz(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await moduleService.generateQuiz(token, moduleId, currentLessonIndex);
+
+      if (response.success) {
+        setQuizQuestions(response.data);
+      } else {
+        console.warn('AI Quiz failed, using static fallback');
+        setQuizQuestions(currentLesson?.quiz || []);
+      }
+    } catch (error) {
+      console.error('Quiz fetch error:', error);
+      setQuizQuestions(currentLesson?.quiz || []);
+    } finally {
+      setLoadingQuiz(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showQuiz) {
+      fetchQuiz();
+    }
+  }, [showQuiz, moduleId, currentLessonIndex]);
 
   if (loading) {
     return (
@@ -410,13 +439,22 @@ const ModuleDetailPage = () => {
               >
                 <XCircle className="w-6 h-6" />
               </button>
-              <Suspense fallback={<QuizSkeleton />}>
-                <LessonQuiz
-                  quiz={currentLesson?.quiz}
-                  lessonTitle={currentLesson?.title}
-                  onComplete={handleQuizComplete}
-                />
-              </Suspense>
+
+              {loadingQuiz ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <Sparkles className="w-12 h-12 text-amber-400 animate-spin mb-4" />
+                  <p className="text-amber-400 font-mono animate-pulse">GENERATING ADAPTIVE QUIZ...</p>
+                  <p className="text-slate-500 text-sm mt-2">Analyzing your proficiency level</p>
+                </div>
+              ) : (
+                <Suspense fallback={<QuizSkeleton />}>
+                  <LessonQuiz
+                    quiz={quizQuestions}
+                    lessonTitle={currentLesson?.title}
+                    onComplete={handleQuizComplete}
+                  />
+                </Suspense>
+              )}
             </div>
           </motion.div>
         )}

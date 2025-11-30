@@ -8,7 +8,9 @@ import { authenticate } from '../middleware/authMiddleware.js';
 import User from '../models/User.js';
 import analyticsService from '../services/analyticsService.js';
 import achievementService from '../services/achievementService.js';
+import recommendationService from '../services/recommendationService.js';
 import { learningModules } from '../data/learningModules.js';
+import { handleChat } from '../controllers/chatController.js';
 
 const router = express.Router();
 
@@ -256,5 +258,32 @@ router.post('/activity', authenticate, async (req, res) => {
     });
   }
 });
+
+/**
+ * GET /api/dashboard/recommendations
+ * Get personalized learning recommendations
+ */
+router.get('/recommendations', authenticate, async (req, res) => {
+  try {
+    const data = await recommendationService.getRecommendations(req.userId);
+
+    res.json({
+      success: true,
+      data: data
+    });
+  } catch (error) {
+    console.error('❌ Recommendation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get recommendations'
+    });
+  }
+});
+
+/**
+ * POST /api/dashboard/chat
+ * Chat with the AI Financial Advisor
+ */
+router.post('/chat', authenticate, handleChat);
 
 export default router;

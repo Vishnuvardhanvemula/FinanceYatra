@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { moduleService } from '../../services/moduleService';
-import { ArrowLeft, Save, Plus, Trash2, GripVertical } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, GripVertical, Eye, Code } from 'lucide-react';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import { toast } from 'react-hot-toast';
+import LessonContentRenderer from '../../components/LessonContentRenderer';
 
 const ModuleEditorPage = () => {
     const { id } = useParams();
@@ -33,6 +34,7 @@ const ModuleEditorPage = () => {
 
     const [topicInput, setTopicInput] = useState('');
     const [outcomeInput, setOutcomeInput] = useState('');
+    const [previewModes, setPreviewModes] = useState({}); // { lessonIndex: boolean }
 
     useEffect(() => {
         const handleBeforeUnload = (e) => {
@@ -485,19 +487,48 @@ const ModuleEditorPage = () => {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-xs font-medium text-slate-500">HTML Content</label>
-                                            <textarea
-                                                rows={6}
-                                                value={lesson.content}
-                                                onChange={(e) => {
-                                                    const newLessons = [...formData.lessons];
-                                                    newLessons[index].content = e.target.value;
-                                                    setFormData({ ...formData, lessons: newLessons });
-                                                    setIsDirty(true);
-                                                }}
-                                                className="w-full p-2 bg-slate-900 border border-slate-700 rounded focus:ring-1 focus:ring-indigo-500 text-sm font-mono"
-                                            />
-                                            <p className="text-xs text-slate-500">Supports basic HTML tags like &lt;h3&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt;</p>
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-xs font-medium text-slate-500">Content</label>
+                                                <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setPreviewModes(prev => ({ ...prev, [index]: false }))}
+                                                        className={`px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors ${!previewModes[index] ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-300'}`}
+                                                    >
+                                                        <Code size={12} /> Code
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setPreviewModes(prev => ({ ...prev, [index]: true }))}
+                                                        className={`px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors ${previewModes[index] ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-300'}`}
+                                                    >
+                                                        <Eye size={12} /> Preview
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {previewModes[index] ? (
+                                                <div className="border border-slate-700 rounded-xl overflow-hidden bg-slate-900/50 min-h-[200px]">
+                                                    <div className="p-4">
+                                                        <LessonContentRenderer content={lesson.content} />
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <textarea
+                                                        rows={6}
+                                                        value={lesson.content}
+                                                        onChange={(e) => {
+                                                            const newLessons = [...formData.lessons];
+                                                            newLessons[index].content = e.target.value;
+                                                            setFormData({ ...formData, lessons: newLessons });
+                                                            setIsDirty(true);
+                                                        }}
+                                                        className="w-full p-2 bg-slate-900 border border-slate-700 rounded focus:ring-1 focus:ring-indigo-500 text-sm font-mono"
+                                                    />
+                                                    <p className="text-xs text-slate-500">Supports basic HTML tags like &lt;h3&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt;</p>
+                                                </>
+                                            )}
                                         </div>
 
                                         <div className="space-y-2">

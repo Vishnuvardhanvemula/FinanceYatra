@@ -5,25 +5,38 @@ import WeeklyChallenge from '../models/WeeklyChallenge.js';
 class ChallengeService {
     // --- Daily Challenges ---
 
-    async getDailyQuestion(userId) {
-        const user = await User.findById(userId);
-        if (!user) throw new Error('User not found');
+    async getDailyQuestion(userOrId) {
+        let user = null;
+        if (userOrId) {
+            if (typeof userOrId === 'string') {
+                user = await User.findById(userOrId);
+            } else {
+                user = userOrId;
+            }
+        }
 
-        // Check if user already answered today
-        const today = new Date().toDateString();
-        const lastAnswered = user.dailyChallenge?.lastAnsweredAt
-            ? new Date(user.dailyChallenge.lastAnsweredAt).toDateString()
-            : null;
+        // Check if user already answered today (only if user exists)
+        if (user) {
+            const today = new Date().toDateString();
+            const lastAnswered = user.dailyChallenge?.lastAnsweredAt
+                ? new Date(user.dailyChallenge.lastAnsweredAt).toDateString()
+                : null;
 
-        if (lastAnswered === today) {
-            return {
-                alreadyAnswered: true,
-                message: 'You have already completed the daily challenge for today!'
-            };
+            if (lastAnswered === today) {
+                return {
+                    alreadyAnswered: true,
+                    message: 'You have already completed the daily challenge for today!'
+                };
+            }
         }
 
         // Get a random question
         const count = await DailyChallenge.countDocuments({ isActive: true });
+        if (count === 0) {
+            // Fallback if no challenges exist (shouldn't happen if seeded)
+            return { message: 'No daily challenges available at the moment.' };
+        }
+
         const random = Math.floor(Math.random() * count);
         const question = await DailyChallenge.findOne({ isActive: true }).skip(random);
 
@@ -33,7 +46,10 @@ class ChallengeService {
 
         // Return question without the correct answer
         const { correct, ...questionData } = question.toObject();
-        return questionData;
+        return {
+            question: questionData,
+            answeredToday: false
+        };
     }
 
     async submitDailyAnswer(userId, questionId, answer) {
@@ -188,8 +204,8 @@ class ChallengeService {
 
     // --- Leaderboard ---
 
-    async getLeaderboard(limit = 10) {
-        const users = await User.find({}, 'name totalPoints proficiencyLevel currentStreak avatar')
+    async getLeaderboard(limit = 10, currentUserId = null) {
+        const users = await User.find({}, 'name totalPoints proficiencyLevel currentStreak avatar badges')
             .sort({ totalPoints: -1 })
             .limit(limit);
 
@@ -200,7 +216,10 @@ class ChallengeService {
             points: user.totalPoints,
             level: user.proficiencyLevel,
             streak: user.currentStreak,
-            avatar: user.avatar // Assuming avatar field exists or handled by frontend
+            avatar: user.avatar,
+            badges: user.badges ? user.badges.length : 0,
+            topBadge: user.badges && user.badges.length > 0 ? user.badges[user.badges.length - 1].badgeId : null,
+            isMe: currentUserId ? user._id.toString() === currentUserId.toString() : false
         }));
     }
 }

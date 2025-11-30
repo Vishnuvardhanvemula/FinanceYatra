@@ -10,6 +10,8 @@ import RankBadge from '../components/RankBadge';
 import SpotlightCard from '../components/SpotlightCard';
 import AnimatedCounter from '../components/AnimatedCounter';
 import MarketTicker from '../components/dashboard/MarketTicker';
+import RecommendedModules from '../components/dashboard/RecommendedModules';
+import MarketSentimentWidget from '../components/dashboard/MarketSentimentWidget';
 import WidgetErrorBoundary from '../components/WidgetErrorBoundary';
 import { dashboardService } from '../services/dashboardService';
 import { useRankSystem } from '../hooks/useRankSystem';
@@ -284,6 +286,11 @@ const DashboardPage = () => {
           </div>
         </motion.div>
 
+        {/* 1.5. AI Recommendations & Daily Goal */}
+        <WidgetErrorBoundary>
+          <RecommendedModules />
+        </WidgetErrorBoundary>
+
         {/* 2. Bento Grid Layout */}
         <motion.div
           variants={containerVariants}
@@ -461,59 +468,7 @@ const DashboardPage = () => {
           {rankTier >= 2 && (
             <motion.div variants={itemVariants} className="md:col-span-12 md:row-span-1">
               <WidgetErrorBoundary>
-                <SpotlightCard className="h-full" variant={rankTier === 4 ? 'legendary' : 'default'}>
-                  <div className="p-6 flex flex-col gap-6">
-                    {/* Row 1: Standard Market Data */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-cyan-500/10 rounded-xl border border-cyan-500/20">
-                          <BarChart2 className="text-cyan-400" size={24} />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-bold text-white">{t('dashboard.market_intelligence')}</h3>
-                          <p className="text-xs text-cyan-400 uppercase tracking-widest">{t('dashboard.exclusive_insight')}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-8 text-right">
-                        {marketData?.length > 0 ? (
-                          marketData.slice(0, 3).map((item, idx) => (
-                            <div key={idx}>
-                              <div className="text-xs text-slate-500 uppercase">{item.symbol}</div>
-                              <div className={`text-lg font-mono ${item.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                {item.change >= 0 ? '+' : ''}{item.changePercent ? item.changePercent.toFixed(2) : '0.00'}% {item.change >= 0 ? '▲' : '▼'}
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-sm text-slate-500">Loading market data...</div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Row 2: Insider Signals (Legendary Only) */}
-                    {rankTier === 4 && (
-                      <>
-                        <div className="w-full h-px bg-white/10"></div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Zap size={16} className="text-fuchsia-400" />
-                            <span className="text-sm font-bold text-fuchsia-400 uppercase tracking-widest">Insider Signals</span>
-                          </div>
-                          <div className="flex gap-8">
-                            <div className="flex items-center gap-3 bg-fuchsia-500/10 px-4 py-2 rounded-lg border border-fuchsia-500/20">
-                              <span className="text-xs text-fuchsia-300 uppercase">{t('dashboard.insider_signals')}</span>
-                              <span className="text-sm font-mono text-white">BTC Accumulation</span>
-                            </div>
-                            <div className="flex items-center gap-3 bg-fuchsia-500/10 px-4 py-2 rounded-lg border border-fuchsia-500/20">
-                              <span className="text-xs text-fuchsia-300 uppercase">Sentiment</span>
-                              <span className="text-sm font-mono text-emerald-400">Extreme Greed (85)</span>
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </SpotlightCard>
+                <MarketSentimentWidget rankTier={rankTier} />
               </WidgetErrorBoundary>
             </motion.div>
           )}

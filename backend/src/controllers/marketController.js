@@ -1,36 +1,84 @@
 import Portfolio from '../models/Portfolio.js';
 import StockTransaction from '../models/StockTransaction.js';
+import YahooFinance from 'yahoo-finance2';
+import marketService from '../services/marketService.js';
+const yahooFinance = new YahooFinance({ suppressNotices: ['yahooSurvey'] });
 
-// Mock Data for Phase 1
-const MOCK_STOCKS = [
-    { symbol: 'AAPL', name: 'Apple Inc.', basePrice: 175.50, sector: 'Technology' },
-    { symbol: 'GOOGL', name: 'Alphabet Inc.', basePrice: 138.20, sector: 'Technology' },
-    { symbol: 'MSFT', name: 'Microsoft Corp.', basePrice: 330.00, sector: 'Technology' },
-    { symbol: 'AMZN', name: 'Amazon.com Inc.', basePrice: 145.80, sector: 'Consumer Cyclical' },
-    { symbol: 'TSLA', name: 'Tesla Inc.', basePrice: 215.30, sector: 'Automotive' },
-    { symbol: 'NVDA', name: 'NVIDIA Corp.', basePrice: 460.10, sector: 'Technology' },
-    { symbol: 'META', name: 'Meta Platforms', basePrice: 310.50, sector: 'Technology' },
-    { symbol: 'NFLX', name: 'Netflix Inc.', basePrice: 450.20, sector: 'Communication' },
-    { symbol: 'JPM', name: 'JPMorgan Chase', basePrice: 148.00, sector: 'Financial' },
-    { symbol: 'V', name: 'Visa Inc.', basePrice: 245.60, sector: 'Financial' }
+// Supported Stocks for the platform
+const SUPPORTED_STOCKS = [
+    { symbol: 'AAPL', name: 'Apple Inc.', sector: 'Technology' },
+    { symbol: 'GOOGL', name: 'Alphabet Inc.', sector: 'Technology' },
+    { symbol: 'MSFT', name: 'Microsoft Corp.', sector: 'Technology' },
+    { symbol: 'AMZN', name: 'Amazon.com Inc.', sector: 'Consumer Cyclical' },
+    { symbol: 'TSLA', name: 'Tesla Inc.', sector: 'Automotive' },
+    { symbol: 'NVDA', name: 'NVIDIA Corp.', sector: 'Technology' },
+    { symbol: 'META', name: 'Meta Platforms', sector: 'Technology' },
+    { symbol: 'NFLX', name: 'Netflix Inc.', sector: 'Communication' },
+    { symbol: 'JPM', name: 'JPMorgan Chase', sector: 'Financial' },
+    { symbol: 'V', name: 'Visa Inc.', sector: 'Financial' }
 ];
 
-// Helper to generate slightly randomized price
-const getCurrentPrice = (basePrice) => {
-    const fluctuation = (Math.random() - 0.5) * 0.04; // +/- 2%
-    return basePrice * (1 + fluctuation);
+// Helper to fetch real stock data
+const fetchStockData = async (symbols) => {
+    try {
+        const results = await yahooFinance.quote(symbols);
+        return results.map(quote => ({
+            symbol: quote.symbol,
+            price: quote.regularMarketPrice,
+            change: quote.regularMarketChange,
+            changePercent: quote.regularMarketChangePercent
+        }));
+    } catch (error) {
+        console.error('Failed to fetch stock data:', error.message);
+        // Fallback to mock data if API fails (to prevent app crash)
+        return symbols.map(sym => ({
+            symbol: sym,
+            price: 150.00 + (Math.random() * 10),
+            change: 1.5,
+            changePercent: 1.0
+        }));
+    }
 };
 
 export const getMarketPrices = async (req, res) => {
     try {
-        const stocks = MOCK_STOCKS.map(stock => ({
-            ...stock,
-            currentPrice: getCurrentPrice(stock.basePrice),
-            change24h: (Math.random() - 0.5) * 5 // Mock % change
-        }));
+        const symbols = SUPPORTED_STOCKS.map(s => s.symbol);
+        const realData = await fetchStockData(symbols);
+
+        const stocks = SUPPORTED_STOCKS.map(stock => {
+            const data = realData.find(d => d.symbol === stock.symbol) || {};
+            return {
+                ...stock,
+                currentPrice: data.price || 0,
+                change24h: data.changePercent || 0
+            };
+        });
+
         res.json(stocks);
     } catch (error) {
         res.status(500).json({ message: 'Failed to fetch market prices', error: error.message });
+    }
+};
+
+export const getMarketOverview = async (req, res) => {
+    try {
+        // Return top 5 stocks for dashboard
+        const symbols = SUPPORTED_STOCKS.slice(0, 5).map(s => s.symbol);
+        const realData = await fetchStockData(symbols);
+
+        const stocks = SUPPORTED_STOCKS.slice(0, 5).map(stock => {
+            const data = realData.find(d => d.symbol === stock.symbol) || {};
+            return {
+                symbol: stock.symbol,
+                name: stock.name,
+                price: data.price || 0,
+                change: data.change || 0,
+                changePercent: data.changePercent || 0
+            };
+        });
+        res.json(stocks);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch market overview', error: error.message });
     }
 };
 
@@ -39,7 +87,6 @@ export const getPortfolio = async (req, res) => {
         let portfolio = await Portfolio.findOne({ user: req.user._id });
 
         if (!portfolio) {
-            // Initialize new portfolio for user
             portfolio = await Portfolio.create({
                 user: req.user._id,
                 balance: 10000,
@@ -47,11 +94,20 @@ export const getPortfolio = async (req, res) => {
             });
         }
 
-        // Calculate current total value based on mock prices
+        // Get current prices for all holdings
+        const holdingSymbols = portfolio.holdings.map(h => h.symbol);
+        let priceMap = {};
+
+        if (holdingSymbols.length > 0) {
+            const realData = await fetchStockData(holdingSymbols);
+            realData.forEach(d => {
+                priceMap[d.symbol] = d.price;
+            });
+        }
+
         let holdingsValue = 0;
         const updatedHoldings = portfolio.holdings.map(holding => {
-            const stock = MOCK_STOCKS.find(s => s.symbol === holding.symbol);
-            const currentPrice = stock ? getCurrentPrice(stock.basePrice) : holding.averagePrice;
+            const currentPrice = priceMap[holding.symbol] || holding.averagePrice;
             const currentValue = currentPrice * holding.quantity;
             holdingsValue += currentValue;
             return {
@@ -82,12 +138,20 @@ export const executeTrade = async (req, res) => {
     }
 
     try {
-        const stock = MOCK_STOCKS.find(s => s.symbol === symbol);
-        if (!stock) {
+        // Verify stock exists in our supported list
+        const stockInfo = SUPPORTED_STOCKS.find(s => s.symbol === symbol);
+        if (!stockInfo) {
             return res.status(404).json({ message: 'Stock not found' });
         }
 
-        const currentPrice = getCurrentPrice(stock.basePrice);
+        // Fetch REAL-TIME price for the trade
+        const quotes = await fetchStockData([symbol]);
+        const currentPrice = quotes[0]?.price;
+
+        if (!currentPrice) {
+            return res.status(500).json({ message: 'Failed to fetch current stock price' });
+        }
+
         const totalAmount = currentPrice * quantity;
 
         let portfolio = await Portfolio.findOne({ user: userId });
@@ -174,5 +238,14 @@ export const getLeaderboard = async (req, res) => {
         res.json(leaderboard);
     } catch (error) {
         res.status(500).json({ message: 'Failed to fetch leaderboard', error: error.message });
+    }
+};
+
+export const getMarketSentiment = async (req, res) => {
+    try {
+        const sentimentData = await marketService.analyzeMarketSentiment();
+        res.json(sentimentData);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to analyze market sentiment', error: error.message });
     }
 };
