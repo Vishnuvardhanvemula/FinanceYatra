@@ -6,7 +6,8 @@ Write-Host "     FinanceYatra - Starting All Services" -ForegroundColor Cyan
 Write-Host "=========================================================" -ForegroundColor Cyan
 Write-Host ""
 
-$projectRoot = "d:\projects\Finance tutor"
+# Resolve project root dynamically using script location so this works on other machines
+$projectRoot = (Resolve-Path -Path (Join-Path $PSScriptRoot '..')).Path
 # Frontend now lives in a `frontend` subfolder. If your repo keeps the frontend at root, the fallback
 # will still try the root folder (for backwards-compatibility).
 $frontendPath = Join-Path $projectRoot "frontend"
@@ -44,14 +45,28 @@ try {
 
 Write-Host ""
 
-# Check GPU availability
 Write-Host "Checking GPU availability..." -ForegroundColor Yellow
 $ragPath = Join-Path $projectRoot "rag_system"
-$gpuCheck = & powershell -Command "cd '$ragPath'; .\venv\Scripts\activate; python -c 'import torch; print(torch.cuda.is_available())'" 2>$null
 
-if ($gpuCheck -eq "True") {
+# Prefer venv python if available (more reliable than trying to activate a shell-specific activate script)
+$pythonExe = Join-Path $ragPath "venv\Scripts\python.exe"
+if (-not (Test-Path $pythonExe)) {
+    $pythonExe = "python"
+}
+
+try {
+    $gpuCheck = & $pythonExe -c "import torch; print(torch.cuda.is_available())" 2>$null
+} catch {
+    $gpuCheck = $null
+}
+
+if ($gpuCheck -and $gpuCheck -like "*True*") {
     Write-Host "   GPU (CUDA) detected and available!" -ForegroundColor Green
-    $gpuName = & powershell -Command "cd '$ragPath'; .\venv\Scripts\activate; python -c 'import torch; print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else `"N/A`")'" 2>$null
+    try {
+        $gpuName = & $pythonExe -c "import torch; print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'N/A')" 2>$null
+    } catch {
+        $gpuName = "N/A"
+    }
     Write-Host "   GPU: $gpuName" -ForegroundColor Gray
 } else {
     Write-Host "   GPU not available, will use CPU" -ForegroundColor Yellow
@@ -63,9 +78,13 @@ Write-Host ""
 Write-Host "Starting Python RAG Service with GPU acceleration (port 8000)..." -ForegroundColor Yellow
 Write-Host "   Opening new terminal for Python RAG..." -ForegroundColor Gray
 
-$ragCommand = "cd '$ragPath'; .\venv\Scripts\activate; Write-Host '==========================================' -ForegroundColor Green; Write-Host '  Python RAG Service Starting with GPU...' -ForegroundColor Green; Write-Host '==========================================' -ForegroundColor Green; python app.py"
+# Use the venv python if available, fallback to system python to run the server
+$pythonExe = Join-Path $ragPath "venv\Scripts\python.exe"
+if (-not (Test-Path $pythonExe)) { $pythonExe = "python" }
 
-Start-Process powershell -ArgumentList "-NoExit", "-Command", $ragCommand
+$ragCommand = "Set-Location -Path '$ragPath'; & '$pythonExe' app.py"
+
+Start-Process powershell -ArgumentList "-NoExit", "-Command", $ragCommand -WorkingDirectory $ragPath
 
 Write-Host "Python RAG terminal opened" -ForegroundColor Green
 Write-Host "   Waiting 20 seconds for Python RAG to initialize..." -ForegroundColor Gray
@@ -93,13 +112,14 @@ Write-Host ""
 Write-Host "Starting Node.js Backend (port 5000)..." -ForegroundColor Yellow
 Write-Host "   Opening new terminal for Node.js..." -ForegroundColor Gray
 
-$backendPath = Join-Path $projectRoot "backend"
-$backendCommand = "cd '$backendPath'; `$env:USE_PYTHON_RAG='true'; `$env:PYTHON_RAG_URL='http://localhost:8000'; Write-Host '==========================================' -ForegroundColor Blue; Write-Host '  Node.js Backend Starting...' -ForegroundColor Blue; Write-Host '==========================================' -ForegroundColor Blue; npm run dev"
+    $backendPath = Join-Path $projectRoot "backend"
+    # Build a one-liner that sets environment variables in the new shell and then runs npm. Use backticks to avoid expansion in this script.
+    $backendCommand = "Set-Location -Path '$backendPath'; `$env:USE_PYTHON_RAG='true'; `$env:PYTHON_RAG_URL='http://localhost:8000'; Write-Host '==========================================' -ForegroundColor Blue; Write-Host '  Node.js Backend Starting...' -ForegroundColor Blue; Write-Host '==========================================' -ForegroundColor Blue; npm run dev"
 
-Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCommand
+Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCommand -WorkingDirectory $backendPath
 
-Write-Host "Node.js Backend terminal opened" -ForegroundColor Green
-Write-Host "   Waiting 10 seconds for backend to initialize..." -ForegroundColor Gray
+Write-Host "GPU Acceleration:" -ForegroundColor Cyan
+if ($gpuCheck -and $gpuCheck -like "*True*") {
 Start-Sleep -Seconds 10
 
 Write-Host ""
@@ -108,13 +128,13 @@ Write-Host ""
 Write-Host "Starting Frontend (port 5173)..." -ForegroundColor Yellow
 Write-Host "   Opening new terminal for Frontend..." -ForegroundColor Gray
 
-$frontendCommand = "cd '$frontendPath'; Write-Host '==========================================' -ForegroundColor Magenta; Write-Host '  Frontend Starting...' -ForegroundColor Magenta; Write-Host '==========================================' -ForegroundColor Magenta; npm run dev"
+    $frontendCommand = "Set-Location -Path '$frontendPath'; Write-Host '==========================================' -ForegroundColor Magenta; Write-Host '  Frontend Starting...' -ForegroundColor Magenta; Write-Host '==========================================' -ForegroundColor Magenta; npm run dev"
 
 if (Test-Path (Join-Path $frontendPath 'package.json')) {
     Start-Process powershell -ArgumentList "-NoExit", "-Command", $frontendCommand
     Write-Host "Frontend terminal opened" -ForegroundColor Green
-} else {
-    Write-Host "Skipped starting frontend: no package.json found in $frontendPath" -ForegroundColor Yellow
+if (Test-Path (Join-Path $frontendPath 'package.json')) {
+     Start-Process powershell -ArgumentList "-NoExit", "-Command", $frontendCommand -WorkingDirectory $frontendPath
 }
 
 Write-Host ""

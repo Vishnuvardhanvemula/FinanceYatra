@@ -117,19 +117,15 @@ router.post('/check-achievements', authenticate, async (req, res) => {
       });
     }
 
-    // Get current achievement IDs
     const currentAchievementIds = user.achievements.map(a => a.id);
 
-    // Check newly unlocked achievements
     const unlockedIds = achievementService.checkUnlockedAchievements(user, learningModules);
 
-    // Get new achievements
     const newAchievements = achievementService.getNewAchievements(
       currentAchievementIds,
       unlockedIds
     );
 
-    // Add new achievements to user
     if (newAchievements.length > 0) {
       for (const achievement of newAchievements) {
         user.achievements.push({
@@ -182,7 +178,7 @@ router.get('/stats', authenticate, async (req, res) => {
     }
 
     // Calculate key statistics
-    const streak = analyticsService.calculateStreak(user.activityLog || []);
+    const streak = user.currentStreak || 0;
     const moduleStats = analyticsService.calculateModuleStats(
       user.moduleProgress || [],
       learningModules
@@ -198,7 +194,7 @@ router.get('/stats', authenticate, async (req, res) => {
 
     const stats = {
       totalPoints: user.totalPoints || 0,
-      currentStreak: streak,
+      streak: streak,
       modulesCompleted: moduleStats.completedModules,
       totalModules: moduleStats.totalModules,
       achievementsUnlocked: unlockedAchievements.length,

@@ -77,6 +77,10 @@ class AuthService {
 
       // Update last login
       user.lastLogin = new Date();
+
+      // Update daily streak (Daily Active User)
+      user.updateDailyStreak();
+
       await user.save();
 
       // Generate JWT token

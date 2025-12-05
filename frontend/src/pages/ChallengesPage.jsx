@@ -276,14 +276,14 @@ export default function ChallengesPage() {
               <StatCard
                 label="XP"
                 value={user?.points || user?.xp || 0}
-                icon={IconZap}
+                icon={IconStar}
                 colorClass="from-cyan-500/20 to-blue-500/20"
                 delay={0.2}
               />
               <StatCard
                 label="Streak"
                 value={`${user?.streak || 0} Days`}
-                icon={IconFlame}
+                icon={IconZap}
                 colorClass="from-orange-500/20 to-red-500/20"
                 delay={0.3}
               />

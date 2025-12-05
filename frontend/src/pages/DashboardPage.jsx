@@ -266,11 +266,11 @@ const DashboardPage = () => {
 
             {/* Right Side Stats (Streak & XP) */}
             <div className="hidden md:flex items-center gap-12 z-10">
-              <div className="text-right group/stat" role="status" aria-label={`${t('dashboard.streak')}: ${stats?.streak || 0} days`}>
+              <div className="text-right group/stat" role="status" aria-label={`${t('dashboard.streak')}: ${user?.streak || 0} days`}>
                 <div className="text-xs text-slate-500 uppercase tracking-widest mb-1 group-hover/stat:text-amber-400 transition-colors">{t('dashboard.streak')}</div>
                 <div className="flex items-center justify-end gap-3 text-4xl font-medium text-white tracking-tight">
                   <Zap className="text-amber-400 fill-amber-400" size={28} aria-hidden="true" />
-                  <AnimatedCounter value={stats?.streak || 0} />
+                  <AnimatedCounter value={user?.streak || 0} />
                   <span className="text-sm font-normal text-slate-500 self-end mb-1">days</span>
                 </div>
               </div>
