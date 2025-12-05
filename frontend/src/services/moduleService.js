@@ -1,24 +1,47 @@
 import axios from 'axios';
+import { API_URL } from '../config/api';
 
-const API_URL = 'http://localhost:5000/api/modules';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 Minutes
+
+// Helper for caching
+const fetchWithCache = async (key, fetcher) => {
+    const cached = localStorage.getItem(key);
+    if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp < CACHE_DURATION) {
+            return data;
+        }
+    }
+    const data = await fetcher();
+    localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
+    return data;
+};
 
 export const moduleService = {
-    // Get all modules
+    // Get all modules (Cached)
     getAllModules: async () => {
         try {
-            const response = await axios.get(API_URL);
-            return response.data;
+            return await fetchWithCache('all_modules', async () => {
+                const response = await axios.get(API_URL);
+                return response.data;
+            });
         } catch (error) {
             console.error('Error fetching modules:', error);
+            // If API fails, try to return stale cache if available
+            const cached = localStorage.getItem('all_modules');
+            if (cached) return JSON.parse(cached).data;
+
             return { success: false, message: error.message };
         }
     },
 
-    // Get single module
+    // Get single module (Cached by ID)
     getModuleById: async (id) => {
         try {
-            const response = await axios.get(`${API_URL}/${id}`);
-            return response.data;
+            return await fetchWithCache(`module_${id}`, async () => {
+                const response = await axios.get(`${API_URL}/${id}`);
+                return response.data;
+            });
         } catch (error) {
             console.error('Error fetching module:', error);
             return { success: false, message: error.message };
@@ -68,7 +91,7 @@ export const moduleService = {
     generateQuiz: async (token, moduleId, lessonIndex) => {
         try {
             // Note: Using a different base URL for quizzes since it's a separate route file
-            const response = await axios.get(`http://localhost:5000/api/quiz/generate/${moduleId}/${lessonIndex}`, {
+            const response = await axios.get(`${API_URL.replace('/modules', '')}/quiz/generate/${moduleId}/${lessonIndex}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return response.data;

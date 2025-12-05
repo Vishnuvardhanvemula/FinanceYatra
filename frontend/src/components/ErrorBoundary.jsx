@@ -9,11 +9,13 @@ import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { 
+    this.state = {
       hasError: false,
       error: null,
-      errorInfo: null 
+      errorInfo: null
     };
+    this.handleReset = this.handleReset.bind(this);
+    this.handleGoHome = this.handleGoHome.bind(this);
   }
 
   static getDerivedStateFromError(error) {
@@ -30,19 +32,19 @@ class ErrorBoundary extends React.Component {
     });
   }
 
-  handleReset = () => {
-    this.setState({ 
+  handleReset() {
+    this.setState({
       hasError: false,
       error: null,
-      errorInfo: null 
+      errorInfo: null
     });
     // Reload the page
     window.location.reload();
-  };
+  }
 
-  handleGoHome = () => {
+  handleGoHome() {
     window.location.href = '/modules';
-  };
+  }
 
   render() {
     if (this.state.hasError) {
@@ -55,11 +57,11 @@ class ErrorBoundary extends React.Component {
                 <AlertTriangle className="w-8 h-8 text-red-500" />
               </div>
             </div>
-            
+
             <h2 className="text-2xl font-bold text-white mb-2">
               Oops! Something went wrong
             </h2>
-            
+
             <p className="text-gray-400 mb-6">
               We encountered an unexpected error. Don't worry, your progress is saved.
             </p>
@@ -82,7 +84,7 @@ class ErrorBoundary extends React.Component {
                 )}
               </div>
             )}
-            
+
             <div className="flex gap-3 justify-center">
               <button
                 onClick={this.handleReset}
@@ -91,7 +93,7 @@ class ErrorBoundary extends React.Component {
                 <RefreshCw className="w-4 h-4" />
                 Try Again
               </button>
-              
+
               <button
                 onClick={this.handleGoHome}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"

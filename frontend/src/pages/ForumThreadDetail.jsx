@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { API_URL } from '../config/api';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ThumbsUp, MessageSquare, CheckCircle, User, Send, Clock } from 'lucide-react';
 import MainNavbar from '../components/MainNavbar';
@@ -17,7 +18,7 @@ const ForumThreadDetail = () => {
     const fetchPostDetails = async () => {
         try {
             const token = localStorage.getItem('authToken');
-            const res = await fetch(`http://localhost:5000/api/forum/${id}`, {
+            const res = await fetch(`${API_URL}/forum/${id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -42,7 +43,7 @@ const ForumThreadDetail = () => {
     const handleUpvote = async () => {
         try {
             const token = localStorage.getItem('authToken');
-            const res = await fetch(`http://localhost:5000/api/forum/${id}/vote`, {
+            const res = await fetch(`${API_URL}/forum/${id}/vote`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -63,7 +64,7 @@ const ForumThreadDetail = () => {
         setSubmitting(true);
         try {
             const token = localStorage.getItem('authToken');
-            const res = await fetch(`http://localhost:5000/api/forum/${id}/comment`, {
+            const res = await fetch(`${API_URL}/forum/${id}/comment`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

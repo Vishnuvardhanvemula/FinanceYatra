@@ -4,6 +4,7 @@ import { Plus, Search, Filter, MessageCircle } from 'lucide-react';
 import MainNavbar from '../components/MainNavbar';
 import ForumThreadCard from '../components/community/ForumThreadCard';
 import CreatePostModal from '../components/community/CreatePostModal';
+import { API_URL } from '../config/api';
 
 const CommunityPage = () => {
     const [posts, setPosts] = useState([]);
@@ -16,7 +17,7 @@ const CommunityPage = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('authToken');
-            let url = 'http://localhost:5000/api/forum?';
+            let url = `${API_URL}/forum?`;
             if (activeCategory !== 'All') url += `category=${encodeURIComponent(activeCategory)}&`;
             if (searchQuery) url += `search=${encodeURIComponent(searchQuery)}&`;
 
@@ -84,8 +85,8 @@ const CommunityPage = () => {
                                         key={cat}
                                         onClick={() => setActiveCategory(cat)}
                                         className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeCategory === cat
-                                                ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
-                                                : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                                            ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
+                                            : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
                                             }`}
                                     >
                                         {cat}

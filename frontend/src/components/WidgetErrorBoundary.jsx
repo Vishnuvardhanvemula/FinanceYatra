@@ -5,6 +5,7 @@ class WidgetErrorBoundary extends React.Component {
     constructor(props) {
         super(props);
         this.state = { hasError: false, error: null };
+        this.handleRetry = this.handleRetry.bind(this);
     }
 
     static getDerivedStateFromError(error) {
@@ -15,9 +16,9 @@ class WidgetErrorBoundary extends React.Component {
         console.error("Widget Error:", error, errorInfo);
     }
 
-    handleRetry = () => {
+    handleRetry() {
         this.setState({ hasError: false, error: null });
-    };
+    }
 
     render() {
         if (this.state.hasError) {
