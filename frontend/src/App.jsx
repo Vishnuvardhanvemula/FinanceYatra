@@ -191,14 +191,15 @@ export default function App() {
                 <Route path="/market-simulator" element={<MarketPage />} />
                 <Route path="/community" element={<CommunityPage />} />
                 <Route path="/community/post/:id" element={<ForumThreadDetail />} />
-                <Route path="/calculators/emi" element={<EMICalculatorPage />} />
-                <Route path="/calculators" element={<Calculators />} />
-                <Route path="/calculators/emergency" element={<EmergencyFund />} />
-                <Route path="/calculators/retirement" element={<RetirementCalculator />} />
-                <Route path="/calculators/sip" element={<SIPCalculator />} />
-                <Route path="/calculators/tax" element={<TaxCalculator />} />
               </Route>
 
+              {/* Public Calculator Routes */}
+              <Route path="/calculators" element={<Calculators />} />
+              <Route path="/calculators/emi" element={<EMICalculatorPage />} />
+              <Route path="/calculators/emergency" element={<EmergencyFund />} />
+              <Route path="/calculators/retirement" element={<RetirementCalculator />} />
+              <Route path="/calculators/sip" element={<SIPCalculator />} />
+              <Route path="/calculators/tax" element={<TaxCalculator />} />
               <Route path="/sip" element={<SIPCalculator />} />
               <Route path="/emi" element={<EMICalculatorPage />} />
               <Route path="/retirement" element={<RetirementCalculator />} />
