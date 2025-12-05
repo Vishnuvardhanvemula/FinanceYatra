@@ -9,6 +9,7 @@ i18n
     .use(initReactI18next)
     .init({
         fallbackLng: 'en',
+        load: 'languageOnly',
         debug: true, // Set to false in production
         interpolation: {
             escapeValue: false, // React already safes from xss

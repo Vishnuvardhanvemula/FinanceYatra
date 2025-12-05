@@ -21,7 +21,7 @@ import budgetRoutes from './routes/budgetRoutes.js';
 import forumRoutes from './routes/forumRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import llmService from './services/llmService.js';
-import pythonRagService from './services/pythonRagService.js';
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -112,7 +112,7 @@ async function connectDatabase() {
 
     await mongoose.connect(mongoUri);
     console.log('✅ Connected to MongoDB');
-    console.log(`📊 Database: ${mongoUri}`);
+    // console.log(`📊 Database: ${mongoUri}`); // Hiding for security
     return true;
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
@@ -124,7 +124,7 @@ async function connectDatabase() {
 async function startServer() {
   await connectDatabase();
 
-  await pythonRagService.initialize();
+
 
   llmService.initialize();
 
@@ -133,8 +133,8 @@ async function startServer() {
     console.log(`📡 Server running on: http://localhost:${PORT}`);
     console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
     console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🦙 AI Model: Ollama (llama3.2:1b)`);
-    console.log(`🐍 RAG System: Python FastAPI on http://localhost:8000\n`);
+
+
   });
 }
 

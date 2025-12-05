@@ -3,13 +3,9 @@
  * All LLM inference now happens through Python RAG API
  */
 
-import pythonRagService from './pythonRagService.js';
 
 class LLMService {
   constructor() {
-    this.usePythonRAG = process.env.USE_PYTHON_RAG === 'true';
-    this.pythonRag = pythonRagService;
-    
     this.systemPrompt = `You are a friendly and knowledgeable financial advisor assistant for financeYatra, 
 a platform that helps people understand finance in simple terms. Your role is to:
 
@@ -26,68 +22,21 @@ Always be encouraging and supportive of their financial learning journey.`;
   }
 
   /**
-   * Initialize the LLM service - checks Python RAG availability
+   * Initialize the LLM service
    */
   async initialize() {
-    try {
-      // Initialize Python RAG service (primary system)
-      if (this.usePythonRAG) {
-        console.log('🐍 Initializing Python RAG service...');
-        const ragAvailable = await this.pythonRag.initialize();
-        
-        if (ragAvailable) {
-          console.log('✅ Python RAG service is ready - Enhanced multilingual RAG responses enabled');
-          console.log('   📊 Ollama LLM, ChromaDB vector store, and 10+ languages available');
-          return; // Python RAG is ready
-        } else {
-          console.warn('⚠️  Python RAG not available, will use mock responses');
-          this.usePythonRAG = false;
-        }
-      }
-
-      // No Python RAG - use mock responses
-      console.log('ℹ️  Using mock responses (Python RAG not enabled)');
-      console.log('   To enable full functionality:');
-      console.log('   1. Install Ollama: https://ollama.ai');
-      console.log('   2. Run: ollama pull llama3');
-      console.log('   3. Start Python RAG: cd rag_system && python app.py');
-
-    } catch (error) {
-      console.error('❌ Failed to initialize LLM services:', error.message);
-    }
+    console.log('✅ LLM Service initialized (Mock Mode)');
   }
 
   /**
    * Get response from LLM based on user query and chat history
-   * @param {string} userMessage - User's message (already translated to English)
+   * @param {string} userMessage - User's message
    * @param {Array} chatHistory - Previous messages
    * @param {string} targetLanguage - Target language for response
-   * @param {string} proficiencyLevel - User proficiency level (beginner/intermediate/expert)
+   * @param {string} proficiencyLevel - User proficiency level
    */
   async getResponse(userMessage, chatHistory = [], targetLanguage = 'en', proficiencyLevel = null) {
-    // Priority 1: Use Python RAG if available (primary system)
-    if (this.usePythonRAG && this.pythonRag.isAvailable()) {
-      try {
-        console.log(`🐍 Using Python RAG system with Ollama [Level: ${proficiencyLevel || 'unknown'}]...`);
-        const ragResponse = await this.pythonRag.query(
-          userMessage, 
-          targetLanguage, 
-          proficiencyLevel,
-          3, 
-          true
-        );
-        
-        // Python RAG handles translation internally, return the answer directly
-        return ragResponse.answer;
-      } catch (error) {
-        console.error('❌ Python RAG error:', error.message);
-        console.warn('⚠️  Falling back to mock responses');
-        // Fall through to mock fallback
-      }
-    }
-
-    // Priority 2: Use mock responses (development/fallback)
-    console.warn('⚠️  Using mock responses (Python RAG not available)');
+    // Return mock response directly since RAG is removed
     return this.getMockResponse(userMessage);
   }
 

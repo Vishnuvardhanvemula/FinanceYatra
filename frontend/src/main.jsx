@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App'
 import './index.css'
 import './i18n'; // Import i18n configuration
-import favicon from './assets/logo-source.png'
+import favicon from './assets/logo.png'
 
 // set favicon dynamically so the bundled asset is used
 const setFavicon = (src) => {

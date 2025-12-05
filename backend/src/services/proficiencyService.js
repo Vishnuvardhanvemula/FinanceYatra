@@ -3,7 +3,6 @@
  * Analyzes user questions using Ollama LLM to determine proficiency level
  */
 
-import pythonRagService from './pythonRagService.js';
 
 class ProficiencyDetectionService {
   constructor() {
@@ -26,48 +25,13 @@ class ProficiencyDetectionService {
     }
 
     try {
-      // Prepare analysis prompt
-      const questionsText = questions.map((q, i) => `${i + 1}. ${q}`).join('\n');
-      
-      const analysisPrompt = `
-You are an expert financial literacy assessor. Analyze these questions asked by a user and determine their financial knowledge level.
+      console.log('🔍 Analyzing user proficiency (Rule-based)...');
 
-User's Questions:
-${questionsText}
-
-Based on these questions, classify the user's financial literacy level as one of:
-1. BEGINNER - Asks basic definitions, doesn't understand common terms (EMI, savings, interest, UPI). Questions like "What is...?", "How do I...?" for very basic concepts.
-2. INTERMEDIATE - Understands basic concepts, asks about applications and comparisons. Questions about how things work, which option is better, practical scenarios.
-3. EXPERT - Asks advanced questions about optimization, tax implications, complex financial products. Shows understanding of concepts and asks for deeper analysis.
-
-Provide your assessment in this exact format:
-LEVEL: [beginner/intermediate/expert]
-SCORE: [0-100, where 0-33=beginner, 34-66=intermediate, 67-100=expert]
-REASONING: [2-3 sentences explaining why you classified them at this level, with specific examples from their questions]
-
-Assessment:`;
-
-      console.log('🔍 Analyzing user proficiency...');
-      
-      // Use Python RAG service to call Ollama
-      // Parameters: query, language, proficiencyLevel, k (documents), returnSources
-      const response = await pythonRagService.query(analysisPrompt, 'en', null, 1, false);
-      
-      if (!response || !response.answer) {
-        throw new Error('Failed to get LLM response for proficiency analysis');
-      }
-
-      // Parse the response
-      const analysis = this.parseAnalysisResponse(response.answer);
-      
-      console.log(`✅ Proficiency detected: ${analysis.level} (score: ${analysis.score})`);
-      
-      return analysis;
+      // Use fallback rule-based detection since RAG is disabled
+      return this.fallbackDetection(questions);
 
     } catch (error) {
       console.error('❌ Proficiency detection error:', error.message);
-      
-      // Fallback to rule-based detection if AI fails
       return this.fallbackDetection(questions);
     }
   }
@@ -84,11 +48,11 @@ Assessment:`;
       // Extract SCORE
       const scoreMatch = text.match(/SCORE:\s*(\d+)/);
       let score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
-      
+
       // Validate score range
       if (score < 0) score = 0;
       if (score > 100) score = 100;
-      
+
       // If score doesn't match level, adjust it
       if (level === 'beginner' && score > 33) score = Math.min(score, 33);
       if (level === 'intermediate' && (score < 34 || score > 66)) {
@@ -117,7 +81,7 @@ Assessment:`;
    */
   fallbackDetection(questions) {
     console.log('⚠️ Using fallback rule-based proficiency detection');
-    
+
     let score = 0;
     const questionTexts = questions.join(' ').toLowerCase();
 
@@ -155,16 +119,16 @@ Assessment:`;
     // Reassess if:
     // 1. Never assessed
     if (user.proficiencyLevel === 'unknown') return true;
-    
+
     // 2. Enough new questions since last assessment
     if (user.questionsAnalyzed >= this.reassessmentThreshold) return true;
-    
+
     // 3. Assessment is old (30 days)
     if (user.proficiencyAssessedAt) {
       const daysSinceAssessment = (Date.now() - user.proficiencyAssessedAt.getTime()) / (1000 * 60 * 60 * 24);
       if (daysSinceAssessment > 30) return true;
     }
-    
+
     return false;
   }
 
@@ -176,7 +140,7 @@ Assessment:`;
       // Read session file
       const fs = await import('fs/promises');
       const path = await import('path');
-      
+
       const sessionPath = path.join(process.cwd(), 'data', 'sessions', `${sessionId}.json`);
       const sessionData = await fs.readFile(sessionPath, 'utf-8');
       const session = JSON.parse(sessionData);
