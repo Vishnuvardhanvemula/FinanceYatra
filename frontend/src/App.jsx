@@ -175,7 +175,6 @@ export default function App() {
               <Route path="/onboarding" element={<OnboardingPage />} />
 
               <Route element={<ProtectedRoute />}>
-                <Route path="/chat" element={<ChatPage />} />
                 <Route path="/modules" element={<ModulesPage />} />
                 <Route path="/modules/:id" element={<ErrorBoundary><ModuleDetailPage /></ErrorBoundary>} />
                 <Route path="/dashboard" element={<DashboardPage />} />

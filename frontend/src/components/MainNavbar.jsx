@@ -52,7 +52,6 @@ export default function MainNavbar() {
                 // User View: Full Navigation
                 <>
                   {isAuthenticated && <Link to="/dashboard" className="text-sm font-medium text-slate-400 hover:text-white transition-colors tracking-wide">{t('nav.dashboard')}</Link>}
-                  <Link to="/chat" className="text-sm font-medium text-slate-400 hover:text-white transition-colors tracking-wide">{t('nav.chat')}</Link>
                   <Link to="/modules" className="text-sm font-medium text-slate-400 hover:text-white transition-colors tracking-wide">{t('nav.modules')}</Link>
                   <Link to="/challenges" className="text-sm font-medium text-slate-400 hover:text-white transition-colors tracking-wide">{t('nav.challenges')}</Link>
                   <Link to="/community" className="text-sm font-medium text-slate-400 hover:text-white transition-colors tracking-wide">Community</Link>
@@ -194,7 +193,6 @@ export default function MainNavbar() {
                   // User View: Full Navigation
                   <>
                     {isAuthenticated && <Link to="/dashboard" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">Dashboard</Link>}
-                    <Link to="/chat" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">Chat</Link>
                     <Link to="/modules" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">Modules</Link>
                     <Link to="/challenges" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">Challenges</Link>
                     <Link to="/community" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">Community</Link>
