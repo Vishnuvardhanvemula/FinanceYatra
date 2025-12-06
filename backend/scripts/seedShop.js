@@ -1,195 +1,155 @@
+
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import ShopItem from '../src/models/ShopItem.js';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-dotenv.config();
+// Fix for __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-const shopItems = [
-    // Frames
+dotenv.config({ path: join(__dirname, '../.env') });
+
+const sampleItems = [
+    // Themes
     {
-        itemId: 'frame_gold',
-        name: 'Golden Frame',
-        description: 'A shiny golden frame for your profile.',
-        category: 'frame',
-        price: 1000,
-        rarity: 'rare',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/2550/2550223.png',
+        itemId: 'theme_dark_gold',
+        name: 'Grand Luxury (Dark)',
+        description: 'A premium dark theme with gold accents and regal vibes. Perfect for the high roller.',
+        category: 'theme',
+        price: 5000,
+        rarity: 'legendary',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/566/566312.png',
+        unlockCondition: { rankTier: 2 },
         isActive: true
     },
     {
-        itemId: 'frame_neon',
-        name: 'Neon Cyber Frame',
-        description: 'A futuristic neon frame that glows.',
-        category: 'frame',
+        itemId: 'theme_cyberpunk',
+        name: 'Neon City',
+        description: 'A vibrant cyberpunk theme with neon pinks and cyans. Future is now.',
+        category: 'theme',
         price: 2500,
         rarity: 'epic',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/3159/3159310.png',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/3665/3665922.png',
+        unlockCondition: { rankTier: 1 },
         isActive: true
     },
     {
-        itemId: 'frame_bull',
-        name: 'Bull Run Horns',
-        description: 'Show you are bullish on your future.',
-        category: 'frame',
-        price: 1500,
+        itemId: 'theme_minimal',
+        name: 'Zen Minimalist',
+        description: 'Clean, white, and distraction-free. For the focused investor.',
+        category: 'theme',
+        price: 1000,
         rarity: 'rare',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/2316/2316680.png',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/4333/4333609.png',
         isActive: true
     },
+
+    // Frames
     {
-        itemId: 'frame_diamond',
-        name: 'Diamond Hands',
-        description: 'For those who hold through the volatility.',
-        category: 'frame',
-        price: 4000,
-        rarity: 'legendary',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/616/616556.png',
-        isActive: true
-    },
-    {
-        itemId: 'frame_rocket',
-        name: 'To The Moon',
-        description: 'Blast off with this rocket frame.',
+        itemId: 'frame_gold_wreath',
+        name: 'Golden Laurel',
+        description: 'A wreath of pure gold to adorn your avatar.',
         category: 'frame',
         price: 3000,
+        rarity: 'legendary',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/1152/1152912.png',
+        unlockCondition: { rankTier: 3 },
+        isActive: true
+    },
+    {
+        itemId: 'frame_cyber_border',
+        name: 'Holographic Rim',
+        description: 'A glitching, animated holographic border.',
+        category: 'frame',
+        price: 1500,
         rarity: 'epic',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/1356/1356479.png',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/4456/4456985.png',
+        isActive: true
+    },
+    {
+        itemId: 'frame_wood',
+        name: 'Oak Frame',
+        description: 'Sturdy and reliable. A classic choice.',
+        category: 'frame',
+        price: 500,
+        rarity: 'common',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/10692/10692985.png',
         isActive: true
     },
 
     // Accessories
     {
-        itemId: 'acc_sunglasses',
-        name: 'Cool Sunglasses',
-        description: 'Look cool while learning finance.',
-        category: 'accessory',
-        price: 500,
-        rarity: 'common',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/664/664468.png',
-        isActive: true
-    },
-    {
         itemId: 'acc_tophat',
         name: 'Monopoly Hat',
-        description: 'Feel like a tycoon.',
+        description: 'You mean business.',
         category: 'accessory',
-        price: 1500,
+        price: 2000,
         rarity: 'rare',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/1063/1063376.png',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/138/138308.png',
         isActive: true
     },
     {
-        itemId: 'acc_monocle',
-        name: 'The Monocle',
-        description: 'Classy and sophisticated.',
+        itemId: 'acc_glasses',
+        name: 'Deal With It',
+        description: 'Pixelated sunglasses. Very cool.',
         category: 'accessory',
         price: 1200,
         rarity: 'rare',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/2292/2292398.png',
-        isActive: true
-    },
-    {
-        itemId: 'acc_vr',
-        name: 'VR Headset',
-        description: 'Ready for the metaverse.',
-        category: 'accessory',
-        price: 2000,
-        rarity: 'epic',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/2983/2983720.png',
-        isActive: true
-    },
-    {
-        itemId: 'acc_chain',
-        name: 'Golden Chain',
-        description: 'Drip too hard.',
-        category: 'accessory',
-        price: 3500,
-        rarity: 'legendary',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/2761/2761118.png',
-        isActive: true
-    },
-
-    // Themes
-    {
-        itemId: 'theme_dark_gold',
-        name: 'Luxury Dark Theme',
-        description: 'A premium dark theme with gold accents.',
-        category: 'theme',
-        price: 5000,
-        rarity: 'legendary',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/566/566312.png',
-        isActive: true
-    },
-    {
-        itemId: 'theme_cyberpunk',
-        name: 'Cyberpunk Finance',
-        description: 'Neon lights and high tech vibes.',
-        category: 'theme',
-        price: 3000,
-        rarity: 'epic',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/3662/3662588.png',
-        isActive: true
-    },
-    {
-        itemId: 'theme_matrix',
-        name: 'Matrix Code',
-        description: 'Enter the financial matrix.',
-        category: 'theme',
-        price: 2500,
-        rarity: 'rare',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/2083/2083213.png',
-        isActive: true
-    },
-    {
-        itemId: 'theme_old_money',
-        name: 'Old Money Aesthetic',
-        description: 'Timeless elegance and wealth.',
-        category: 'theme',
-        price: 2000,
-        rarity: 'rare',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/2482/2482528.png',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/265/265691.png',
         isActive: true
     },
 
     // Mystery Boxes
     {
-        itemId: 'box_common',
-        name: 'Standard Supply Drop',
-        description: 'Contains random common or rare items.',
+        itemId: 'box_starter',
+        name: 'Starter Box',
+        description: 'Contains common and rare items. Good for beginners.',
         category: 'mystery_box',
         price: 800,
         rarity: 'common',
-        dropRates: { common: 0.7, rare: 0.25, epic: 0.05 },
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/4577/4577660.png',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/679/679821.png',
+        dropRates: { common: 0.8, rare: 0.19, epic: 0.01 },
         isActive: true
     },
     {
-        itemId: 'box_epic',
-        name: 'Elite Cache',
-        description: 'High chance for epic and legendary loot.',
+        itemId: 'box_premium',
+        name: 'Premium Crate',
+        description: 'High chance of Epic items. Small chance of Legendary.',
         category: 'mystery_box',
-        price: 3000,
+        price: 3500,
         rarity: 'epic',
-        dropRates: { rare: 0.5, epic: 0.4, legendary: 0.1 },
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/4577/4577660.png',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/2850/2850236.png',
+        dropRates: { common: 0.1, rare: 0.5, epic: 0.35, legendary: 0.05 },
         isActive: true
     }
 ];
 
 const seedShop = async () => {
     try {
-        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/financeyatra');
-        console.log('Connected to MongoDB');
+        const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/financeyatra';
+        await mongoose.connect(mongoUri);
+        console.log('✅ Connected to MongoDB');
 
-        await ShopItem.deleteMany({}); // Clear existing items
-        console.log('Cleared existing shop items');
+        // Clear existing items? Maybe optional. Let's strict updating to avoid duplicates.
+        // Or just upsert.
 
-        await ShopItem.insertMany(shopItems);
-        console.log(`Seeded ${shopItems.length} shop items`);
+        let count = 0;
+        for (const item of sampleItems) {
+            await ShopItem.findOneAndUpdate(
+                { itemId: item.itemId },
+                item,
+                { upsert: true, new: true }
+            );
+            count++;
+        }
+
+        console.log(`✅ Seeded ${count} shop items successfully`);
 
         process.exit(0);
     } catch (error) {
-        console.error('Error seeding shop items:', error);
+        console.error('❌ Seeding error:', error);
         process.exit(1);
     }
 };

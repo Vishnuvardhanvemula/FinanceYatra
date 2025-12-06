@@ -237,11 +237,21 @@ const ShopPage = () => {
                         <AnimatePresence mode="popLayout">
                             {filteredItems.length === 0 && (
                                 <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    className="col-span-full text-center py-20 text-slate-500"
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="col-span-full flex flex-col items-center justify-center py-20 text-slate-500"
                                 >
-                                    {activeCategory === 'inventory' ? "You haven't purchased any items yet." : "No items found in this category."}
+                                    <div className="w-24 h-24 bg-slate-900 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                                        <Package size={48} className="text-slate-700" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-400 mb-2">
+                                        {activeCategory === 'inventory' ? "Your inventory is empty" : "No items found"}
+                                    </h3>
+                                    <p className="text-slate-500 max-w-xs text-center">
+                                        {activeCategory === 'inventory'
+                                            ? "Visit the shop to acquire exclusive items for your journey."
+                                            : "Check back later for new arrivals in this category."}
+                                    </p>
                                 </motion.div>
                             )}
 
