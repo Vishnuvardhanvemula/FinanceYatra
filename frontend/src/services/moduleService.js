@@ -2,6 +2,7 @@ import axios from 'axios';
 import { API_URL } from '../config/api';
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 Minutes
+const MODULE_API_URL = `${API_URL}/modules`;
 
 // Helper for caching
 const fetchWithCache = async (key, fetcher) => {
@@ -22,7 +23,7 @@ export const moduleService = {
     getAllModules: async () => {
         try {
             return await fetchWithCache('all_modules', async () => {
-                const response = await axios.get(API_URL);
+                const response = await axios.get(MODULE_API_URL);
                 return response.data;
             });
         } catch (error) {
@@ -39,7 +40,7 @@ export const moduleService = {
     getModuleById: async (id) => {
         try {
             return await fetchWithCache(`module_${id}`, async () => {
-                const response = await axios.get(`${API_URL}/${id}`);
+                const response = await axios.get(`${MODULE_API_URL}/${id}`);
                 return response.data;
             });
         } catch (error) {
@@ -51,7 +52,7 @@ export const moduleService = {
     // Get user stats
     getUserStats: async (token) => {
         try {
-            const response = await axios.get(`${API_URL}/progress`, {
+            const response = await axios.get(`${MODULE_API_URL}/progress`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return response.data;
@@ -64,7 +65,7 @@ export const moduleService = {
     // Start a module
     startModule: async (token, moduleId) => {
         try {
-            const response = await axios.post(`${API_URL}/${moduleId}/start`, {}, {
+            const response = await axios.post(`${MODULE_API_URL}/${moduleId}/start`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return response.data;
@@ -77,7 +78,7 @@ export const moduleService = {
     // Complete a lesson
     completeLesson: async (token, moduleId, lessonIndex) => {
         try {
-            const response = await axios.post(`${API_URL}/${moduleId}/lessons/${lessonIndex}/complete`, {}, {
+            const response = await axios.post(`${MODULE_API_URL}/${moduleId}/lessons/${lessonIndex}/complete`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return response.data;
@@ -90,8 +91,8 @@ export const moduleService = {
     // Generate AI Quiz
     generateQuiz: async (token, moduleId, lessonIndex) => {
         try {
-            // Note: Using a different base URL for quizzes since it's a separate route file
-            const response = await axios.get(`${API_URL.replace('/modules', '')}/quiz/generate/${moduleId}/${lessonIndex}`, {
+            // Using API_URL directly for quizzes as they are on /api/quiz
+            const response = await axios.get(`${API_URL}/quiz/generate/${moduleId}/${lessonIndex}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return response.data;
@@ -104,7 +105,7 @@ export const moduleService = {
     // Admin: Create Module
     createModule: async (token, data) => {
         try {
-            const response = await axios.post(API_URL, data, {
+            const response = await axios.post(MODULE_API_URL, data, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return response.data;
@@ -117,7 +118,7 @@ export const moduleService = {
     // Admin: Update Module
     updateModule: async (token, id, data) => {
         try {
-            const response = await axios.put(`${API_URL}/${id}`, data, {
+            const response = await axios.put(`${MODULE_API_URL}/${id}`, data, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return response.data;
@@ -130,7 +131,7 @@ export const moduleService = {
     // Admin: Delete Module
     deleteModule: async (token, id) => {
         try {
-            const response = await axios.delete(`${API_URL}/${id}`, {
+            const response = await axios.delete(`${MODULE_API_URL}/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return response.data;
