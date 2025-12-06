@@ -490,9 +490,9 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[80%] rounded-lg px-4 py-3 ${msg.role === 'user'
-                  ? 'bg-teal-600 dark:bg-teal-700 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+              className={`max-w-[80%] rounded-2xl px-5 py-3.5 shadow-sm ${msg.role === 'user'
+                ? 'bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-tr-sm shadow-teal-500/10'
+                : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-tl-sm'
                 }`}
             >
               <div className="flex items-start gap-2">
@@ -513,8 +513,8 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
                   <button
                     onClick={() => toggleSpeak(msg.content, index)}
                     className={`flex-shrink-0 p-1.5 rounded-full transition-all ${speakingIndex === index
-                        ? 'bg-red-500 text-white hover:bg-red-600'
-                        : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
+                      ? 'bg-red-500 text-white hover:bg-red-600'
+                      : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
                       }`}
                     title={speakingIndex === index ? 'Stop speaking (click to stop)' : 'Read aloud'}
                   >

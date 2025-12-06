@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { motion, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -8,6 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ScrollToTop from './components/ScrollToTop';
 import MainNavbar from './components/MainNavbar';
 import MainFooter from './components/MainFooter';
+import PageTransition from './components/PageTransition'; // Import PageTransition
 import HomePage from './pages/HomePage';
 import HomePage2 from './pages/HomePage2';
 import ChatPage from './pages/ChatPage';
@@ -149,6 +150,59 @@ function Layout({ children }) {
   );
 }
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><HomePage2 /></PageTransition>} />
+        <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
+        <Route path="/signup" element={<PageTransition><SignupPage /></PageTransition>} />
+        <Route path="/onboarding" element={<PageTransition><OnboardingPage /></PageTransition>} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="/modules" element={<PageTransition><ModulesPage /></PageTransition>} />
+          <Route path="/modules/:id" element={<PageTransition><ErrorBoundary><ModuleDetailPage /></ErrorBoundary></PageTransition>} />
+          <Route path="/dashboard" element={<PageTransition><DashboardPage /></PageTransition>} />
+          <Route path="/achievements" element={<PageTransition><AchievementsPage /></PageTransition>} />
+          <Route path="/share/achievement/:achievementId" element={<PageTransition><ShareAchievementPage /></PageTransition>} />
+          <Route path="/daily-quiz" element={<PageTransition><DailyQuizPage /></PageTransition>} />
+          <Route path="/weekly-challenges" element={<PageTransition><WeeklyChallengesPage /></PageTransition>} />
+          <Route path="/leaderboard" element={<PageTransition><LeaderboardPage /></PageTransition>} />
+          <Route path="/challenges" element={<PageTransition><ChallengesPage /></PageTransition>} />
+          <Route path="/shop" element={<PageTransition><ShopPage /></PageTransition>} />
+          <Route path="/budget-planner" element={<PageTransition><BudgetPlannerPage /></PageTransition>} />
+          {/* Stock Market Simulator Route */}
+          <Route path="/market-simulator" element={<PageTransition><MarketPage /></PageTransition>} />
+          <Route path="/community" element={<PageTransition><CommunityPage /></PageTransition>} />
+          <Route path="/community/post/:id" element={<PageTransition><ForumThreadDetail /></PageTransition>} />
+        </Route>
+
+        {/* Public Calculator Routes */}
+        <Route path="/calculators" element={<PageTransition><Calculators /></PageTransition>} />
+        <Route path="/calculators/emi" element={<PageTransition><EMICalculatorPage /></PageTransition>} />
+        <Route path="/calculators/emergency" element={<PageTransition><EmergencyFund /></PageTransition>} />
+        <Route path="/calculators/retirement" element={<PageTransition><RetirementCalculator /></PageTransition>} />
+        <Route path="/calculators/sip" element={<PageTransition><SIPCalculator /></PageTransition>} />
+        <Route path="/calculators/tax" element={<PageTransition><TaxCalculator /></PageTransition>} />
+        <Route path="/sip" element={<PageTransition><SIPCalculator /></PageTransition>} />
+        <Route path="/emi" element={<PageTransition><EMICalculatorPage /></PageTransition>} />
+        <Route path="/retirement" element={<PageTransition><RetirementCalculator /></PageTransition>} />
+
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminRoute />}>
+          <Route path="dashboard" element={<PageTransition><AdminDashboardPage /></PageTransition>} />
+          <Route path="modules/new" element={<PageTransition><ModuleEditorPage /></PageTransition>} />
+          <Route path="modules/edit/:id" element={<PageTransition><ModuleEditorPage /></PageTransition>} />
+        </Route>
+
+        <Route path="*" element={<PageTransition><NotFoundPage /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
+  );
+};
+
 export default function App() {
   return (
     <Router>
@@ -168,50 +222,7 @@ export default function App() {
           />
 
           <Layout>
-            <Routes>
-              <Route path="/" element={<HomePage2 />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
-              <Route path="/onboarding" element={<OnboardingPage />} />
-
-              <Route element={<ProtectedRoute />}>
-                <Route path="/modules" element={<ModulesPage />} />
-                <Route path="/modules/:id" element={<ErrorBoundary><ModuleDetailPage /></ErrorBoundary>} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/achievements" element={<AchievementsPage />} />
-                <Route path="/share/achievement/:achievementId" element={<ShareAchievementPage />} />
-                <Route path="/daily-quiz" element={<DailyQuizPage />} />
-                <Route path="/weekly-challenges" element={<WeeklyChallengesPage />} />
-                <Route path="/leaderboard" element={<LeaderboardPage />} />
-                <Route path="/challenges" element={<ChallengesPage />} />
-                <Route path="/shop" element={<ShopPage />} />
-                <Route path="/budget-planner" element={<BudgetPlannerPage />} />
-                {/* Stock Market Simulator Route */}
-                <Route path="/market-simulator" element={<MarketPage />} />
-                <Route path="/community" element={<CommunityPage />} />
-                <Route path="/community/post/:id" element={<ForumThreadDetail />} />
-              </Route>
-
-              {/* Public Calculator Routes */}
-              <Route path="/calculators" element={<Calculators />} />
-              <Route path="/calculators/emi" element={<EMICalculatorPage />} />
-              <Route path="/calculators/emergency" element={<EmergencyFund />} />
-              <Route path="/calculators/retirement" element={<RetirementCalculator />} />
-              <Route path="/calculators/sip" element={<SIPCalculator />} />
-              <Route path="/calculators/tax" element={<TaxCalculator />} />
-              <Route path="/sip" element={<SIPCalculator />} />
-              <Route path="/emi" element={<EMICalculatorPage />} />
-              <Route path="/retirement" element={<RetirementCalculator />} />
-
-              {/* Admin Routes */}
-              <Route path="/admin" element={<AdminRoute />}>
-                <Route path="dashboard" element={<AdminDashboardPage />} />
-                <Route path="modules/new" element={<ModuleEditorPage />} />
-                <Route path="modules/edit/:id" element={<ModuleEditorPage />} />
-              </Route>
-
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
+            <AnimatedRoutes />
             <ChatWidget />
           </Layout>
         </AuthProvider>

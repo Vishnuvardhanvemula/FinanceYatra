@@ -2,7 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calculator, TrendingUp, Umbrella, FileText, ShieldAlert, Wallet, Activity } from 'lucide-react';
+import { Calculator, TrendingUp, Umbrella, FileText, ShieldAlert, Wallet, Activity, Home, LayoutDashboard, Layers, Trophy, Users, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import Logo from './Logo';
@@ -14,21 +14,11 @@ export default function MainNavbar() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [calculatorsOpen, setCalculatorsOpen] = React.useState(false);
-  const [mobileCalculatorsOpen, setMobileCalculatorsOpen] = React.useState(false);
   const buttonRef = React.useRef(null);
 
   const handleLogout = async () => {
     await logout();
     navigate('/');
-  };
-
-  const getProficiencyColor = (level) => {
-    const colors = {
-      beginner: 'bg-teal-500',
-      intermediate: 'bg-teal-600',
-      expert: 'bg-teal-700'
-    };
-    return colors[level] || 'bg-teal-500';
   };
 
   return (
@@ -44,10 +34,8 @@ export default function MainNavbar() {
 
             <div className="hidden md:flex items-center gap-8">
               {user?.isAdmin ? (
-                // Admin View: Only Admin Dashboard
                 <Link to="/admin/dashboard" className="px-3 py-1 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-full transition-all duration-200 text-xs uppercase tracking-widest font-medium">Admin Panel</Link>
               ) : (
-                // User View: Full Navigation
                 <>
                   <Link to="/" className="text-sm font-medium text-slate-400 hover:text-white transition-colors tracking-wide">{t('nav.home')}</Link>
                   {isAuthenticated && <Link to="/dashboard" className="text-sm font-medium text-slate-400 hover:text-white transition-colors tracking-wide">{t('nav.dashboard')}</Link>}
@@ -168,68 +156,122 @@ export default function MainNavbar() {
               )}
             </div>
 
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden p-2 rounded-lg hover:bg-gray-100">
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 relative z-50">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">{mobileMenuOpen ? (<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />) : (<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />)}</svg>
             </button>
           </div>
 
-          {mobileMenuOpen && (
-            <div className="md:hidden py-4 animate-fadeIn">
-              <div className="flex flex-col space-y-2">
-                {user?.isAdmin ? (
-                  // Admin View: Only Admin Dashboard
-                  <Link to="/admin/dashboard" className="px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">Admin Panel</Link>
-                ) : (
-                  // User View: Full Navigation
-                  <>
-                    <Link to="/" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">{t('nav.home')}</Link>
-                    {isAuthenticated && <Link to="/dashboard" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">Dashboard</Link>}
-                    <Link to="/modules" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">Modules</Link>
-                    <Link to="/challenges" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">Challenges</Link>
-                    <Link to="/community" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">{t('nav.community')}</Link>
-
-                    <div className="space-y-1">
-                      <button
-                        onClick={() => setMobileCalculatorsOpen(!mobileCalculatorsOpen)}
-                        className="w-full flex items-center justify-between px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg"
-                      >
-                        <span>Calculators</span>
-                        <svg className={`w-4 h-4 transition-transform ${mobileCalculatorsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                      </button>
-
-                      <AnimatePresence>
-                        {mobileCalculatorsOpen && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden pl-4 space-y-1"
-                          >
-                            <Link to="/budget-planner" className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 rounded-lg">Budget Planner</Link>
-                            <Link to="/market-simulator" className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 rounded-lg">Stock Simulator</Link>
-                            <Link to="/calculators/emi" className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 rounded-lg">EMI Calculator</Link>
-                            <Link to="/calculators/sip" className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 rounded-lg">SIP Calculator</Link>
-                            <Link to="/calculators/retirement" className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 rounded-lg">Retirement Planner</Link>
-                            <Link to="/calculators/tax" className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 rounded-lg">Tax Analyzer</Link>
-                            <Link to="/calculators/emergency" className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 rounded-lg">Emergency Fund</Link>
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+                className="md:hidden absolute top-20 left-0 w-full bg-[#0b101b]/95 backdrop-blur-xl border-b border-white/10 shadow-2xl h-[calc(100vh-5rem)] overflow-y-auto"
+              >
+                <div className="flex flex-col space-y-2 p-6 pb-20">
+                  <motion.div
+                    className="flex flex-col space-y-2"
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: {
+                        opacity: 1,
+                        transition: {
+                          staggerChildren: 0.1
+                        }
+                      }
+                    }}
+                  >
+                    {user?.isAdmin ? (
+                      <motion.div variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0 } }}>
+                        <Link
+                          to="/admin/dashboard"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3.5 text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-xl font-medium border border-red-500/20 transition-all"
+                        >
+                          <ShieldAlert size={18} />
+                          Admin Panel
+                        </Link>
+                      </motion.div>
+                    ) : (
+                      <>
+                        {[
+                          { to: "/", label: t('nav.home'), icon: <Home size={18} /> },
+                          isAuthenticated && { to: "/dashboard", label: t('nav.dashboard'), icon: <LayoutDashboard size={18} /> },
+                          { to: "/modules", label: t('nav.modules'), icon: <Layers size={18} /> },
+                          { to: "/challenges", label: t('nav.challenges'), icon: <Trophy size={18} /> },
+                          { to: "/community", label: t('nav.community'), icon: <Users size={18} /> },
+                        ].filter(Boolean).map((item, idx) => (
+                          <motion.div key={idx} variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0 } }}>
+                            <Link
+                              to={item.to}
+                              onClick={() => setMobileMenuOpen(false)}
+                              className="flex items-center gap-3 px-4 py-3.5 text-slate-300 hover:text-white hover:bg-white/5 rounded-xl font-medium transition-colors border border-transparent hover:border-white/5"
+                            >
+                              <div className="text-teal-400 opacity-80">{item.icon}</div>
+                              {item.label}
+                            </Link>
                           </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </>
-                )}
-                <hr className="my-2 dark:border-gray-600" />
-                {isAuthenticated ? (
-                  <button onClick={handleLogout} className="px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-left">Logout</button>
-                ) : (
-                  <>
-                    <Link to="/login" className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg">Sign In</Link>
-                    <Link to="/signup" className="mx-4 btn-gradient text-sm text-center">Get Started</Link>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
+                        ))}
+
+                        <motion.div variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0 } }}>
+                          <Link
+                            to="/shop"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3.5 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded-xl font-medium transition-colors border border-amber-500/10"
+                          >
+                            <ShoppingBag size={18} />
+                            {t('nav.shop')} <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse ml-auto"></span>
+                          </Link>
+                        </motion.div>
+
+                        <div className="space-y-1 pt-2 mt-2 border-t border-white/10">
+                          <motion.div variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }} className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Calculators</motion.div>
+                          {[
+                            { to: "/budget-planner", label: "Budget Planner", color: "text-teal-400", icon: <Wallet size={16} /> },
+                            { to: "/market-simulator", label: "Stock Simulator", color: "text-blue-400", icon: <Activity size={16} /> },
+                            { to: "/calculators/emi", label: "EMI Calculator", color: "text-blue-400", icon: <Calculator size={16} /> },
+                            { to: "/calculators/sip", label: "SIP Calculator", color: "text-emerald-400", icon: <TrendingUp size={16} /> },
+                            { to: "/calculators/retirement", label: "Retirement Planner", color: "text-violet-400", icon: <Umbrella size={16} /> },
+                            { to: "/calculators/tax", label: "Tax Analyzer", color: "text-orange-400", icon: <FileText size={16} /> },
+                            { to: "/calculators/emergency", label: "Emergency Fund", color: "text-red-400", icon: <ShieldAlert size={16} /> },
+                          ].map((item, idx) => (
+                            <motion.div key={idx} variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}>
+                              <Link to={item.to} onClick={() => setMobileMenuOpen(false)} className={`flex items-center gap-3 px-4 py-3 text-sm text-slate-400 hover:${item.color} hover:bg-white/5 rounded-xl transition-colors`}>
+                                <div className={`opacity-60 ${item.color}`}>{item.icon}</div>
+                                {item.label}
+                              </Link>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    <hr className="my-2 border-white/10" />
+
+                    {isAuthenticated ? (
+                      <motion.button
+                        variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
+                        onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                        className="flex items-center gap-3 px-4 py-3.5 text-red-400 hover:bg-red-500/10 rounded-xl text-left font-medium w-full transition-colors"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                        Logout
+                      </motion.button>
+                    ) : (
+                      <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }} className="flex flex-col gap-3 pt-2">
+                        <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 text-center text-slate-300 hover:bg-white/5 rounded-xl font-medium border border-white/10">Sign In</Link>
+                        <Link to="/signup" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 text-center bg-teal-500 text-white rounded-xl font-bold shadow-lg shadow-teal-500/20">Get Started</Link>
+                      </motion.div>
+                    )}
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </nav>

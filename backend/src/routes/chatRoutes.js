@@ -8,7 +8,18 @@ import { optionalAuth, authenticate } from '../middleware/authMiddleware.js';
 import proficiencyService from '../services/proficiencyService.js';
 import User from '../models/User.js';
 
+import rateLimit from 'express-rate-limit';
+
 const router = express.Router();
+
+// Strict rate limiter for AI Chat (save API costs)
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // Limit each IP to 10 requests per minute
+  message: { error: 'Too many messages. Please wait a moment before sending more.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Helper function to check if MongoDB is connected
 function isMongoConnected() {
@@ -19,7 +30,7 @@ function isMongoConnected() {
  * POST /api/chat/message
  * Send a message and get AI response
  */
-router.post('/message', optionalAuth, async (req, res) => {
+router.post('/message', chatLimiter, optionalAuth, async (req, res) => {
   try {
     const { message, sessionId, language } = req.body;
 
@@ -30,14 +41,14 @@ router.post('/message', optionalAuth, async (req, res) => {
     // Get or create session (only if user is authenticated and MongoDB is connected)
     let session = null;
     let messageHistory = [];
-    
+
     if (req.user && isMongoConnected() && sessionId) {
       session = await ChatSession.findOne({ sessionId, userId: req.userId });
       if (session) {
         messageHistory = session.messages;
       }
     }
-    
+
     if (!session && req.user && isMongoConnected()) {
       const newSessionId = sessionId || uuidv4();
       session = new ChatSession({
@@ -49,7 +60,7 @@ router.post('/message', optionalAuth, async (req, res) => {
     }
 
     const currentSessionId = sessionId || uuidv4();
-    
+
     // Log chat mode
     if (req.user) {
       console.log(`💬 Authenticated chat - User: ${req.userId}, Session will be saved`);
@@ -72,7 +83,7 @@ router.post('/message', optionalAuth, async (req, res) => {
     }
 
     // Step 2: Detect language and translate to English if needed
-    const { text: translatedMessage, detectedLanguage } = 
+    const { text: translatedMessage, detectedLanguage } =
       await translationService.translateToEnglish(message, language);
 
     // Update preferred language
@@ -125,25 +136,25 @@ router.post('/message', optionalAuth, async (req, res) => {
         if (user) {
           // Track this question
           await user.trackQuestion('general'); // You can extract topic from message later
-          
+
           // Check if we should assess proficiency
           if (proficiencyService.shouldReassess(user)) {
             console.log('🔍 Assessing user proficiency...');
-            
+
             // Get recent questions from session
-            const recentQuestions = session ? 
+            const recentQuestions = session ?
               session.messages
                 .filter(msg => msg.role === 'user')
                 .slice(-10)
-                .map(msg => msg.content) 
+                .map(msg => msg.content)
               : [message];
-            
+
             // Detect proficiency
             const analysis = await proficiencyService.detectProficiency(recentQuestions);
-            
+
             // Update user profile
             await user.updateProficiency(analysis.level, analysis.score);
-            
+
             console.log(`✅ Proficiency updated: ${analysis.level} (score: ${analysis.score})`);
           }
         }
@@ -158,16 +169,16 @@ router.post('/message', optionalAuth, async (req, res) => {
       message: translatedResponse,
       sessionId: session ? session.sessionId : currentSessionId,
       detectedLanguage,
-      messageId: session && session.messages.length > 0 
-        ? session.messages[session.messages.length - 1]._id 
+      messageId: session && session.messages.length > 0
+        ? session.messages[session.messages.length - 1]._id
         : uuidv4()
     });
 
   } catch (error) {
     console.error('Chat error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to process message',
-      details: error.message 
+      details: error.message
     });
   }
 });
@@ -179,17 +190,17 @@ router.post('/message', optionalAuth, async (req, res) => {
 router.get('/history/:sessionId', authenticate, async (req, res) => {
   try {
     const { sessionId } = req.params;
-    
+
     if (!isMongoConnected()) {
-      return res.status(503).json({ 
+      return res.status(503).json({
         error: 'Database not available',
         message: 'Chat history is not available without MongoDB connection'
       });
     }
-    
+
     // IMPORTANT: Verify session belongs to authenticated user
     const session = await ChatSession.findOne({ sessionId, userId: req.userId });
-    
+
     if (!session) {
       console.log(`❌ Unauthorized access attempt - User: ${req.userId}, Session: ${sessionId}`);
       return res.status(404).json({ error: 'Session not found' });
@@ -260,17 +271,17 @@ router.post('/session', optionalAuth, async (req, res) => {
 router.delete('/session/:sessionId', authenticate, async (req, res) => {
   try {
     const { sessionId } = req.params;
-    
+
     if (!isMongoConnected()) {
-      return res.status(503).json({ 
+      return res.status(503).json({
         error: 'Database not available',
         message: 'Cannot delete session without MongoDB connection'
       });
     }
-    
+
     // IMPORTANT: Only delete if session belongs to authenticated user
     const result = await ChatSession.deleteOne({ sessionId, userId: req.userId });
-    
+
     if (result.deletedCount === 0) {
       console.log(`❌ Unauthorized delete attempt - User: ${req.userId}, Session: ${sessionId}`);
       return res.status(404).json({ error: 'Session not found' });
@@ -293,7 +304,7 @@ router.delete('/session/:sessionId', authenticate, async (req, res) => {
 router.get('/sessions', authenticate, async (req, res) => {
   try {
     if (!isMongoConnected()) {
-      return res.status(503).json({ 
+      return res.status(503).json({
         error: 'Database not available',
         message: 'Session list not available without MongoDB connection'
       });

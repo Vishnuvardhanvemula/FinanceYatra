@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaRobot, FaPaperPlane, FaTimes, FaCommentDots, FaUser, FaChevronDown } from 'react-icons/fa';
+import { FaRobot, FaPaperPlane, FaTimes, FaCommentDots, FaSparkles, FaChevronDown, FaHistory, FaExpandAlt, FaCompressAlt } from 'react-icons/fa';
 import api from '../../services/api';
 
 const ChatWidget = () => {
@@ -10,7 +10,9 @@ const ChatWidget = () => {
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
     const messagesEndRef = useRef(null);
+    const inputRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -18,6 +20,9 @@ const ChatWidget = () => {
 
     useEffect(() => {
         scrollToBottom();
+        if (isOpen && inputRef.current) {
+            inputRef.current.focus();
+        }
     }, [messages, isOpen]);
 
     const handleSubmit = async (e) => {
@@ -36,23 +41,28 @@ const ChatWidget = () => {
                 content: m.text
             }));
 
-            const response = await api.post('/dashboard/chat', {
+            const response = await api.post('/chat/message', {
                 message: userMessage,
                 history
             });
 
-            if (response.data.success) {
+            if (response.data) {
                 setMessages(prev => [...prev, {
                     role: 'model',
-                    text: response.data.data.message,
-                    sources: response.data.data.sources
+                    text: response.data.message || response.data.data?.message, // Handle both structures
+                    sources: response.data.sources || response.data.data?.sources
                 }]);
             }
         } catch (error) {
             console.error('Chat Error:', error);
+            const errorMsg = error.response?.status === 429
+                ? "You're sending messages too fast. Please wait a moment."
+                : "I'm connecting to the server. Please try again in 5 seconds.";
+
             setMessages(prev => [...prev, {
                 role: 'model',
-                text: "I'm having trouble connecting right now. Please try again later."
+                text: errorMsg,
+                isError: true
             }]);
         } finally {
             setIsLoading(false);
@@ -60,57 +70,78 @@ const ChatWidget = () => {
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <div className="z-50">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-80 md:w-96 mb-4 overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col max-h-[600px]"
+                        initial={isExpanded ? { opacity: 0, scale: 0.9 } : { opacity: 0, scale: 0.9, y: 20 }}
+                        animate={isExpanded ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1, y: 0 }}
+                        exit={isExpanded ? { opacity: 0, scale: 0.9 } : { opacity: 0, scale: 0.9, y: 20 }}
+                        className={`${isExpanded ? 'fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[800px] md:h-[600px] w-full h-full' : 'fixed inset-0 md:inset-auto md:bottom-20 md:right-6 w-full h-full md:w-[350px] md:h-[600px] md:max-h-[80vh]'} 
+                            bg-[#0b101b]/95 backdrop-blur-xl md:rounded-3xl shadow-2xl flex flex-col overflow-hidden relative transition-all duration-300 z-50`}
                     >
+                        {/* Glow Effects */}
+                        <div className="absolute top-0 left-1/4 w-32 h-32 bg-teal-500/20 blur-3xl rounded-full pointer-events-none" />
+                        <div className="absolute bottom-0 right-1/4 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full pointer-events-none" />
+
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 flex justify-between items-center text-white">
-                            <div className="flex items-center gap-2">
-                                <div className="bg-white/20 p-2 rounded-full">
-                                    <FaRobot size={20} />
+                        <div className="bg-white/5 border-b border-white/10 p-4 flex justify-between items-center text-white backdrop-blur-md sticky top-0 z-10">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-gradient-to-br from-teal-400 to-blue-500 p-2.5 rounded-xl shadow-lg shadow-teal-500/20">
+                                    <FaRobot size={20} className="text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-sm">FinanceYatra AI</h3>
-                                    <p className="text-xs text-blue-100 flex items-center gap-1">
-                                        <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                                    <h3 className="font-bold text-sm text-white tracking-wide">FinanceYatra AI</h3>
+                                    <p className="text-[10px] text-teal-300 flex items-center gap-1.5 font-medium uppercase tracking-wider">
+                                        <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(45,212,191,0.6)]"></span>
                                         Online
                                     </p>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="text-white/80 hover:text-white transition-colors"
-                            >
-                                <FaChevronDown />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setIsExpanded(!isExpanded)}
+                                    className="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
+                                    title={isExpanded ? "Collapse" : "Expand"}
+                                >
+                                    {isExpanded ? <FaCompressAlt size={14} /> : <FaExpandAlt size={14} />}
+                                </button>
+                                <button
+                                    onClick={() => setIsOpen(false)}
+                                    className="p-2 hover:bg-red-500/20 hover:text-red-400 rounded-lg text-gray-400 transition-colors"
+                                >
+                                    <FaChevronDown size={14} />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900 h-80 md:h-96">
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
                             {messages.map((msg, idx) => (
-                                <div
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
                                     key={idx}
                                     className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
-                                    <div
-                                        className={`max-w-[85%] rounded-2xl p-3 text-sm ${msg.role === 'user'
-                                                ? 'bg-blue-600 text-white rounded-tr-none'
-                                                : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-tl-none shadow-sm'
-                                            }`}
-                                    >
-                                        <p className="whitespace-pre-wrap">{msg.text}</p>
+                                    <div className={`max-w-[85%] rounded-2xl p-4 text-sm relative group
+                                        ${msg.role === 'user'
+                                            ? 'bg-gradient-to-br from-teal-500 to-blue-600 text-white rounded-tr-sm shadow-lg shadow-teal-500/10'
+                                            : 'bg-white/10 border border-white/10 text-gray-200 rounded-tl-sm backdrop-blur-md'
+                                        }
+                                        ${msg.isError ? 'border-red-500/50 bg-red-500/10 text-red-200' : ''}
+                                    `}>
+                                        <div className="whitespace-pre-wrap leading-relaxed">{msg.text}</div>
+
+                                        {/* Sources */}
                                         {msg.sources && msg.sources.length > 0 && (
-                                            <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
-                                                <p className="text-[10px] text-gray-500 font-medium mb-1">Sources:</p>
-                                                <div className="flex flex-wrap gap-1">
+                                            <div className="mt-3 pt-3 border-t border-white/10">
+                                                <p className="text-[10px] text-gray-400 font-medium mb-1.5 flex items-center gap-1">
+                                                    <FaHistory className="w-3 h-3" /> SOURCES
+                                                </p>
+                                                <div className="flex flex-wrap gap-1.5">
                                                     {msg.sources.map((source, i) => (
-                                                        <span key={i} className="text-[10px] bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-400">
+                                                        <span key={i} className="text-[10px] bg-black/20 px-2 py-1 rounded-md text-teal-300/80 border border-teal-500/10">
                                                             {source}
                                                         </span>
                                                     ))}
@@ -118,39 +149,50 @@ const ChatWidget = () => {
                                             </div>
                                         )}
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
+
                             {isLoading && (
-                                <div className="flex justify-start">
-                                    <div className="bg-white dark:bg-gray-800 rounded-2xl rounded-tl-none p-3 border border-gray-200 dark:border-gray-700 shadow-sm">
-                                        <div className="flex gap-1">
-                                            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
-                                            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
-                                            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
+                                    <div className="bg-white/5 rounded-2xl rounded-tl-sm p-4 border border-white/10">
+                                        <div className="flex gap-1.5">
+                                            {[0, 1, 2].map((i) => (
+                                                <motion.span
+                                                    key={i}
+                                                    className="w-1.5 h-1.5 bg-teal-400 rounded-full"
+                                                    animate={{ y: [0, -5, 0] }}
+                                                    transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.2 }}
+                                                />
+                                            ))}
                                         </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             )}
                             <div ref={messagesEndRef} />
                         </div>
 
                         {/* Input */}
-                        <form onSubmit={handleSubmit} className="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-                            <div className="relative">
+                        <form onSubmit={handleSubmit} className="p-4 bg-[#0b101b]/95 border-t border-white/10">
+                            <div className="relative group">
+                                <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-blue-500/20 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition-opacity" />
                                 <input
+                                    ref={inputRef}
                                     type="text"
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Ask about stocks, savings..."
-                                    className="w-full pl-4 pr-12 py-3 bg-gray-100 dark:bg-gray-900 border-none rounded-xl focus:ring-2 focus:ring-blue-500 dark:text-white text-sm"
+                                    placeholder="Ask about crypto, savings, taxes..."
+                                    className="w-full pl-4 pr-12 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-teal-500/50 focus:bg-white/10 text-white placeholder-gray-500 text-sm transition-all relative z-10"
                                 />
                                 <button
                                     type="submit"
                                     disabled={!input.trim() || isLoading}
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-teal-500 hover:bg-teal-400 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-teal-500/20 z-10"
                                 >
                                     <FaPaperPlane size={14} />
                                 </button>
+                            </div>
+                            <div className="text-center mt-2 text-[10px] text-gray-600">
+                                AI can make mistakes. Check important info.
                             </div>
                         </form>
                     </motion.div>
@@ -158,17 +200,26 @@ const ChatWidget = () => {
             </AnimatePresence>
 
             {/* Toggle Button */}
-            <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setIsOpen(!isOpen)}
-                className={`p-4 rounded-full shadow-lg flex items-center justify-center transition-colors ${isOpen
-                        ? 'bg-gray-600 text-white hover:bg-gray-700'
-                        : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-blue-500/30'
-                    }`}
-            >
-                {isOpen ? <FaTimes size={24} /> : <FaCommentDots size={24} />}
-            </motion.button>
+            {!isOpen && (
+                <div className="fixed bottom-6 right-6 z-50">
+                    <motion.button
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setIsOpen(true)}
+                        className="w-14 h-14 rounded-full shadow-[0_0_30px_rgba(45,212,191,0.3)] bg-gradient-to-br from-teal-500 to-blue-600 flex items-center justify-center text-white relative group overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                        <FaSparkles size={24} className="animate-pulse" />
+                        {/* Badge */}
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] font-bold items-center justify-center">1</span>
+                        </span>
+                    </motion.button>
+                </div>
+            )}
         </div>
     );
 };
