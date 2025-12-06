@@ -4,7 +4,7 @@ import { Plus, Search, Filter, MessageCircle } from 'lucide-react';
 import MainNavbar from '../components/MainNavbar';
 import ForumThreadCard from '../components/community/ForumThreadCard';
 import CreatePostModal from '../components/community/CreatePostModal';
-import { API_URL } from '../config/api';
+import forumService from '../services/forumService';
 
 const CommunityPage = () => {
     const [posts, setPosts] = useState([]);
@@ -16,15 +16,7 @@ const CommunityPage = () => {
     const fetchPosts = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem('authToken');
-            let url = `${API_URL}/forum?`;
-            if (activeCategory !== 'All') url += `category=${encodeURIComponent(activeCategory)}&`;
-            if (searchQuery) url += `search=${encodeURIComponent(searchQuery)}&`;
-
-            const res = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
+            const data = await forumService.getAllPosts(activeCategory, searchQuery);
             if (data.posts) {
                 setPosts(data.posts);
             }

@@ -384,7 +384,7 @@ const RupeeFallback = ({ size = 120 }) => (
   </div>
 );
 
-const HeroSection = ({ isAuthenticated, navigate }) => (
+const HeroSection = ({ isAuthenticated, loading, navigate }) => (
   <section className="min-h-[90vh] flex flex-col justify-center px-6 md:px-20 relative z-10 pt-20">
     <div className="max-w-[900px]">
       <motion.div
@@ -411,18 +411,31 @@ const HeroSection = ({ isAuthenticated, navigate }) => (
 
         <div className="flex flex-col sm:flex-row gap-5">
           <button
-            onClick={() => navigate(isAuthenticated ? '/dashboard' : '/signup')}
-            className="w-full sm:w-auto group relative px-8 py-4 bg-white text-black rounded-full font-bold text-lg overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_50px_rgba(255,255,255,0.3)]"
+            onClick={() => {
+              if (loading) return;
+              navigate(isAuthenticated ? '/dashboard' : '/signup');
+            }}
+            disabled={loading}
+            className="w-full sm:w-auto group relative px-8 py-4 bg-white text-black rounded-full font-bold text-lg overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_50px_rgba(255,255,255,0.3)] disabled:opacity-70 disabled:cursor-wait"
           >
             <span className="relative flex items-center gap-2 justify-center">
-              {isAuthenticated ? 'Go to Dashboard' : 'Start Learning'} <ArrowRight size={18} />
+              {loading ? 'Connecting...' : (isAuthenticated ? 'Resume Learning' : 'Start Your Journey')}
+              {!loading && <ArrowRight size={18} />}
             </span>
           </button>
           <button
-            onClick={() => navigate('/modules')}
-            className="w-full sm:w-auto px-8 py-4 bg-transparent border border-white/20 hover:bg-white/5 text-white rounded-full font-medium text-lg transition-all backdrop-blur-sm"
+            onClick={() => navigate(isAuthenticated ? '/challenges' : '/modules')}
+            className="w-full sm:w-auto px-8 py-4 bg-transparent border border-white/20 hover:bg-white/5 text-white rounded-full font-medium text-lg transition-all backdrop-blur-sm flex items-center gap-2 justify-center"
           >
-            View Modules
+            {isAuthenticated ? (
+              <>
+                <Trophy size={18} className="text-amber-400" /> Leaderboard
+              </>
+            ) : (
+              <>
+                <LayoutDashboard size={18} /> Explore Modules
+              </>
+            )}
           </button>
         </div>
       </motion.div>
@@ -923,7 +936,7 @@ const CtaSection = ({ isAuthenticated, navigate }) => (
 export default function App() {
   useLenis();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const { scrollYProgress } = useScroll();
   const smoothProgress = useSpring(scrollYProgress, { mass: 0.5, stiffness: 40, damping: 15 });
   const [lowEnd, setLowEnd] = useState(false);
@@ -981,7 +994,7 @@ export default function App() {
 
       {/* UI Layer */}
       <main className="relative w-full">
-        <HeroSection isAuthenticated={isAuthenticated} navigate={navigate} />
+        <HeroSection isAuthenticated={isAuthenticated} loading={loading} navigate={navigate} />
 
         <FeatureSection
           align="right"

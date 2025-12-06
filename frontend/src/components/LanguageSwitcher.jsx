@@ -32,6 +32,12 @@ const LanguageSwitcher = () => {
                 >
                     हिंदी (Hindi)
                 </button>
+                <button
+                    onClick={() => changeLanguage('te')}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-800 transition-colors ${i18n.language.startsWith('te') ? 'text-amber-400 font-bold' : 'text-slate-300'}`}
+                >
+                    తెలుగు (Telugu)
+                </button>
             </div>
         </div>
     );

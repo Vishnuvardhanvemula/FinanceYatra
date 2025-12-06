@@ -1,9 +1,7 @@
-import axios from 'axios';
 import api from './api';
 import { API_URL } from '../config/api';
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 Minutes
-const MODULE_API_URL = `${API_URL}/modules`;
 
 // Helper for caching
 const fetchWithCache = async (key, fetcher) => {
@@ -24,7 +22,7 @@ export const moduleService = {
     getAllModules: async () => {
         try {
             return await fetchWithCache('all_modules', async () => {
-                const response = await axios.get(MODULE_API_URL);
+                const response = await api.get('/modules');
                 return response.data;
             });
         } catch (error) {
@@ -41,7 +39,7 @@ export const moduleService = {
     getModuleById: async (id) => {
         try {
             return await fetchWithCache(`module_${id}`, async () => {
-                const response = await axios.get(`${MODULE_API_URL}/${id}`);
+                const response = await api.get(`/modules/${id}`);
                 return response.data;
             });
         } catch (error) {

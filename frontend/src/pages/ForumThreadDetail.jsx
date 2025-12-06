@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { API_URL } from '../config/api';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ThumbsUp, MessageSquare, CheckCircle, User, Send, Clock } from 'lucide-react';
 import MainNavbar from '../components/MainNavbar';
 import { toast } from 'react-hot-toast';
+import forumService from '../services/forumService';
 
 const ForumThreadDetail = () => {
     const { id } = useParams();
@@ -17,14 +17,7 @@ const ForumThreadDetail = () => {
 
     const fetchPostDetails = async () => {
         try {
-            const token = localStorage.getItem('authToken');
-            const res = await fetch(`${API_URL}/forum/${id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (!res.ok) throw new Error('Post not found');
-
-            const data = await res.json();
+            const data = await forumService.getPostById(id);
             setPost(data.post);
             setComments(data.comments);
         } catch (error) {
@@ -42,16 +35,8 @@ const ForumThreadDetail = () => {
 
     const handleUpvote = async () => {
         try {
-            const token = localStorage.getItem('authToken');
-            const res = await fetch(`${API_URL}/forum/${id}/vote`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                setPost(prev => ({ ...prev, upvotes: data.upvotes }));
-            }
+            const data = await forumService.likePost(id);
+            setPost(prev => ({ ...prev, upvotes: data.upvotes }));
         } catch (error) {
             console.error('Failed to vote', error);
         }
@@ -63,25 +48,13 @@ const ForumThreadDetail = () => {
 
         setSubmitting(true);
         try {
-            const token = localStorage.getItem('authToken');
-            const res = await fetch(`${API_URL}/forum/${id}/comment`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ content: newComment })
-            });
+            const comment = await forumService.addComment(id, newComment);
+            setComments(prev => [...prev, comment]);
+            setNewComment('');
+            toast.success('Comment added!');
 
-            if (res.ok) {
-                const comment = await res.json();
-                setComments(prev => [...prev, comment]);
-                setNewComment('');
-                toast.success('Comment added!');
-
-                // Update post comment count locally
-                setPost(prev => ({ ...prev, commentCount: (prev.commentCount || 0) + 1 }));
-            }
+            // Update post comment count locally
+            setPost(prev => ({ ...prev, commentCount: (prev.commentCount || 0) + 1 }));
         } catch (error) {
             toast.error('Failed to post comment');
         } finally {

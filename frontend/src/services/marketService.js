@@ -1,29 +1,21 @@
-import axios from 'axios';
-
-import { API_URL as BASE_URL } from '../config/api';
-const API_URL = `${BASE_URL}/market`;
-
-const getAuthHeader = () => {
-    const token = localStorage.getItem('authToken');
-    return { headers: { Authorization: `Bearer ${token}` } };
-};
+import api from './api';
 
 export const getMarketPrices = async () => {
-    const response = await axios.get(`${API_URL}/prices`);
+    const response = await api.get('/market/prices');
     return response.data;
 };
 
 export const getPortfolio = async () => {
-    const response = await axios.get(`${API_URL}/portfolio`, getAuthHeader());
+    const response = await api.get('/market/portfolio');
     return response.data;
 };
 
 export const executeTrade = async (tradeData) => {
-    const response = await axios.post(`${API_URL}/trade`, tradeData, getAuthHeader());
+    const response = await api.post('/market/trade', tradeData);
     return response.data;
 };
 
 export const getLeaderboard = async () => {
-    const response = await axios.get(`${API_URL}/leaderboard`, getAuthHeader());
+    const response = await api.get('/market/leaderboard');
     return response.data;
 };

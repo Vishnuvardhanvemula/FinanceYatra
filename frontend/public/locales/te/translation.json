@@ -1,0 +1,42 @@
+{
+    "dashboard": {
+        "greeting": "హలో, {{name}}",
+        "welcome": "తిరిగి స్వాగతం. మీ ఆర్థిక కమాండ్ సెంటర్ సిద్ధంగా ఉంది.",
+        "welcome_legend": "Legend, శూన్యంలోకి స్వాగతం.",
+        "streak": "ప్రస్తుత స్ట్రీక్",
+        "total_xp": "మొత్తం XP",
+        "learning_trajectory": "లర్నింగ్ ట్రాజెక్టరీ",
+        "overall_progress": "మొత్తం పురోగతి",
+        "completed": "పూర్తయింది",
+        "active": "యాక్టివ్",
+        "locked": "లాక్ చేయబడింది",
+        "resume": "పునఃప్రారంభించు",
+        "continue_learning": "నేర్చుకోవడం కొనసాగించండి",
+        "continue_desc": "మీ ఆర్థిక ప్రయాణంలో మీరు ఆపివేసిన చోట నుండి ప్రారంభించండి.",
+        "daily_objective": "రోజువారీ లక్ష్యం",
+        "complete_daily": "రోజువారీ సవాలును పూర్తి చేయండి",
+        "engage_mission": "మిషన్‌లో పాల్గొనండి",
+        "recent_badges": "ఇటీవలి బ్యాడ్జ్‌లు",
+        "market_intelligence": "మార్కెట్ ఇంటెలిజెన్స్",
+        "exclusive_insight": "నిపుణుల ప్రత్యేక అంతర్దృష్టి",
+        "insider_signals": "ఇన్‌సైడర్ సిగ్నల్స్",
+        "ai_wealth_manager": "AI వెల్త్ మేనేజర్",
+        "system_status": "సిస్టమ్ స్థితి",
+        "portfolio_health": "పోర్ట్‌ఫోలియో ఆరోగ్యం",
+        "next_move": "నీ తదుపరి అడుగు",
+        "locked_market": "మార్కెట్ ఇంటెలిజెన్స్‌ని అన్‌లాక్ చేయడానికి ఎక్స్‌పర్ట్ ర్యాంక్ సాధించండి"
+    },
+    "nav": {
+        "home": "హోమ్",
+        "dashboard": "డాష్‌బోర్డ్",
+        "modules": "మాడ్యూల్స్",
+        "challenges": "సవాళ్లు",
+        "leaderboard": "లీడర్‌బోర్డ్",
+        "shop": "షాప్",
+        "calculators": "కాలిక్యులేటర్లు",
+        "chat": "AI చాట్",
+        "login": "లాగిన్",
+        "signup": "సైన్ అప్",
+        "logout": "లాగౌట్"
+    }
+}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { API_URL } from '../../config/api';
+import forumService from '../../services/forumService';
 
 const CATEGORIES = ['General', 'Module Help', 'Ask an Expert', 'Challenge'];
 
@@ -18,17 +18,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
 
         setLoading(true);
         try {
-            const token = localStorage.getItem('authToken');
-            const res = await fetch(`${API_URL}/forum`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ title, content, category })
-            });
-
-            if (!res.ok) throw new Error('Failed to create post');
+            await forumService.createPost({ title, content, category });
 
             toast.success('Post created successfully!');
             setTitle('');

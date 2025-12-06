@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import compression from 'compression';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit'; // Security: Rate limiting
 
 
 // Load environment variables
@@ -26,35 +28,25 @@ import llmService from './services/llmService.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Security: Release the helmet! (Sets various HTTP headers for security)
+app.use(helmet());
+
+// Security: Rate Limiter (Prevent brute-force and DoS)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use(limiter);
+
 app.use(cors({
   origin: (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, ''),
   credentials: true
 }));
 
 app.use(compression());
-(async () => {
-  try {
-    const helmetModule = await import('helmet');
-    const helmet = helmetModule.default || helmetModule;
-    app.use(helmet());
-  } catch (err) {
-    console.warn('helmet not installed; skipping security headers');
-  }
-
-  try {
-    const rlModule = await import('express-rate-limit');
-    const rateLimit = rlModule.default || rlModule;
-    const limiter = rateLimit({
-      windowMs: 15 * 60 * 1000,
-      max: 300,
-      standardHeaders: true,
-      legacyHeaders: false
-    });
-    app.use(limiter);
-  } catch (err) {
-    console.warn('express-rate-limit not installed; skipping rate limiter');
-  }
-})();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

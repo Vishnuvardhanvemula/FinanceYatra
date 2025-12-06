@@ -12,13 +12,46 @@ import {
   Search,
   ChevronRight,
   Zap,
-  Target
+  Target,
+  Landmark,
+  Smartphone,
+  Percent,
+  Wallet,
+  Shield,
+  TrendingUp,
+  FileText,
+  PieChart,
+  Activity,
+  Umbrella,
+  Home,
+  CreditCard,
+  Briefcase,
+  Layers
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Components
 import ParticleBackground from '../components/ParticleBackground';
 import TiltCard from '../components/TiltCard';
+
+// Icon Mapping
+const ICON_MAP = {
+  'module-1': Landmark,
+  'module-2': Smartphone,
+  'module-3': Percent,
+  'module-4': Wallet,
+  'module-5': Shield,
+  'module-6': TrendingUp,
+  'module-7': FileText,
+  'module-8': PieChart,
+  'module-9': Activity,
+  'module-10': Umbrella,
+  'module-11': Home,
+  'module-12': Target,
+  'module-13': CreditCard,
+  'module-14': Briefcase,
+  'module-15': Layers
+};
 
 const ModulesPage = () => {
   const { user } = useAuth();
@@ -64,6 +97,9 @@ const ModulesPage = () => {
   }, [location.state, loading, modules, user]);
 
   const getModuleStatus = (moduleId) => {
+    // ALWAYS unlock the first module (Banking Basics)
+    if (moduleId === 'module-1') return 'unlocked';
+
     if (!user) return 'locked';
     const progress = user.moduleProgress?.find(m => m.moduleId === moduleId);
     if (progress?.completedAt) return 'completed';
@@ -81,6 +117,7 @@ const ModulesPage = () => {
       return allPrereqsCompleted ? 'unlocked' : 'locked';
     }
 
+    // Default to unlocked if no prerequisites (though specific logic above handles module-1)
     return 'unlocked';
   };
 
@@ -183,8 +220,8 @@ const ModulesPage = () => {
                 key={f.id}
                 onClick={() => setFilter(f.id)}
                 className={`relative px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 whitespace-nowrap ${filter === f.id
-                    ? 'text-white shadow-lg'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  ? 'text-white shadow-lg'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                   }`}
               >
                 {filter === f.id && (
@@ -250,16 +287,16 @@ const ModulesPage = () => {
                       {/* Header Row */}
                       <div className="flex justify-between items-start mb-6">
                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-inner ${isLocked ? 'bg-slate-900 text-slate-700' :
-                            isCompleted ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20' :
-                              'bg-indigo-500/10 text-indigo-400 ring-1 ring-indigo-500/20 group-hover:bg-indigo-500/20 transition-colors'
+                          isCompleted ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20' :
+                            'bg-indigo-500/10 text-indigo-400 ring-1 ring-indigo-500/20 group-hover:bg-indigo-500/20 transition-colors'
                           }`}>
                           {module.icon}
                         </div>
 
                         {/* Status Badge */}
                         <div className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border ${isCompleted ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                            isInProgress ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
-                              'bg-slate-800 text-slate-500 border-slate-700'
+                          isInProgress ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
+                            'bg-slate-800 text-slate-500 border-slate-700'
                           }`}>
                           {isCompleted ? 'Mission Complete' : isInProgress ? 'Active Mission' : 'Locked'}
                         </div>
@@ -301,10 +338,10 @@ const ModulesPage = () => {
                           onClick={() => !isLocked && navigate(`/modules/${module.id}`)}
                           disabled={isLocked}
                           className={`w-full py-4 rounded-xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-3 group/btn relative overflow-hidden ${isLocked
-                              ? 'bg-slate-900 text-slate-700 border border-slate-800 cursor-not-allowed'
-                              : isCompleted
-                                ? 'bg-slate-800 text-emerald-400 border border-emerald-500/30 hover:bg-slate-700'
-                                : 'bg-white text-slate-950 hover:bg-indigo-400 hover:text-white shadow-xl shadow-indigo-500/20'
+                            ? 'bg-slate-900 text-slate-700 border border-slate-800 cursor-not-allowed'
+                            : isCompleted
+                              ? 'bg-slate-800 text-emerald-400 border border-emerald-500/30 hover:bg-slate-700'
+                              : 'bg-white text-slate-950 hover:bg-indigo-400 hover:text-white shadow-xl shadow-indigo-500/20'
                             }`}
                         >
                           {isLocked ? (

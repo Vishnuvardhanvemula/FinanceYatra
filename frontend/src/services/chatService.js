@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { API_URL } from '../config/api';
+import api from './api';
 
 class ChatService {
   constructor() {
@@ -10,7 +9,7 @@ class ChatService {
   getOrCreateSessionId(userId) {
     // Use user-specific key to prevent cross-user session access
     const storageKey = userId ? `chatSessionId_${userId}` : 'chatSessionId_guest';
-    
+
     let sessionId = localStorage.getItem(storageKey);
     if (!sessionId) {
       sessionId = this.generateSessionId();
@@ -24,17 +23,6 @@ class ChatService {
     return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   }
 
-  // Get auth token from localStorage
-  getAuthToken() {
-    return localStorage.getItem('token');
-  }
-
-  // Get auth headers if user is logged in
-  getAuthHeaders() {
-    const token = this.getAuthToken();
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }
-
   async sendMessage(message, language = 'en', userId = null) {
     try {
       // Ensure we have a session ID for the current user
@@ -42,17 +30,11 @@ class ChatService {
         this.getOrCreateSessionId(userId);
       }
 
-      const response = await axios.post(
-        `${API_URL}/chat/message`, 
-        {
-          message,
-          sessionId: this.sessionId,
-          language
-        },
-        {
-          headers: this.getAuthHeaders()
-        }
-      );
+      const response = await api.post('/chat/message', {
+        message,
+        sessionId: this.sessionId,
+        language
+      });
 
       return response.data;
     } catch (error) {
@@ -68,12 +50,7 @@ class ChatService {
         this.getOrCreateSessionId(userId);
       }
 
-      const response = await axios.get(
-        `${API_URL}/chat/history/${this.sessionId}`,
-        {
-          headers: this.getAuthHeaders()
-        }
-      );
+      const response = await api.get(`/chat/history/${this.sessionId}`);
       return response.data;
     } catch (error) {
       if (error.response?.status === 404 || error.response?.status === 401) {
@@ -86,20 +63,14 @@ class ChatService {
 
   async createNewSession(language = 'en', userId = null) {
     try {
-      const response = await axios.post(
-        `${API_URL}/chat/session`, 
-        { language },
-        {
-          headers: this.getAuthHeaders()
-        }
-      );
-      
+      const response = await api.post('/chat/session', { language });
+
       this.sessionId = response.data.sessionId;
-      
+
       // Store with user-specific key
       const storageKey = userId ? `chatSessionId_${userId}` : 'chatSessionId_guest';
       localStorage.setItem(storageKey, this.sessionId);
-      
+
       return response.data;
     } catch (error) {
       console.error('Failed to create session:', error);

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import api from '../services/api';
 
 const THEME_STORAGE_KEY = 'fy_selected_theme';
 
@@ -70,18 +71,8 @@ export const ThemeProvider = ({ children, defaultTheme = 'default' }) => {
   const persistToServer = async (userId, newTheme) => {
     if (!userId) return false;
     try {
-      const url = `/api/auth/preferences`;
-      const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-      };
-
-      const res = await fetch(url, {
-        method: 'PATCH',
-        headers,
-        body: JSON.stringify({ theme: newTheme }),
-      });
-      return res.ok;
+      const res = await api.patch('/auth/preferences', { theme: newTheme });
+      return res.status === 200;
     } catch (err) {
       console.warn('Theme persist failed', err);
       return false;
