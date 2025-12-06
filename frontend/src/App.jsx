@@ -138,6 +138,7 @@ function CustomCursor() {
 function Layout({ children }) {
   const location = useLocation();
   const showFooter = location.pathname !== '/chat';
+  const showChatWidget = location.pathname !== '/chat';
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -146,6 +147,7 @@ function Layout({ children }) {
       {/* Add top padding equal to navbar height so content doesn't sit under the fixed navbar */}
       <main className="flex-1 pt-20">{children}</main>
       {showFooter && <MainFooter />}
+      {showChatWidget && <ChatWidget />}
     </div>
   );
 }
@@ -157,6 +159,7 @@ const AnimatedRoutes = () => {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<PageTransition><HomePage2 /></PageTransition>} />
+        <Route path="/chat" element={<PageTransition><ChatPage /></PageTransition>} />
         <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
         <Route path="/signup" element={<PageTransition><SignupPage /></PageTransition>} />
         <Route path="/onboarding" element={<PageTransition><OnboardingPage /></PageTransition>} />
@@ -223,7 +226,6 @@ export default function App() {
 
           <Layout>
             <AnimatedRoutes />
-            <ChatWidget />
           </Layout>
         </AuthProvider>
       </ThemeProvider>
