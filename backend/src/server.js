@@ -98,25 +98,43 @@ app.use((err, req, res, next) => {
   });
 });
 
-async function connectDatabase() {
-  try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/financeyatra';
+const MAX_RETRIES = 5;
+const RETRY_DELAY = 5000; // 5 seconds
 
-    await mongoose.connect(mongoUri);
-    console.log('✅ Connected to MongoDB');
-    // console.log(`📊 Database: ${mongoUri}`); // Hiding for security
-    return true;
-  } catch (error) {
-    console.error('❌ MongoDB connection error:', error.message);
-    console.warn('⚠️  Continuing without database. User authentication disabled.');
-    return false;
+async function connectDatabase() {
+  let retries = 0;
+  while (retries < MAX_RETRIES) {
+    try {
+      const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/financeyatra';
+
+      await mongoose.connect(mongoUri, {
+        serverSelectionTimeoutMS: 5000, // Fail fast if no network access
+      });
+
+      console.log('✅ Connected to MongoDB');
+      return true;
+    } catch (error) {
+      retries++;
+      console.error(`❌ MongoDB connection attempt ${retries} failed:`, error.message);
+
+      if (retries < MAX_RETRIES) {
+        console.log(`⏳ Retrying in ${RETRY_DELAY / 1000} seconds...`);
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+      } else {
+        console.error('🔥 Max retries reached. Database unavailable.');
+        return false;
+      }
+    }
   }
 }
 
 async function startServer() {
-  await connectDatabase();
+  const isConnected = await connectDatabase();
 
-
+  if (!isConnected) {
+    console.error('🚫 Server fail to start due to database connection error.');
+    process.exit(1); // Hard exit to prevent buffering timeouts
+  }
 
   llmService.initialize();
 
@@ -125,8 +143,6 @@ async function startServer() {
     console.log(`📡 Server running on: http://localhost:${PORT}`);
     console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
     console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
-
-
   });
 }
 

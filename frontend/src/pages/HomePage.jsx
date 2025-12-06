@@ -413,7 +413,8 @@ const HeroSection = ({ isAuthenticated, loading, navigate }) => (
           <button
             onClick={() => {
               if (loading) return;
-              navigate(isAuthenticated ? '/dashboard' : '/signup');
+              const hasToken = localStorage.getItem('authToken');
+              navigate(isAuthenticated || hasToken ? '/dashboard' : '/signup');
             }}
             disabled={loading}
             className="w-full sm:w-auto group relative px-8 py-4 bg-white text-black rounded-full font-bold text-lg overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_50px_rgba(255,255,255,0.3)] disabled:opacity-70 disabled:cursor-wait"
@@ -424,7 +425,10 @@ const HeroSection = ({ isAuthenticated, loading, navigate }) => (
             </span>
           </button>
           <button
-            onClick={() => navigate(isAuthenticated ? '/challenges' : '/modules')}
+            onClick={() => {
+              const hasToken = localStorage.getItem('authToken');
+              navigate(isAuthenticated || hasToken ? '/challenges' : '/modules');
+            }}
             className="w-full sm:w-auto px-8 py-4 bg-transparent border border-white/20 hover:bg-white/5 text-white rounded-full font-medium text-lg transition-all backdrop-blur-sm flex items-center gap-2 justify-center"
           >
             {isAuthenticated ? (
