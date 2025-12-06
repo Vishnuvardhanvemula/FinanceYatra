@@ -6,6 +6,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import ParticleBackground from '../components/ParticleBackground';
+import { ChevronRight, Sparkles, Brain, Target, Globe } from 'lucide-react';
 
 const OnboardingPage = () => {
   const navigate = useNavigate();
@@ -21,153 +24,176 @@ const OnboardingPage = () => {
     return null;
   }
 
+  const variants = {
+    enter: (direction) => ({
+      x: direction > 0 ? 100 : -100,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction) => ({
+      x: direction < 0 ? 100 : -100,
+      opacity: 0,
+    }),
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden font-sans text-white">
+      <ParticleBackground />
+
+      {/* Background Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/20 blur-[100px] rounded-full pointer-events-none" />
+
+      <div className="max-w-2xl w-full relative z-10">
         {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-            <div 
-              className="h-2 bg-indigo-600 dark:bg-teal-500 rounded-full transition-all duration-300"
-              style={{ width: `${(step / 3) * 100}%` }}
-            ></div>
-          </div>
+        <div className="mb-12 flex justify-center gap-2">
+          {[1, 2, 3].map((s) => (
+            <div
+              key={s}
+              className={`h-1.5 rounded-full transition-all duration-500 ${s <= step ? 'w-12 bg-indigo-500' : 'w-4 bg-slate-800'
+                }`}
+            />
+          ))}
         </div>
 
-        {/* Onboarding Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          {step === 1 && (
-            <div className="text-center">
-              <div className="mb-6 flex justify-center">
-                <svg className="w-24 h-24 text-indigo-600 dark:text-teal-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                </svg>
-              </div>
-              <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-3">
-                Welcome, {user.name}!
-              </h1>
-              <p className="text-xl font-semibold text-indigo-600 dark:text-teal-400 mb-4">
-                From Saving to Success — Your FinYatra Begins
-              </p>
-              <p className="text-base text-gray-600 dark:text-gray-300 mb-8">
-                Discover, understand, and master money with interactive learning
-              </p>
-              <button
-                onClick={() => setStep(2)}
-                className="bg-indigo-600 dark:bg-teal-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 dark:hover:bg-teal-700 transition-colors"
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 p-8 md:p-12 rounded-3xl shadow-2xl relative overflow-hidden">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl -translate-y-1/2 translate-x-1/2" />
+
+          <AnimatePresence mode="wait" initial={false}>
+            {step === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                className="text-center"
               >
-                Continue
-              </button>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div>
-              <div className="text-center mb-8">
-                <div className="text-6xl mb-6">🎯</div>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-                  How It Works
-                </h2>
-              </div>
-
-              <div className="space-y-6 mb-8">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 bg-indigo-100 dark:bg-teal-900/30 text-indigo-600 dark:text-teal-400 rounded-full flex items-center justify-center font-bold">
-                    1
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-1">Ask Questions</h3>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      Type or speak your financial questions in any of 11 supported languages
-                    </p>
-                  </div>
+                <div className="w-20 h-20 mx-auto bg-indigo-500/20 rounded-2xl flex items-center justify-center mb-8 ring-1 ring-indigo-500/40">
+                  <Sparkles className="w-10 h-10 text-indigo-400" />
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 bg-indigo-100 dark:bg-teal-900/30 text-indigo-600 dark:text-teal-400 rounded-full flex items-center justify-center font-bold">
-                    2
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-1">AI Analyzes Your Level</h3>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      Our AI automatically detects your proficiency (beginner/intermediate/expert)
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 bg-indigo-100 dark:bg-teal-900/30 text-indigo-600 dark:text-teal-400 rounded-full flex items-center justify-center font-bold">
-                    3
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-1">Personalized Learning</h3>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      Get answers tailored to your level, track progress, and earn achievements
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setStep(3)}
-                className="w-full bg-indigo-600 dark:bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 dark:hover:bg-teal-700 transition-colors"
-              >
-                Next
-              </button>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div>
-              <div className="text-center mb-8">
-                <div className="mb-6 flex justify-center">
-                  <svg className="w-24 h-24 text-indigo-600 dark:text-teal-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                  </svg>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-                  You're All Set!
-                </h2>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  Your proficiency level will be automatically detected after you ask a few questions.
-                  No quiz needed!
+                <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                  Welcome, {user.name}
+                </h1>
+                <p className="text-xl text-indigo-300 font-medium mb-4">
+                  Initiating Financial Protocol...
                 </p>
-              </div>
+                <p className="text-slate-400 leading-relaxed mb-10 max-w-lg mx-auto">
+                  You are about to enter a simulated economy designed to master wealth creation. No risk. All reward.
+                </p>
 
-              <div className="bg-indigo-50 dark:bg-teal-900/20 border border-indigo-200 dark:border-teal-800 rounded-lg p-6 mb-8">
-                <h3 className="font-semibold text-indigo-900 dark:text-teal-300 mb-3">
-                  ✨ Features You'll Love:
-                </h3>
-                <ul className="space-y-2 text-indigo-800 dark:text-teal-400">
-                  <li>• 🎤 Voice input in 11 languages</li>
-                  <li>• 🔊 Natural voice responses</li>
-                  <li>• 📊 Progress tracking & achievements</li>
-                  <li>• 🧠 AI-powered proficiency detection</li>
-                  <li>• 🌍 Multilingual support (EN, HI, BN, TE, MR, TA, GU, KN, ML, PA, UR)</li>
-                </ul>
-              </div>
+                <button
+                  onClick={() => setStep(2)}
+                  className="px-10 py-4 bg-white text-slate-950 font-bold rounded-xl hover:scale-105 transition-transform shadow-lg shadow-indigo-500/20 flex items-center gap-2 mx-auto"
+                >
+                  Initialize System <ChevronRight size={18} />
+                </button>
+              </motion.div>
+            )}
 
-              <button
-                onClick={handleStart}
-                className="w-full bg-indigo-600 dark:bg-teal-600 text-white py-4 rounded-lg font-semibold hover:bg-indigo-700 dark:hover:bg-teal-700 transition-colors text-lg flex items-center justify-center gap-2 group"
+            {step === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
               >
-                <span>Start Learning</span>
-                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </button>
-            </div>
-          )}
+                <div className="text-center mb-10">
+                  <h2 className="text-3xl font-bold mb-3">System Capabilities</h2>
+                  <p className="text-slate-400">Powered by advanced AI and Real-time data.</p>
+                </div>
+
+                <div className="space-y-4 mb-10">
+                  <div className="flex items-center gap-6 p-4 rounded-2xl bg-slate-800/50 border border-slate-700/50">
+                    <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center shrink-0">
+                      <Globe className="w-6 h-6 text-indigo-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-white mb-1">Universal Language</h3>
+                      <p className="text-sm text-slate-400">Speak or Type in 11+ Indian languages. The AI understands you.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-6 p-4 rounded-2xl bg-slate-800/50 border border-slate-700/50">
+                    <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center shrink-0">
+                      <Brain className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-white mb-1">Adaptive Intelligence</h3>
+                      <p className="text-sm text-slate-400">The system detects your proficiency level automatically.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-6 p-4 rounded-2xl bg-slate-800/50 border border-slate-700/50">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0">
+                      <Target className="w-6 h-6 text-emerald-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-white mb-1">Mission Roadmap</h3>
+                      <p className="text-sm text-slate-400">Complete tactical modules to unlock new ranks and badges.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setStep(3)}
+                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
+                >
+                  Continue
+                </button>
+              </motion.div>
+            )}
+
+            {step === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                className="text-center"
+              >
+                <div className="w-24 h-24 mx-auto bg-green-500/20 rounded-full flex items-center justify-center mb-8 ring-4 ring-green-500/10 animate-pulse">
+                  <div className="w-3 h-3 bg-green-400 rounded-full" />
+                </div>
+
+                <h2 className="text-3xl font-bold mb-4 text-white">
+                  System Online
+                </h2>
+                <p className="text-slate-400 mb-10 max-w-md mx-auto">
+                  Your profile has been created. Your financial journey begins now.
+                </p>
+
+                <div className="bg-indigo-900/20 border border-indigo-500/20 rounded-xl p-6 mb-10 text-left">
+                  <h3 className="font-bold text-indigo-300 mb-2 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse" />
+                    Next Objective:
+                  </h3>
+                  <p className="text-slate-300 text-sm">
+                    Navigate to the <strong>Modules</strong> section and complete "Banking Basics" to earn your first badge.
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleStart}
+                  className="w-full py-4 bg-white text-slate-950 font-bold rounded-xl hover:scale-[1.02] transition-transform shadow-xl flex items-center justify-center gap-2"
+                >
+                  Launch Dashboard <ChevronRight size={18} />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Skip Link */}
         {step < 3 && (
-          <div className="text-center mt-6">
+          <div className="text-center mt-8">
             <button
               onClick={handleStart}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-sm"
+              className="text-slate-500 text-sm hover:text-white transition-colors uppercase tracking-widest font-semibold"
             >
-              Skip onboarding
+              Skip Protocol
             </button>
           </div>
         )}

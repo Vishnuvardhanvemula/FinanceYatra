@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { moduleService } from '../services/moduleService';
@@ -8,22 +8,10 @@ import {
   Search,
   ChevronRight,
   Target,
-  Landmark,
-  Smartphone,
-  Percent,
-  Wallet,
-  Shield,
-  TrendingUp,
-  FileText,
-  PieChart,
-  Activity,
-  Umbrella,
-  Home,
-  CreditCard,
-  Briefcase,
-  Layers
+  MapPin,
+  Star
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useSpring } from 'framer-motion';
 
 // Components
 import ParticleBackground from '../components/ParticleBackground';
@@ -37,6 +25,18 @@ const ModulesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Scroll Progress for the Timeline
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
+  const scaleY = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
 
   useEffect(() => {
     fetchModules();
@@ -56,44 +56,33 @@ const ModulesPage = () => {
     }
   };
 
-  useEffect(() => {
-    if (location.state?.scrollToCurrent && !loading && modules.length > 0) {
-      const currentModule = modules.find(m => {
-        const progress = user?.moduleProgress?.find(p => p.moduleId === m.id);
-        return progress && !progress.completedAt;
-      });
-
-      if (currentModule) {
-        const element = document.getElementById(`module-${currentModule.id}`);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
-    }
-  }, [location.state, loading, modules, user]);
-
   const getModuleStatus = (moduleId) => {
-    // ALWAYS unlock the first module (Banking Basics)
-    if (moduleId === 'module-1') return 'unlocked';
+    // ALWAYS unlock the first module
+    if (moduleId === 'module-1') return { status: 'unlocked' };
 
-    if (!user) return 'locked';
+    if (!user) return { status: 'locked', reason: 'Sign in required' };
     const progress = user.moduleProgress?.find(m => m.moduleId === moduleId);
-    if (progress?.completedAt) return 'completed';
-    if (progress) return 'in-progress';
+    if (progress?.completedAt) return { status: 'completed' };
+    if (progress) return { status: 'in-progress' };
 
     // Check prerequisites
     const module = modules.find(m => m.id === moduleId);
-    if (!module) return 'locked';
+    if (!module) return { status: 'locked', reason: 'Unknown Module' };
 
     if (module.prerequisites && module.prerequisites.length > 0) {
-      const allPrereqsCompleted = module.prerequisites.every(prereqId => {
+      for (const prereqId of module.prerequisites) {
         const prereqProgress = user.moduleProgress?.find(m => m.moduleId === prereqId);
-        return prereqProgress?.completedAt;
-      });
-      return allPrereqsCompleted ? 'unlocked' : 'locked';
+        if (!prereqProgress?.completedAt) {
+          const prereqModule = modules.find(m => m.id === prereqId);
+          return {
+            status: 'locked',
+            reason: prereqModule ? `Complete "${prereqModule.title}"` : 'Prerequisite missing'
+          };
+        }
+      }
     }
 
-    return 'unlocked';
+    return { status: 'unlocked' };
   };
 
   const filteredModules = modules.filter(module => {
@@ -103,19 +92,12 @@ const ModulesPage = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const filters = [
-    { id: 'all', label: 'All Modules' },
-    { id: 'beginner', label: 'Beginner' },
-    { id: 'intermediate', label: 'Intermediate' },
-    { id: 'expert', label: 'Expert' },
-  ];
-
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-16 h-16 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
-          <p className="text-slate-400 font-medium animate-pulse">Loading Payload...</p>
+          <p className="text-slate-400 font-medium animate-pulse">Loading Mission Data...</p>
         </div>
       </div>
     );
@@ -129,18 +111,18 @@ const ModulesPage = () => {
       <div className="h-20" />
 
       {/* Main Content */}
-      <div className="relative pt-12 pb-24 px-6 md:px-12 max-w-7xl mx-auto">
+      <div className="relative pt-12 pb-24 px-4 md:px-12 max-w-6xl mx-auto" ref={containerRef}>
 
-        {/* Hero Section */}
-        <div className="flex flex-col items-center text-center space-y-6 mb-20">
+        {/* Header */}
+        <div className="flex flex-col items-center text-center space-y-6 mb-24">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/50 border border-slate-700 backdrop-blur-md shadow-sm"
           >
-            <Target size={16} className="text-indigo-400" />
+            <MapPin size={16} className="text-indigo-400" />
             <span className="text-sm font-medium text-slate-300">
-              Your Journey: <span className="text-white font-bold">{modules.length} Missions Available</span>
+              Campaign Map: <span className="text-white font-bold">{filteredModules.length} Sectors</span>
             </span>
           </motion.div>
 
@@ -149,196 +131,148 @@ const ModulesPage = () => {
             animate={{ opacity: 1, scale: 1 }}
             className="text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-white via-indigo-100 to-indigo-400"
           >
-            Mission Control
+            Mission Roadmap
           </motion.h1>
 
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-lg text-slate-400 max-w-2xl font-light leading-relaxed"
+            className="w-full max-w-md relative"
           >
-            Master the art of finance through our tactical learning modules. From rookie basics to elite investing strategies.
-          </motion.p>
-
-          {/* Search Bar - Floating */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="w-full max-w-lg relative group"
-          >
-            <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative flex items-center bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-full px-6 py-4 shadow-xl focus-within:border-indigo-500/50 focus-within:bg-slate-900 transition-all">
-              <Search className="text-slate-500 group-focus-within:text-indigo-400 transition-colors" size={20} />
-              <input
-                type="text"
-                placeholder="Search command log..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent border-none focus:outline-none text-white ml-4 placeholder-slate-500"
-              />
-            </div>
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+            <input
+              type="text"
+              placeholder="Search missions..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-slate-900/50 border border-slate-800 rounded-full py-3 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
+            />
           </motion.div>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="sticky top-20 z-40 mb-16 flex justify-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex items-center gap-1 p-1 bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-full shadow-2xl overflow-x-auto max-w-full no-scrollbar"
-          >
-            {filters.map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setFilter(f.id)}
-                className={`relative px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 whitespace-nowrap ${filter === f.id
-                  ? 'text-white shadow-lg'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                  }`}
-              >
-                {filter === f.id && (
-                  <motion.div
-                    layoutId="activeModuleFilter"
-                    className="absolute inset-0 bg-indigo-600 rounded-full"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                  />
-                )}
-                <span className="relative z-10">{f.label}</span>
-              </button>
-            ))}
-          </motion.div>
-        </div>
+        {/* The Timeline */}
+        <div className="relative">
+          {/* Central Line */}
+          <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-1 bg-slate-800/50 -translate-x-1/2 rounded-full overflow-hidden">
+            <motion.div
+              className="w-full bg-gradient-to-b from-indigo-500 via-purple-500 to-cyan-500"
+              style={{ height: '100%', scaleY, transformOrigin: 'top' }}
+            />
+          </div>
 
-        {/* Modules Grid */}
-        <motion.div
-          layout
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-        >
-          <AnimatePresence mode="popLayout">
+          <div className="space-y-12 md:space-y-24 pb-12">
             {filteredModules.map((module, index) => {
-              const status = getModuleStatus(module.id);
+              const { status, reason } = getModuleStatus(module.id);
               const isLocked = status === 'locked';
               const isCompleted = status === 'completed';
               const isInProgress = status === 'in-progress';
-
-              // Visual styling based on status
-              const containerOpacity = isLocked ? 'opacity-60 grayscale-[0.5] backdrop-blur-sm' : 'opacity-100';
-              const borderColor = isCompleted ? 'border-emerald-500/30' :
-                isInProgress ? 'border-indigo-500/50' :
-                  isLocked ? 'border-slate-800' : 'border-slate-700';
-
-              const glowColor = isCompleted ? 'shadow-[0_0_30px_rgba(16,185,129,0.1)]' :
-                isInProgress ? 'shadow-[0_0_30px_rgba(99,102,241,0.15)]' :
-                  'shadow-lg shadow-black/50';
+              const isEven = index % 2 === 0;
 
               return (
                 <motion.div
                   key={module.id}
-                  id={`module-${module.id}`}
-                  layout
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="h-full"
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className={`relative flex flex-col md:flex-row items-center w-full ${isEven ? 'md:flex-row-reverse' : ''}`}
                 >
-                  <TiltCard
-                    className={`h-full bg-slate-900/40 backdrop-blur-md border ${borderColor} ${glowColor} rounded-3xl overflow-hidden group hover:border-indigo-500/30 transition-all duration-500 flex flex-col ${containerOpacity}`}
-                  >
-                    {/* Progress Bar (Top) */}
-                    {isInProgress && (
-                      <div className="absolute top-0 left-0 w-full h-1 bg-slate-800/50">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: '40%' }}
-                          className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
-                        />
-                      </div>
-                    )}
+                  {/* Timeline Dot */}
+                  <div className="absolute left-4 md:left-1/2 -translate-x-1/2 w-8 h-8 rounded-full border-4 border-slate-950 z-20 flex items-center justify-center bg-slate-800 box-content shadow-xl">
+                    <div className={`w-3 h-3 rounded-full transition-colors duration-500 ${isCompleted ? 'bg-emerald-400 shadow-[0_0_10px_#34d399]' :
+                        isInProgress ? 'bg-indigo-400 shadow-[0_0_10px_#818cf8] animate-pulse' :
+                          'bg-slate-600'
+                      }`} />
+                  </div>
 
-                    <div className="p-8 flex flex-col h-full relative z-10">
-                      {/* Header Row */}
-                      <div className="flex justify-between items-start mb-6">
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-inner ${isLocked ? 'bg-slate-950 text-slate-700' :
-                          isCompleted ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20' :
-                            'bg-gradient-to-tr from-slate-800 to-slate-900 text-indigo-400 ring-1 ring-white/10 group-hover:bg-indigo-500/10 transition-colors'
-                          }`}>
-                          {module.icon}
+                  {/* Content Card Side */}
+                  <div className={`w-full md:w-5/12 pl-12 md:pl-0 ${isEven ? 'md:pr-16' : 'md:pl-16'}`}>
+                    <TiltCard
+                      className={`relative group overflow-hidden rounded-2xl border transition-all duration-300 ${isLocked
+                          ? 'bg-slate-900/20 border-slate-800/50 backdrop-blur-sm grayscale opacity-70'
+                          : isCompleted
+                            ? 'bg-slate-900/60 border-emerald-500/20 shadow-lg shadow-emerald-900/5'
+                            : 'bg-slate-900/80 border-indigo-500/30 shadow-xl shadow-indigo-500/10'
+                        }`}
+                    >
+                      {/* Active Glow */}
+                      {isInProgress && !isLocked && (
+                        <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 blur-xl opacity-50 group-hover:opacity-100 transition-opacity" />
+                      )}
+
+                      <div className="relative p-6 z-10">
+                        {/* Top Badge Row */}
+                        <div className="flex justify-between items-start mb-4">
+                          <div className={`p-3 rounded-xl ${isLocked ? 'bg-slate-800 text-slate-500' :
+                              isCompleted ? 'bg-emerald-500/10 text-emerald-400' :
+                                'bg-indigo-500/10 text-indigo-400'
+                            }`}>
+                            {module.icon}
+                          </div>
+
+                          {isLocked && (
+                            <div className="flex items-center gap-1.5 px-3 py-1 bg-red-500/10 border border-red-500/20 rounded text-red-400 text-[10px] font-bold uppercase tracking-wider">
+                              <Lock size={10} />
+                              <span>{reason || 'Locked'}</span>
+                            </div>
+                          )}
+
+                          {isCompleted && (
+                            <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
+                              <CheckCircle size={10} />
+                              <span>Complete</span>
+                            </div>
+                          )}
+
+                          {isInProgress && (
+                            <div className="flex items-center gap-1.5 px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded text-indigo-400 text-[10px] font-bold uppercase tracking-wider animate-pulse">
+                              <Target size={10} />
+                              <span>Active</span>
+                            </div>
+                          )}
                         </div>
 
-                        {/* Minimal Status Badge */}
-                        <div className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${isCompleted ? 'text-emerald-400 bg-emerald-950/30 border border-emerald-500/20' :
-                          isInProgress ? 'text-indigo-400 bg-indigo-950/30 border border-indigo-500/20 animate-pulse' :
-                            'text-slate-600 border border-slate-800'
-                          }`}>
-                          {isCompleted ? 'Complete' : isInProgress ? 'Active' : 'Locked'}
-                        </div>
-                      </div>
-
-                      {/* Content */}
-                      <div className="mb-6 flex-1">
-                        <h3 className={`text-2xl font-bold mb-3 leading-tight transition-colors ${isLocked ? 'text-slate-500' : 'text-white group-hover:text-indigo-400'
-                          }`}>
+                        <h3 className={`text-xl font-bold mb-2 ${isLocked ? 'text-slate-500' : 'text-white'}`}>
                           {module.title}
                         </h3>
-                        <p className="text-slate-400 text-sm leading-relaxed line-clamp-3">
+                        <p className="text-sm text-slate-400 line-clamp-2 mb-6 h-10">
                           {module.description}
                         </p>
-                      </div>
 
-                      {/* Clean Meta Bar (Replaces Redundant Icons) */}
-                      <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-8 pt-6 border-t border-slate-800/50">
-                        <span className={`${module.difficulty === 'beginner' ? 'text-emerald-400' :
-                          module.difficulty === 'intermediate' ? 'text-amber-400' : 'text-rose-400'
-                          }`}>
-                          {module.difficulty}
-                        </span>
-                        <span className="w-1 h-1 rounded-full bg-slate-700" />
-                        <span>{module.duration}</span>
-                        <span className="w-1 h-1 rounded-full bg-slate-700" />
-                        <span>{module.lessonsCount || module.lessons} Lessons</span>
-                      </div>
+                        {/* Meta Footer */}
+                        <div className="flex items-center justify-between pt-4 border-t border-slate-800/50">
+                          <div className="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+                            <span className={`${module.difficulty === 'beginner' ? 'text-emerald-400' :
+                                module.difficulty === 'intermediate' ? 'text-amber-400' : 'text-rose-400'
+                              }`}>{module.difficulty}</span>
+                            <span className="text-slate-700">•</span>
+                            <span>{module.duration}</span>
+                          </div>
 
-                      {/* Action Button */}
-                      <div className="mt-auto">
-                        <button
-                          onClick={() => !isLocked && navigate(`/modules/${module.id}`)}
-                          disabled={isLocked}
-                          className={`w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3 group/btn relative overflow-hidden ${isLocked
-                            ? 'bg-slate-900/50 text-slate-700 border border-slate-800/50 cursor-not-allowed'
-                            : isCompleted
-                              ? 'bg-slate-800/80 text-emerald-400 border border-emerald-500/30 hover:bg-slate-700'
-                              : 'bg-white text-slate-950 hover:bg-indigo-50 shadow-xl shadow-indigo-500/10'
-                            }`}
-                        >
-                          {isLocked ? (
-                            <>
-                              <Lock size={14} /> Locked
-                            </>
-                          ) : isCompleted ? (
-                            <>
-                              <CheckCircle size={14} /> Review
-                            </>
-                          ) : (
-                            <>
-                              Start <ChevronRight size={14} className="transition-transform group-hover/btn:translate-x-1" />
-                            </>
-                          )}
-                        </button>
+                          <button
+                            onClick={() => !isLocked && navigate(`/modules/${module.id}`)}
+                            disabled={isLocked}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isLocked ? 'bg-slate-800 text-slate-600 cursor-not-allowed' :
+                                isCompleted ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white' :
+                                  'bg-white text-black hover:scale-110 shadow-lg shadow-indigo-500/20'
+                              }`}
+                          >
+                            <ChevronRight size={16} />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </TiltCard>
+                    </TiltCard>
+                  </div>
+
+                  {/* Empty space for the other side */}
+                  <div className="hidden md:block w-5/12" />
                 </motion.div>
               );
             })}
-          </AnimatePresence>
-        </motion.div>
+          </div>
+        </div>
 
-        {/* Bottom Fade */}
-        <div className="fixed bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-slate-950 to-transparent pointer-events-none z-30" />
       </div>
     </div>
   );
