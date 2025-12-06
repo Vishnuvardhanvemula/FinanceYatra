@@ -86,24 +86,47 @@ const ForumThreadDetail = () => {
                 </button>
 
                 {/* Main Post */}
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-8">
-                    <div className="flex justify-between items-start mb-4">
-                        <h1 className="text-2xl font-bold text-white">{post.title}</h1>
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                            {post.category}
+                <div className={`backdrop-blur-sm border rounded-xl p-6 mb-8 relative overflow-hidden ${post.tags?.includes('System Event')
+                        ? post.tags?.includes('legendary') ? 'bg-gradient-to-br from-amber-900/20 to-black border-amber-500/50'
+                            : 'bg-gradient-to-br from-cyan-900/20 to-black border-cyan-500/50'
+                        : 'bg-white/5 border-white/10'
+                    }`}>
+
+                    {/* Background decoration for system events */}
+                    {post.tags?.includes('System Event') && (
+                        <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br rounded-full blur-[80px] -z-10 opacity-20 ${post.tags?.includes('legendary') ? 'from-amber-500 to-yellow-300' : 'from-cyan-500 to-blue-300'
+                            }`} />
+                    )}
+
+                    <div className="flex justify-between items-start mb-4 relative z-10">
+                        <h1 className={`text-2xl font-bold ${post.tags?.includes('System Event')
+                                ? post.tags?.includes('legendary') ? 'text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500'
+                                    : 'text-cyan-100'
+                                : 'text-white'
+                            }`}>
+                            {post.title}
+                        </h1>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${post.tags?.includes('System Event')
+                                ? post.tags?.includes('legendary') ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
+                                    : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50'
+                                : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                            }`}>
+                            {post.tags?.includes('System Event') ? (post.tags?.includes('legendary') ? 'LEGENDARY DROP' : 'SYSTEM EVENT') : post.category}
                         </span>
                     </div>
 
-                    <div className="flex items-center gap-3 mb-6 text-sm text-slate-400">
+                    <div className="flex items-center gap-3 mb-6 text-sm text-slate-400 relative z-10">
                         <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-slate-700 overflow-hidden">
+                            <div className="w-6 h-6 rounded-full bg-slate-700 overflow-hidden border border-white/10">
                                 {post.author?.avatar ? (
                                     <img src={post.author.avatar} alt={post.author.name} className="w-full h-full object-cover" />
                                 ) : (
-                                    <User size={14} className="m-1 text-slate-400" />
+                                    <div className="w-full h-full flex items-center justify-center bg-slate-800"><User size={14} className="text-slate-400" /></div>
                                 )}
                             </div>
-                            <span className="text-white">{post.author?.name}</span>
+                            <span className={post.tags?.includes('System Event') ? 'text-slate-200 font-medium' : 'text-white'}>
+                                {post.author?.name}
+                            </span>
                         </div>
                         <span>•</span>
                         <div className="flex items-center gap-1">
@@ -112,11 +135,11 @@ const ForumThreadDetail = () => {
                         </div>
                     </div>
 
-                    <div className="prose prose-invert max-w-none mb-8 text-slate-300 whitespace-pre-wrap">
+                    <div className="prose prose-invert max-w-none mb-8 text-slate-300 whitespace-pre-wrap relative z-10">
                         {post.content}
                     </div>
 
-                    <div className="flex items-center gap-4 border-t border-white/10 pt-4">
+                    <div className="flex items-center gap-4 border-t border-white/10 pt-4 relative z-10">
                         <button
                             onClick={handleUpvote}
                             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-slate-300"

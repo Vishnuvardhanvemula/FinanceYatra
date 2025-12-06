@@ -12,6 +12,7 @@ import AnimatedCounter from '../components/AnimatedCounter';
 import MarketTicker from '../components/dashboard/MarketTicker';
 import RecommendedModules from '../components/dashboard/RecommendedModules';
 import MarketSentimentWidget from '../components/dashboard/MarketSentimentWidget';
+import ArsenalWidget from '../components/dashboard/ArsenalWidget';
 import WidgetErrorBoundary from '../components/WidgetErrorBoundary';
 import { dashboardService } from '../services/dashboardService';
 import { useRankSystem } from '../hooks/useRankSystem';
@@ -29,6 +30,7 @@ import {
   Medal,
   ArrowUpRight,
   Lock,
+  Box,
   BarChart2
 } from 'lucide-react';
 
@@ -113,6 +115,20 @@ const DashboardPage = () => {
 
   // --- Rank-Based Atmosphere Logic ---
   const getAtmosphere = () => {
+    // 1. Check for Equipped Shop Theme first
+    const themeId = user?.equippedItems?.theme;
+    if (themeId) {
+      const themeMap = {
+        'cyber_city': 'bg-slate-900 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/50 via-slate-900 to-black',
+        'neon_nights': 'bg-black bg-[conic-gradient(at_bottom_left,_var(--tw-gradient-stops))] from-fuchsia-900/40 via-black to-slate-900',
+        'golden_era': 'bg-slate-950 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-900/20 via-slate-950 to-black',
+        'matrix_code': 'bg-[#0a0a0a] text-emerald-400',
+        'deep_space': 'bg-[#020617] bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/40 via-slate-950 to-black',
+      };
+      if (themeMap[themeId]) return themeMap[themeId];
+    }
+
+    // 2. Fallback to Rank Defaults
     if (rankTier === 0) return "bg-[#020617]"; // Novice: Clean Slate
     if (rankTier === 1) return "bg-[#0f172a]"; // Apprentice: Deep Blue
     if (rankTier === 2) return "bg-[#1e293b]"; // Expert: Slate
@@ -232,7 +248,12 @@ const DashboardPage = () => {
                     ]
                   }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className={`w-28 h-28 rounded-full bg-gradient-to-br from-white/10 to-white/5 p-[2px] backdrop-blur-sm transition-all duration-500`}
+                  className={`w-28 h-28 rounded-full p-[3px] backdrop-blur-sm transition-all duration-500 relative
+                    ${user?.equippedItems?.frame === 'neon_border' ? 'bg-gradient-to-r from-fuchsia-500 via-cyan-500 to-fuchsia-500 bg-[length:200%_100%] animate-gradient-x' :
+                      user?.equippedItems?.frame === 'gold_minimal' ? 'bg-amber-400 border-2 border-amber-200' :
+                        user?.equippedItems?.frame === 'stealth_ring' ? 'bg-slate-700 border border-slate-600' :
+                          'bg-gradient-to-br from-white/10 to-white/5' // Default
+                    }`}
                 >
                   <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center text-4xl font-bold text-white overflow-hidden relative">
                     {/* 3D Avatar for Tier 1+ */}
@@ -261,6 +282,20 @@ const DashboardPage = () => {
                 <p className="text-slate-400 text-sm md:text-base font-light max-w-md">
                   {rankTier === 4 ? t('dashboard.welcome_legend') : t('dashboard.welcome')}
                 </p>
+                <div className="flex items-center gap-3 mt-4 text-xs font-mono text-slate-500">
+                  {user?.equippedItems?.theme && (
+                    <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800/50 border border-slate-700/50">
+                      <Zap size={10} className="text-indigo-400" />
+                      <span className="uppercase tracking-wide text-indigo-200">{user.equippedItems.theme.replace('_', ' ')}</span>
+                    </div>
+                  )}
+                  {user?.equippedItems?.frame && (
+                    <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800/50 border border-slate-700/50">
+                      <Box size={10} className="text-amber-400" />
+                      <span className="uppercase tracking-wide text-amber-200">{user.equippedItems.frame.replace('_', ' ')}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -429,6 +464,13 @@ const DashboardPage = () => {
                   </button>
                 </div>
               </SpotlightCard>
+            </WidgetErrorBoundary>
+          </motion.div>
+
+          {/* Block D: Arsenal / Digital Vault (New) - 6 cols, 1 row */}
+          <motion.div variants={itemVariants} className="md:col-span-6 md:row-span-1">
+            <WidgetErrorBoundary>
+              <ArsenalWidget />
             </WidgetErrorBoundary>
           </motion.div>
 

@@ -10,7 +10,7 @@ import api from '../services/api';
 import GlowingRing from '../components/GlowingRing';
 import ParticleBackground from '../components/ParticleBackground';
 import MysteryBoxModal from '../components/MysteryBoxModal';
-import TiltCard from '../components/TiltCard';
+
 
 const ShopPage = () => {
     const { user, refreshUser } = useAuth();
@@ -242,6 +242,15 @@ const ShopPage = () => {
                                 const isInventoryView = activeCategory === 'inventory';
                                 const isEquipped = item.isEquipped;
 
+                                // Rarity Colors
+                                const rarityConfig = {
+                                    legendary: { color: 'text-amber-400', border: 'border-amber-500/50', shadow: 'shadow-amber-500/20', bg: 'bg-amber-500/10' },
+                                    epic: { color: 'text-fuchsia-400', border: 'border-fuchsia-500/50', shadow: 'shadow-fuchsia-500/20', bg: 'bg-fuchsia-500/10' },
+                                    rare: { color: 'text-cyan-400', border: 'border-cyan-500/50', shadow: 'shadow-cyan-500/20', bg: 'bg-cyan-500/10' },
+                                    common: { color: 'text-slate-400', border: 'border-slate-700', shadow: 'shadow-slate-500/0', bg: 'bg-slate-800/30' }
+                                };
+                                const rc = rarityConfig[item.rarity] || rarityConfig.common;
+
                                 return (
                                     <motion.div
                                         key={item.itemId}
@@ -252,126 +261,125 @@ const ShopPage = () => {
                                         transition={{ delay: index * 0.05 }}
                                         className="h-full"
                                     >
-                                        <TiltCard
-                                            className={`h-full bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl overflow-hidden group hover:border-slate-600 transition-colors duration-500 flex flex-col ${isEquipped ? 'ring-2 ring-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.1)]' : ''
-                                                }`}
-                                        >
-                                            {/* Image Area */}
-                                            <div className="aspect-square relative p-8 flex items-center justify-center bg-gradient-to-b from-slate-800/30 to-transparent">
-                                                {/* Rarity Tag */}
-                                                <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/5 backdrop-blur-sm z-10 ${item.rarity === 'legendary' ? 'bg-amber-500/10 text-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.2)]' :
-                                                    item.rarity === 'epic' ? 'bg-fuchsia-500/10 text-fuchsia-400 shadow-[0_0_15px_rgba(232,121,249,0.2)]' :
-                                                        item.rarity === 'rare' ? 'bg-cyan-500/10 text-cyan-400' :
-                                                            'bg-slate-500/10 text-slate-400'
-                                                    }`}>
-                                                    {item.rarity}
+                                        <div className={`group relative h-full flex flex-col rounded-3xl overflow-hidden backdrop-blur-xl transition-all duration-500 border ${rc.border} ${isEquipped ? 'ring-2 ring-emerald-500 shadow-[0_0_40px_rgba(16,185,129,0.3)]' : 'hover:scale-[1.02] hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(0,0,0,0.5)]'}`}>
+
+                                            {/* Card Background - Dynamic */}
+                                            <div className="absolute inset-0 bg-slate-900/60 z-0" />
+                                            <div className={`absolute inset-0 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-b ${rc.bg.replace('10', '5')} to-transparent`} />
+
+                                            {/* Holographic Header */}
+                                            <div className="relative z-10 p-6 flex justify-between items-start border-b border-white/5 bg-white/5 backdrop-blur-md">
+                                                <div className="flex flex-col">
+                                                    <span className={`text-[10px] font-black tracking-[0.2em] uppercase mb-1 ${rc.color}`}>
+                                                        {item.category} // {item.rarity}
+                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={`w-1.5 h-1.5 rounded-full ${rc.bg.replace('/10', '')} animate-pulse`} />
+                                                        <h3 className="text-lg font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-400 transition-all">
+                                                            {item.name}
+                                                        </h3>
+                                                    </div>
                                                 </div>
+                                                {/* Equiped Tag */}
+                                                {isEquipped && (
+                                                    <div className="px-2 py-1 rounded bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 text-[10px] font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                                                        Active
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Image Showcase - The "Holodeck" */}
+                                            <div className="relative z-10 flex-grow py-8 px-6 flex items-center justify-center overflow-hidden">
+                                                {/* Spotlight Effect - Enhanced Contrast */}
+                                                <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full blur-[50px] opacity-40 group-hover:opacity-60 transition-opacity duration-500 ${rc.bg.replace('10', '50')}`} />
+                                                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-white/10 rounded-full blur-[30px]" /> {/* White core for contrast */}
+
+                                                {/* Scanner Grid Line */}
+                                                <div className="absolute inset-0 bg-[linear-gradient(transparent_0%,rgba(255,255,255,0.05)_50%,transparent_100%)] bg-[length:100%_200%] bg-top group-hover:animate-scan opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+                                                {/* Scanner Grid Line */}
+                                                <div className="absolute inset-0 bg-[linear-gradient(transparent_0%,rgba(255,255,255,0.05)_50%,transparent_100%)] bg-[length:100%_200%] bg-top group-hover:animate-scan opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
                                                 {item.previewImage ? (
                                                     <img
                                                         src={item.previewImage}
                                                         alt={item.name}
-                                                        className={`w-full h-full object-contain drop-shadow-2xl transition-transform duration-500 group-hover:scale-110 ${locked && !owned ? 'grayscale opacity-30 blur-sm' : ''
-                                                            }`}
+                                                        className={`w-32 h-32 object-contain drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:scale-110 group-hover:drop-shadow-[0_20px_40px_rgba(255,255,255,0.2)] ${locked && !owned ? 'grayscale opacity-40 blur-[2px]' : ''}`}
                                                     />
                                                 ) : (
-                                                    <Box size={64} className="text-slate-700" />
+                                                    <Box size={80} className={`${rc.color} opacity-80`} />
                                                 )}
 
-                                                {/* Locked Overlay */}
+                                                {/* Lock Overlay (Moved inside image showcase) */}
                                                 {locked && !owned && (
-                                                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 z-20">
-                                                        <div className="bg-slate-900/90 rounded-2xl p-4 flex flex-col items-center border border-slate-700 shadow-2xl">
-                                                            <Lock size={24} className="text-slate-400 mb-2" />
-                                                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Unlocks at</span>
-                                                            <span className="text-sm font-bold text-white">
-                                                                {item.unlockCondition.rankTier === 1 ? 'Beginner' :
-                                                                    item.unlockCondition.rankTier === 2 ? 'Intermediate' :
-                                                                        item.unlockCondition.rankTier === 3 ? 'Expert' :
-                                                                            `Tier ${item.unlockCondition.rankTier}`}
-                                                            </span>
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm z-20">
+                                                        <div className="px-5 py-3 bg-slate-900 border border-slate-700 rounded-xl flex items-center gap-3 shadow-2xl">
+                                                            <Lock size={16} className="text-rose-400" />
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] uppercase text-slate-500 font-bold">Unlocks at</span>
+                                                                <span className="text-xs font-bold text-white">Rank Tier {item.unlockCondition.rankTier}</span>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                )}
-
-                                                {/* Equipped Badge */}
-                                                {isEquipped && (
-                                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-emerald-500/90 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg backdrop-blur-md flex items-center gap-1.5">
-                                                        <Check size={10} strokeWidth={4} /> EQUIPPED
                                                     </div>
                                                 )}
                                             </div>
 
-                                            {/* Content Area */}
-                                            <div className="p-6 flex flex-col flex-grow bg-slate-900/20">
-                                                <div className="mb-4">
-                                                    <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors truncate">
-                                                        {item.name}
-                                                    </h3>
-                                                    <p className="text-sm text-slate-400 line-clamp-2 mt-1 leading-relaxed">
-                                                        {item.description}
-                                                    </p>
-                                                </div>
-
-                                                <div className="mt-auto">
+                                            {/* Action Footer */}
+                                            <div className="relative z-10 p-4 bg-slate-950/40 border-t border-white/5">
+                                                <div className="flex items-center gap-3">
                                                     {!isInventoryView ? (
-                                                        <div className="flex items-center justify-between gap-3">
+                                                        <>
                                                             <div className="flex flex-col">
                                                                 <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Price</span>
-                                                                <div className={`flex items-center gap-1.5 font-bold ${canAfford ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                                                    <Zap size={14} fill="currentColor" />
-                                                                    <span>{item.price.toLocaleString()}</span>
+                                                                <div className={`flex items-center gap-1 font-mono font-bold ${canAfford ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                                                    <Zap size={14} fill="currentColor" /> {item.price.toLocaleString()}
                                                                 </div>
                                                             </div>
 
                                                             {owned && item.category !== 'mystery_box' ? (
-                                                                <button disabled className="px-5 py-2.5 bg-slate-800 text-slate-500 rounded-xl font-semibold text-xs border border-slate-700 cursor-default opacity-60">
+                                                                <button disabled className="ml-auto w-full max-w-[120px] py-3 rounded-xl bg-slate-800/50 border border-slate-700/50 text-slate-500 text-xs font-bold uppercase tracking-wider cursor-default">
                                                                     Owned
                                                                 </button>
                                                             ) : (
                                                                 <button
                                                                     onClick={() => handlePurchase(item)}
                                                                     disabled={!canAfford || locked || purchasing === item.itemId}
-                                                                    className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 ${!canAfford
+                                                                    className={`ml-auto w-full max-w-[140px] relative overflow-hidden group/btn py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${!canAfford
                                                                         ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50'
-                                                                        : 'bg-white text-slate-950 hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(52,211,153,0.4)] hover:scale-105 active:scale-95'
-                                                                        }`}
+                                                                        : 'bg-white text-slate-950 hover:bg-emerald-400 hover:text-white shadow-lg'}`}
                                                                 >
+                                                                    <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite]" />
                                                                     {purchasing === item.itemId ? (
-                                                                        <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin mx-auto" />
+                                                                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                                                                     ) : (
-                                                                        'Purchase'
+                                                                        <>Purchase</>
                                                                     )}
                                                                 </button>
                                                             )}
-                                                        </div>
+                                                        </>
                                                     ) : (
                                                         // Inventory Actions
-                                                        <div className="pt-2">
-                                                            {isEquipped ? (
-                                                                <button
-                                                                    disabled
-                                                                    className="w-full py-3 bg-slate-800/50 text-emerald-500 rounded-xl font-bold text-xs border border-emerald-500/20 cursor-default flex items-center justify-center gap-2"
-                                                                >
-                                                                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                                                                    Active
-                                                                </button>
+                                                        <button
+                                                            onClick={() => handleEquip(item)}
+                                                            disabled={isEquipped || equipping === item.itemId}
+                                                            className={`w-full py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${isEquipped
+                                                                ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 cursor-default'
+                                                                : 'bg-white text-slate-950 hover:bg-indigo-400 hover:text-white shadow-lg active:scale-95'
+                                                                }`}
+                                                        >
+                                                            {equipping === item.itemId ? (
+                                                                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                                            ) : isEquipped ? (
+                                                                <> <Check size={14} /> Equipped </>
                                                             ) : (
-                                                                <button
-                                                                    onClick={() => handleEquip(item)}
-                                                                    disabled={equipping === item.itemId}
-                                                                    className="w-full py-3 bg-white hover:bg-emerald-400 text-slate-950 rounded-xl font-bold text-xs transition-all hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                >
-                                                                    {equipping === item.itemId ? (
-                                                                        <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin mx-auto" />
-                                                                    ) : "Equip Item"}
-                                                                </button>
+                                                                'Equip'
                                                             )}
-                                                        </div>
+                                                        </button>
                                                     )}
                                                 </div>
                                             </div>
-                                        </TiltCard>
+
+                                        </div>
                                     </motion.div>
                                 );
                             })}

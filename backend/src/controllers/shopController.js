@@ -1,5 +1,6 @@
 import ShopItem from '../models/ShopItem.js';
 import User from '../models/User.js';
+import ForumPost from '../models/ForumPost.js';
 
 // Get all active shop items
 export const getShopItems = async (req, res) => {
@@ -71,31 +72,19 @@ export const purchaseItem = async (req, res) => {
             let selectedRarity = 'common';
 
             // Default drop rates if not specified
-            const rates = item.dropRates && item.dropRates.length > 0
-                ? item.dropRates
-                : [
-                    { rarity: 'common', probability: 0.6 },
-                    { rarity: 'rare', probability: 0.3 },
-                    { rarity: 'epic', probability: 0.09 },
-                    { rarity: 'legendary', probability: 0.01 }
-                ];
+            const rates = item.dropRates || { common: 0.6, rare: 0.3, epic: 0.09, legendary: 0.01 };
 
-            // Normalize rates to be sure? Assuming they sum to 1 or close.
-            // Let's just iterate.
-            // If rates is an object { common: 0.7, ... } as per seed script
-            // We need to handle that format. Seed script used object.
-            // Let's check seed script format again.
-            // dropRates: { common: 0.7, rare: 0.25, epic: 0.05 }
-
-            let dropRates = item.dropRates;
-            // If it's a Map or Object in Mongoose, we access it.
-            // If it's stored as Mixed/Object:
-
-            if (!dropRates || Object.keys(dropRates).length === 0) {
-                dropRates = { common: 0.6, rare: 0.3, epic: 0.09, legendary: 0.01 };
+            // Handle both array and object formats for dropRates
+            let dropRates = rates;
+            if (Array.isArray(rates)) {
+                // Convert array to object if needed or iterate array directly.
+                // Assuming object structure { common: 0.6 ... } for simplicity based on previous code
+                dropRates = { common: 0.6, rare: 0.3, epic: 0.09, legendary: 0.01 }; // Fallback
             }
 
-            for (const [rarity, probability] of Object.entries(dropRates)) {
+            // Using standard object iteration
+            const entries = Object.entries(item.dropRates || { common: 0.6, rare: 0.3, epic: 0.09, legendary: 0.01 });
+            for (const [rarity, probability] of entries) {
                 cumulativeProbability += probability;
                 if (random <= cumulativeProbability) {
                     selectedRarity = rarity;
@@ -105,16 +94,10 @@ export const purchaseItem = async (req, res) => {
 
             // 3. Select random item of that rarity
             const itemsOfRarity = potentialItems.filter(i => i.rarity === selectedRarity);
-
-            // Fallback if no items of that rarity exist
             const pool = itemsOfRarity.length > 0 ? itemsOfRarity : potentialItems;
-
             droppedItem = pool[Math.floor(Math.random() * pool.length)];
 
             // Check if user already owns the dropped item
-            // If unique items only, we might want to reroll or give XP refund.
-            // For simplicity, we'll allow duplicates for now OR convert to XP.
-            // Let's convert duplicates to XP refund.
             const alreadyHasDrop = user.inventory.some(i => i.itemId === droppedItem.itemId);
             if (alreadyHasDrop) {
                 const refund = Math.floor(droppedItem.price / 2);
@@ -138,6 +121,35 @@ export const purchaseItem = async (req, res) => {
 
         await user.save();
 
+        // --- Community Celebration Logic (System Event) ---
+        // Post to forum if item is impactful (Rare+)
+        try {
+            const highRarity = ['rare', 'epic', 'legendary'];
+            // Determine item to celebrate (purchased or dropped)
+            const itemToCelebrate = droppedItem && !droppedItem.isRefund ? droppedItem : (item.category !== 'mystery_box' ? item : null);
+
+            if (itemToCelebrate && highRarity.includes(itemToCelebrate.rarity)) {
+
+                const emojis = {
+                    rare: '💠',
+                    epic: '🔮',
+                    legendary: '👑'
+                };
+                const emoji = emojis[itemToCelebrate.rarity] || '✨';
+
+                await ForumPost.create({
+                    author: user._id, // User gets the credit
+                    title: `${emoji} ACQUISITION: ${user.name.split(' ')[0]} secured ${itemToCelebrate.name}!`,
+                    content: `A new standard has been set.\n\n**${user.name}** has just acquired the **[ ${itemToCelebrate.rarity.toUpperCase()} ]** item: **${itemToCelebrate.name}**.\n\n*System Message: Upgrade confirmed. Congratulations on the new addition to your arsenal.*`,
+                    category: 'General',
+                    tags: ['System Event', 'Celebration', itemToCelebrate.rarity],
+                    isSolved: false
+                });
+            }
+        } catch (forumError) {
+            console.error('Failed to create celebration post:', forumError);
+        }
+
         res.json({
             success: true,
             message: droppedItem
@@ -146,7 +158,7 @@ export const purchaseItem = async (req, res) => {
             data: {
                 inventory: user.inventory,
                 remainingXp: user.xp,
-                droppedItem: droppedItem // Frontend needs this for animation
+                droppedItem: droppedItem
             }
         });
 
@@ -194,11 +206,6 @@ export const equipItem = async (req, res) => {
             if (i.itemId === itemId) {
                 i.isEquipped = true;
             }
-            // If it's another item of the same category, set false? 
-            // We'd need to look up every item's category to do this perfectly in the inventory array,
-            // or just rely on `equippedItems` as the source of truth for display.
-            // Let's just set the flag for the equipped one.
-            // Ideally we should unset the previous one.
         });
 
         await user.save();

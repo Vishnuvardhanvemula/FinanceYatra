@@ -1031,3 +1031,74 @@ body,
 .finance-tour-theme.driver-popover-arrow-side-bottom.driver-popover-arrow {
   border-bottom-color: rgba(11, 16, 27, 0.95) !important;
 }
+
+/* Grand Finale Custom Animations */
+@keyframes scan {
+  0% {
+    top: 0%;
+    height: 0%;
+    opacity: 0;
+  }
+
+  10% {
+    height: 15px;
+    opacity: 1;
+  }
+
+  90% {
+    height: 15px;
+    opacity: 1;
+  }
+
+  100% {
+    top: 100%;
+    height: 0%;
+    opacity: 0;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee linear infinite;
+}
+
+@keyframes gradient-y {
+
+  0%,
+  100% {
+    background-size: 400% 400%;
+    background-position: center top;
+  }
+
+  50% {
+    background-size: 200% 200%;
+    background-position: center center;
+  }
+}
+
+@keyframes gradient-x {
+
+  0%,
+  100% {
+    background-size: 200% 200%;
+    background-position: left center;
+  }
+
+  50% {
+    background-size: 200% 200%;
+    background-position: right center;
+  }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 3s ease infinite;
+}
