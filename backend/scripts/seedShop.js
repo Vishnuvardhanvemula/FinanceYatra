@@ -15,13 +15,13 @@ const sampleItems = [
     // Themes
     {
         itemId: 'theme_dark_gold',
-        name: 'Grand Luxury (Dark)',
+        name: 'Grand Luxury',
         description: 'A premium dark theme with gold accents and regal vibes. Perfect for the high roller.',
         category: 'theme',
         price: 5000,
         rarity: 'legendary',
         previewImage: 'https://cdn-icons-png.flaticon.com/512/566/566312.png',
-        unlockCondition: { rankTier: 2 },
+        unlockCondition: { rankTier: 2 }, // Intermediate
         isActive: true
     },
     {
@@ -32,7 +32,7 @@ const sampleItems = [
         price: 2500,
         rarity: 'epic',
         previewImage: 'https://cdn-icons-png.flaticon.com/512/3665/3665922.png',
-        unlockCondition: { rankTier: 1 },
+        unlockCondition: { rankTier: 1 }, // Beginner
         isActive: true
     },
     {
@@ -45,6 +45,16 @@ const sampleItems = [
         previewImage: 'https://cdn-icons-png.flaticon.com/512/4333/4333609.png',
         isActive: true
     },
+    {
+        itemId: 'theme_matrix',
+        name: 'Matrix Code',
+        description: 'Enter the financial matrix. Falling green code background.',
+        category: 'theme',
+        price: 3500,
+        rarity: 'epic',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/2083/2083213.png',
+        isActive: true
+    },
 
     // Frames
     {
@@ -55,7 +65,7 @@ const sampleItems = [
         price: 3000,
         rarity: 'legendary',
         previewImage: 'https://cdn-icons-png.flaticon.com/512/1152/1152912.png',
-        unlockCondition: { rankTier: 3 },
+        unlockCondition: { rankTier: 3 }, // Expert
         isActive: true
     },
     {
@@ -75,7 +85,27 @@ const sampleItems = [
         category: 'frame',
         price: 500,
         rarity: 'common',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/10692/10692985.png',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/10692/10692985.png', // Corrected colorful icon
+        isActive: true
+    },
+    {
+        itemId: 'frame_diamond',
+        name: 'Diamond Hands',
+        description: 'Sparkling diamond border for those who never sell.',
+        category: 'frame',
+        price: 4500,
+        rarity: 'legendary',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/616/616556.png',
+        isActive: true
+    },
+    {
+        itemId: 'frame_rocket',
+        name: 'To The Moon',
+        description: 'A rocket-themed frame ready for blastoff.',
+        category: 'frame',
+        price: 2800,
+        rarity: 'epic',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/1356/1356479.png',
         isActive: true
     },
 
@@ -97,7 +127,27 @@ const sampleItems = [
         category: 'accessory',
         price: 1200,
         rarity: 'rare',
-        previewImage: 'https://cdn-icons-png.flaticon.com/512/265/265691.png',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/265/265691.png', // Corrected colorful icon
+        isActive: true
+    },
+    {
+        itemId: 'acc_vr',
+        name: 'Meta Visor',
+        description: 'Ready for the future of finance.',
+        category: 'accessory',
+        price: 2200,
+        rarity: 'epic',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/2983/2983720.png',
+        isActive: true
+    },
+    {
+        itemId: 'acc_crown',
+        name: 'Crypto King',
+        description: 'A golden crown for the portfolio ruler.',
+        category: 'accessory',
+        price: 5000,
+        rarity: 'legendary',
+        previewImage: 'https://cdn-icons-png.flaticon.com/512/263/263100.png',
         isActive: true
     },
 

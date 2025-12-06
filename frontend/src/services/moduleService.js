@@ -1,4 +1,5 @@
 import axios from 'axios';
+import api from './api';
 import { API_URL } from '../config/api';
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 Minutes
@@ -50,11 +51,9 @@ export const moduleService = {
     },
 
     // Get user stats
-    getUserStats: async (token) => {
+    getUserStats: async () => {
         try {
-            const response = await axios.get(`${MODULE_API_URL}/progress`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/modules/progress');
             return response.data;
         } catch (error) {
             console.error('Error fetching user stats:', error);
@@ -63,11 +62,9 @@ export const moduleService = {
     },
 
     // Start a module
-    startModule: async (token, moduleId) => {
+    startModule: async (moduleId) => {
         try {
-            const response = await axios.post(`${MODULE_API_URL}/${moduleId}/start`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.post(`/modules/${moduleId}/start`);
             return response.data;
         } catch (error) {
             console.error('Error starting module:', error);
@@ -76,11 +73,9 @@ export const moduleService = {
     },
 
     // Complete a lesson
-    completeLesson: async (token, moduleId, lessonIndex) => {
+    completeLesson: async (moduleId, lessonIndex) => {
         try {
-            const response = await axios.post(`${MODULE_API_URL}/${moduleId}/lessons/${lessonIndex}/complete`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.post(`/modules/${moduleId}/lessons/${lessonIndex}/complete`);
             return response.data;
         } catch (error) {
             console.error('Error completing lesson:', error);
@@ -89,12 +84,9 @@ export const moduleService = {
     },
 
     // Generate AI Quiz
-    generateQuiz: async (token, moduleId, lessonIndex) => {
+    generateQuiz: async (moduleId, lessonIndex) => {
         try {
-            // Using API_URL directly for quizzes as they are on /api/quiz
-            const response = await axios.get(`${API_URL}/quiz/generate/${moduleId}/${lessonIndex}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get(`/quiz/generate/${moduleId}/${lessonIndex}`);
             return response.data;
         } catch (error) {
             console.error('Error generating quiz:', error);
@@ -103,11 +95,9 @@ export const moduleService = {
     },
 
     // Admin: Create Module
-    createModule: async (token, data) => {
+    createModule: async (data) => {
         try {
-            const response = await axios.post(MODULE_API_URL, data, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.post('/modules', data);
             return response.data;
         } catch (error) {
             console.error('Error creating module:', error);
@@ -116,11 +106,9 @@ export const moduleService = {
     },
 
     // Admin: Update Module
-    updateModule: async (token, id, data) => {
+    updateModule: async (id, data) => {
         try {
-            const response = await axios.put(`${MODULE_API_URL}/${id}`, data, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.put(`/modules/${id}`, data);
             return response.data;
         } catch (error) {
             console.error('Error updating module:', error);
@@ -129,11 +117,9 @@ export const moduleService = {
     },
 
     // Admin: Delete Module
-    deleteModule: async (token, id) => {
+    deleteModule: async (id) => {
         try {
-            const response = await axios.delete(`${MODULE_API_URL}/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.delete(`/modules/${id}`);
             return response.data;
         } catch (error) {
             console.error('Error deleting module:', error);

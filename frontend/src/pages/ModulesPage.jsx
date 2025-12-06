@@ -10,13 +10,15 @@ import {
   Clock,
   BarChart,
   Search,
-  Filter,
   ChevronRight,
-  Star,
-  Award,
-  Zap
+  Zap,
+  Target
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Components
+import ParticleBackground from '../components/ParticleBackground';
+import TiltCard from '../components/TiltCard';
 
 const ModulesPage = () => {
   const { user } = useAuth();
@@ -89,199 +91,247 @@ const ModulesPage = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { type: "spring", stiffness: 100 }
-    }
-  };
+  const filters = [
+    { id: 'all', label: 'All Modules' },
+    { id: 'beginner', label: 'Beginner' },
+    { id: 'intermediate', label: 'Intermediate' },
+    { id: 'expert', label: 'Expert' },
+  ];
 
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
+          <p className="text-slate-400 font-medium animate-pulse">Loading Payload...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white pb-20">
-      {/* Header Section */}
-      <div className="relative bg-slate-900 border-b border-slate-800 pt-24 pb-12 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-indigo-500/10 to-transparent"></div>
+    <div className="min-h-screen bg-slate-950 text-white relative overflow-hidden font-sans selection:bg-indigo-500/30">
+      <ParticleBackground />
 
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
+      {/* Navbar Placeholder */}
+      <div className="h-20" />
+
+      {/* Main Content */}
+      <div className="relative pt-12 pb-24 px-6 md:px-12 max-w-7xl mx-auto">
+
+        {/* Hero Section */}
+        <div className="flex flex-col items-center text-center space-y-6 mb-20">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/50 border border-slate-700 backdrop-blur-md shadow-sm"
+          >
+            <Target size={16} className="text-indigo-400" />
+            <span className="text-sm font-medium text-slate-300">
+              Your Journey: <span className="text-white font-bold">{modules.length} Missions Available</span>
+            </span>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-white via-indigo-100 to-indigo-400"
+          >
+            Mission Control
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-lg text-slate-400 max-w-2xl font-light leading-relaxed"
+          >
+            Master the art of finance through our tactical learning modules. From rookie basics to elite investing strategies.
+          </motion.p>
+
+          {/* Search Bar - Floating */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ delay: 0.2 }}
+            className="w-full max-w-lg relative group"
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
-              Learning <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Modules</span>
-            </h1>
-            <p className="text-slate-400 text-lg max-w-2xl mb-8">
-              Master financial literacy through our structured curriculum. Start from the basics and advance to expert strategies.
-            </p>
-
-            {/* Search and Filter Bar */}
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
-                <input
-                  type="text"
-                  placeholder="Search topics..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500 transition-all"
-                />
-              </div>
-
-              <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-                {['all', 'beginner', 'intermediate', 'expert'].map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => setFilter(f)}
-                    className={`px-6 py-3 rounded-xl capitalize font-medium transition-all whitespace-nowrap ${filter === f
-                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25'
-                        : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white border border-slate-700'
-                      }`}
-                  >
-                    {f}
-                  </button>
-                ))}
-              </div>
+            <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="relative flex items-center bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-full px-6 py-4 shadow-xl focus-within:border-indigo-500/50 focus-within:bg-slate-900 transition-all">
+              <Search className="text-slate-500 group-focus-within:text-indigo-400 transition-colors" size={20} />
+              <input
+                type="text"
+                placeholder="Search command log..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-transparent border-none focus:outline-none text-white ml-4 placeholder-slate-500"
+              />
             </div>
           </motion.div>
         </div>
-      </div>
 
-      {/* Modules Grid */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Filter Tabs */}
+        <div className="sticky top-20 z-40 mb-16 flex justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex items-center gap-1 p-1 bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-full shadow-2xl overflow-x-auto max-w-full no-scrollbar"
+          >
+            {filters.map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setFilter(f.id)}
+                className={`relative px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 whitespace-nowrap ${filter === f.id
+                    ? 'text-white shadow-lg'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  }`}
+              >
+                {filter === f.id && (
+                  <motion.div
+                    layoutId="activeModuleFilter"
+                    className="absolute inset-0 bg-indigo-600 rounded-full"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <span className="relative z-10">{f.label}</span>
+              </button>
+            ))}
+          </motion.div>
+        </div>
+
+        {/* Modules Grid */}
         <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          layout
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
-          <AnimatePresence>
-            {filteredModules.map((module) => {
+          <AnimatePresence mode="popLayout">
+            {filteredModules.map((module, index) => {
               const status = getModuleStatus(module.id);
               const isLocked = status === 'locked';
               const isCompleted = status === 'completed';
               const isInProgress = status === 'in-progress';
 
+              // Dynamic Border Color based on status
+              const borderColor = isCompleted ? 'border-emerald-500/30' :
+                isInProgress ? 'border-indigo-500/50' :
+                  'border-slate-800';
+
+              const glowColor = isCompleted ? 'shadow-[0_0_30px_rgba(16,185,129,0.1)]' :
+                isInProgress ? 'shadow-[0_0_30px_rgba(99,102,241,0.15)]' :
+                  '';
+
               return (
                 <motion.div
                   key={module.id}
                   id={`module-${module.id}`}
-                  variants={itemVariants}
                   layout
-                  className={`group relative bg-slate-900 rounded-2xl border transition-all duration-300 hover:-translate-y-1 ${isLocked
-                      ? 'border-slate-800 opacity-75'
-                      : isInProgress
-                        ? 'border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.15)]'
-                        : isCompleted
-                          ? 'border-emerald-500/30'
-                          : 'border-slate-800 hover:border-indigo-500/30 hover:shadow-xl'
-                    }`}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="h-full"
                 >
-                  {/* Progress Bar for In-Progress */}
-                  {isInProgress && (
-                    <div className="absolute top-0 left-0 w-full h-1 bg-slate-800 rounded-t-2xl overflow-hidden">
-                      <div className="h-full bg-indigo-500 w-1/3 animate-pulse"></div>
-                    </div>
-                  )}
-
-                  <div className="p-6">
-                    {/* Header */}
-                    <div className="flex justify-between items-start mb-6">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${isLocked ? 'bg-slate-800 grayscale' : 'bg-slate-800'
-                        }`}>
-                        {module.icon}
+                  <TiltCard
+                    className={`h-full bg-slate-900/40 backdrop-blur-md border ${borderColor} ${glowColor} rounded-3xl overflow-hidden group hover:border-indigo-500/30 transition-all duration-500 flex flex-col`}
+                  >
+                    {/* Progress Bar (Top) */}
+                    {isInProgress && (
+                      <div className="absolute top-0 left-0 w-full h-1 bg-slate-800/50">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: '40%' }} // You could calculate real % if data existed
+                          className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+                        />
                       </div>
+                    )}
 
-                      {isCompleted && (
-                        <div className="bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1">
-                          <CheckCircle size={12} /> Completed
+                    <div className="p-8 flex flex-col h-full relative z-10">
+                      {/* Header Row */}
+                      <div className="flex justify-between items-start mb-6">
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-inner ${isLocked ? 'bg-slate-900 text-slate-700' :
+                            isCompleted ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20' :
+                              'bg-indigo-500/10 text-indigo-400 ring-1 ring-indigo-500/20 group-hover:bg-indigo-500/20 transition-colors'
+                          }`}>
+                          {module.icon}
                         </div>
-                      )}
-                      {isInProgress && (
-                        <div className="bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1">
-                          <Play size={12} /> In Progress
+
+                        {/* Status Badge */}
+                        <div className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border ${isCompleted ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                            isInProgress ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
+                              'bg-slate-800 text-slate-500 border-slate-700'
+                          }`}>
+                          {isCompleted ? 'Mission Complete' : isInProgress ? 'Active Mission' : 'Locked'}
                         </div>
-                      )}
-                      {isLocked && (
-                        <div className="bg-slate-800 text-slate-500 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1">
-                          <Lock size={12} /> Locked
+                      </div>
+
+                      {/* Content */}
+                      <div className="mb-6">
+                        <h3 className={`text-2xl font-bold mb-3 transition-colors ${isLocked ? 'text-slate-600' : 'text-white group-hover:text-indigo-400'
+                          }`}>
+                          {module.title}
+                        </h3>
+                        <p className="text-slate-400 text-sm leading-relaxed line-clamp-3">
+                          {module.description}
+                        </p>
+                      </div>
+
+                      {/* Stats Grid */}
+                      <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-8 pt-6 border-t border-slate-800/50">
+                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                          <BarChart size={14} className={
+                            module.difficulty === 'beginner' ? 'text-emerald-400' :
+                              module.difficulty === 'intermediate' ? 'text-amber-400' : 'text-rose-400'
+                          } />
+                          {module.difficulty}
                         </div>
-                      )}
+                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                          <Clock size={14} className="text-indigo-400" />
+                          {module.duration}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 col-span-2">
+                          <BookOpen size={14} className="text-cyan-400" />
+                          {module.lessonsCount || module.lessons} Tactical Lessons
+                        </div>
+                      </div>
+
+                      {/* Action Button */}
+                      <div className="mt-auto">
+                        <button
+                          onClick={() => !isLocked && navigate(`/modules/${module.id}`)}
+                          disabled={isLocked}
+                          className={`w-full py-4 rounded-xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-3 group/btn relative overflow-hidden ${isLocked
+                              ? 'bg-slate-900 text-slate-700 border border-slate-800 cursor-not-allowed'
+                              : isCompleted
+                                ? 'bg-slate-800 text-emerald-400 border border-emerald-500/30 hover:bg-slate-700'
+                                : 'bg-white text-slate-950 hover:bg-indigo-400 hover:text-white shadow-xl shadow-indigo-500/20'
+                            }`}
+                        >
+                          {isLocked ? (
+                            <>
+                              <Lock size={16} /> Locked
+                            </>
+                          ) : isCompleted ? (
+                            <>
+                              <CheckCircle size={16} /> Review Mission
+                            </>
+                          ) : (
+                            <>
+                              Start Mission <ChevronRight size={16} className="transition-transform group-hover/btn:translate-x-1" />
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
-
-                    {/* Content */}
-                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">
-                      {module.title}
-                    </h3>
-                    <p className="text-slate-400 text-sm mb-6 line-clamp-2">
-                      {module.description}
-                    </p>
-
-                    {/* Meta Info */}
-                    <div className="flex items-center gap-4 text-xs text-slate-500 font-medium uppercase tracking-wider mb-6">
-                      <div className="flex items-center gap-1">
-                        <BarChart size={14} className={
-                          module.difficulty === 'beginner' ? 'text-emerald-400' :
-                            module.difficulty === 'intermediate' ? 'text-amber-400' : 'text-rose-400'
-                        } />
-                        {module.difficulty}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock size={14} />
-                        {module.duration}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <BookOpen size={14} />
-                        {module.lessonsCount || module.lessons} Lessons
-                      </div>
-                    </div>
-
-                    {/* Action Button */}
-                    <button
-                      onClick={() => !isLocked && navigate(`/modules/${module.id}`)}
-                      disabled={isLocked}
-                      className={`w-full py-3 rounded-xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${isLocked
-                          ? 'bg-slate-800 text-slate-600 cursor-not-allowed'
-                          : isCompleted
-                            ? 'bg-slate-800 text-white hover:bg-slate-700'
-                            : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg shadow-indigo-500/25'
-                        }`}
-                    >
-                      {isLocked ? (
-                        <>Locked <Lock size={16} /></>
-                      ) : isCompleted ? (
-                        <>Review <BookOpen size={16} /></>
-                      ) : isInProgress ? (
-                        <>Continue <ChevronRight size={16} /></>
-                      ) : (
-                        <>Start Learning <ChevronRight size={16} /></>
-                      )}
-                    </button>
-                  </div>
+                  </TiltCard>
                 </motion.div>
               );
             })}
           </AnimatePresence>
         </motion.div>
+
+        {/* Bottom Fade */}
+        <div className="fixed bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-slate-950 to-transparent pointer-events-none z-30" />
       </div>
     </div>
   );

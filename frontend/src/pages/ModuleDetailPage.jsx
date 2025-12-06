@@ -225,8 +225,8 @@ const ModuleDetailPage = () => {
   const fetchQuiz = async () => {
     setLoadingQuiz(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await moduleService.generateQuiz(token, moduleId, currentLessonIndex);
+      // Token is handled automatically by api interceptor
+      const response = await moduleService.generateQuiz(moduleId, currentLessonIndex);
 
       if (response.success) {
         setQuizQuestions(response.data);
