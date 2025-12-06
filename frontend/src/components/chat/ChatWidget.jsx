@@ -224,16 +224,40 @@ const ChatWidget = () => {
 
             {/* Toggle Button */}
             <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-14 h-14 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 shadow-[0_4px_20px_rgba(20,184,166,0.3)] flex items-center justify-center text-white border border-white/10 relative overflow-hidden group"
+                className="relative w-16 h-16 flex items-center justify-center group"
             >
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                {isOpen ? <X size={24} /> : <MessageCircle size={24} className="fill-white/20" />}
+                {/* Background & Effects Container (Clipped) */}
+                <div className="absolute inset-0 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-indigo-500/30 shadow-[0_0_40px_rgba(99,102,241,0.3)] overflow-hidden transition-all duration-300 group-hover:border-indigo-400/50 group-hover:shadow-[0_0_50px_rgba(99,102,241,0.5)]">
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
+                    {/* Inner glow */}
+                    <div className="absolute inset-[2px] rounded-[14px] bg-gradient-to-br from-indigo-500/10 to-purple-500/5" />
+
+                    {/* Shimmer effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                </div>
+
+                {/* Icon (Above Background) */}
+                <div className="relative z-10 flex items-center justify-center">
+                    {isOpen ? (
+                        <X size={24} className="text-indigo-300" />
+                    ) : (
+                        <MessageCircle size={24} className="text-indigo-400 fill-indigo-500/20" />
+                    )}
+                </div>
+
+                {/* Notification badge (Outside Clipping) */}
                 {!isOpen && (
-                    <span className="absolute top-0 right-0 w-4 h-4 rounded-full bg-red-500 border-2 border-[#0f172a]" />
+                    <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 z-20">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-5 w-5 bg-gradient-to-br from-indigo-500 to-purple-600 border-2 border-slate-950 items-center justify-center shadow-lg shadow-indigo-500/50">
+                            <span className="w-2 h-2 rounded-full bg-white"></span>
+                        </span>
+                    </span>
                 )}
             </motion.button>
         </div>

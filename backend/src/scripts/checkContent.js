@@ -3,41 +3,39 @@ import dotenv from 'dotenv';
 import Module from '../models/Module.js';
 
 dotenv.config();
-
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/financeyatra';
 
-const checkContent = async () => {
+async function check() {
     try {
         await mongoose.connect(MONGODB_URI);
-        console.log('Connected to MongoDB');
-
         const modules = await Module.find({});
         console.log(`Found ${modules.length} modules.`);
 
-        for (const m of modules) {
-            console.log(`\nModule: ${m.title} (${m.difficulty})`);
-            console.log(`  - Lessons: ${m.lessons.length}/${m.lessonsCount}`);
-
-            let missingContent = 0;
-            m.lessons.forEach((l, i) => {
-                if (!l.content || l.content.length < 50) {
-                    console.log(`    ⚠️ Lesson ${i + 1} seems empty or too short.`);
-                    missingContent++;
-                }
-            });
-
-            if (missingContent === 0) {
-                console.log('  ✅ All lessons have content.');
+        let issues = 0;
+        modules.forEach(m => {
+            if (!m.lessons || m.lessons.length === 0) {
+                console.log(`❌ MODULE EMPTY: "${m.title}" (ID: ${m.id}) has 0 lessons.`);
+                issues++;
             } else {
-                console.log(`  ❌ ${missingContent} lessons missing content.`);
+                const emptyContent = m.lessons.filter(l => !l.content || l.content.trim() === '');
+                if (emptyContent.length > 0) {
+                    console.log(`⚠️ CONTENT MISSING: "${m.title}" has ${emptyContent.length} lessons with empty content.`);
+                    issues++;
+                }
             }
+        });
+
+        if (issues === 0) {
+            console.log("✅ All modules have lessons and content.");
+        } else {
+            console.log(`Found ${issues} modules with issues.`);
         }
 
+    } catch (e) {
+        console.error(e);
+    } finally {
+        await mongoose.disconnect();
         process.exit(0);
-    } catch (error) {
-        console.error('Error:', error);
-        process.exit(1);
     }
-};
-
-checkContent();
+}
+check();
