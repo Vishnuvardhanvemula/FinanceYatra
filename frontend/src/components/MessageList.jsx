@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { API_URL } from '../config/api';
+import api from '../services/api';
 import toast from 'react-hot-toast';
 
 export default function MessageList({ messages, isLoading, selectedLanguage = 'en', autoSpeak = true }) {
@@ -31,17 +31,17 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
     if ('speechSynthesis' in window) {
       synthesisRef.current = window.speechSynthesis;
       setIsSpeechSupported(true);
-      
+
       // Load voices - important for language support
       const loadVoices = () => {
         const voices = synthesisRef.current.getVoices();
         setAvailableVoices(voices);
         console.log('🎤 Available voices:', voices.length);
-        
+
         // Log Indian language voices if any
-        const indianVoices = voices.filter(v => 
-          v.lang.includes('hi') || v.lang.includes('te') || 
-          v.lang.includes('ta') || v.lang.includes('bn') || 
+        const indianVoices = voices.filter(v =>
+          v.lang.includes('hi') || v.lang.includes('te') ||
+          v.lang.includes('ta') || v.lang.includes('bn') ||
           v.lang.includes('kn') || v.lang.includes('ml')
         );
         if (indianVoices.length > 0) {
@@ -50,15 +50,15 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
           console.log('⚠️ No Indian language voices found - will use Google TTS for Indian languages');
         }
       };
-      
+
       // Load immediately
       loadVoices();
-      
+
       // Some browsers load voices asynchronously
       if (synthesisRef.current.onvoiceschanged !== undefined) {
         synthesisRef.current.onvoiceschanged = loadVoices;
       }
-      
+
       // Also try loading after a delay (Chrome needs this sometimes)
       setTimeout(loadVoices, 100);
     }
@@ -100,13 +100,13 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
     // Skip Google TTS due to CORS/format issues, use Web Speech with Hindi voice
     if (selectedLanguage !== 'en') {
       console.log(`🌐 Non-English language (${selectedLanguage}) - checking for Indian language voices...`);
-      
+
       const voices = synthesisRef.current.getVoices();
-      const indianVoice = voices.find(v => 
-        v.lang.startsWith(selectedLanguage) || 
+      const indianVoice = voices.find(v =>
+        v.lang.startsWith(selectedLanguage) ||
         v.lang.startsWith('hi') // Hindi voice can read other Indian scripts
       );
-      
+
       if (indianVoice) {
         console.log(`✅ Found Indian voice: ${indianVoice.name} - using directly`);
         speakWithWebSpeech(text, selectedLanguage, index, indianVoice);
@@ -121,28 +121,28 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
     // For English, use Web Speech API
     speakWithWebSpeech(text, selectedLanguage, index, null);
   };
-  
+
   const speakWithWebSpeech = (text, language, index, voice) => {
     if (!synthesisRef.current) return;
-    
+
     // Cancel any ongoing speech
     synthesisRef.current.cancel();
-    
+
     const ttsLang = ttsLanguageMap[language] || 'en-US';
-    
+
     // For Telugu and other South Indian languages, use Hindi lang code if Hindi voice
     let effectiveLang = ttsLang;
     if (voice && voice.lang.startsWith('hi') && language !== 'hi') {
       effectiveLang = 'hi-IN';
       console.log(`💡 Using Hindi pronunciation for ${language} text`);
     }
-    
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = effectiveLang;
     utterance.rate = 0.8; // Slower for clarity
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
-    
+
     if (voice) {
       utterance.voice = voice;
       console.log(`🔊 Using voice: ${voice.name} (${voice.lang}) for lang: ${effectiveLang}`);
@@ -162,7 +162,7 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
     utterance.onerror = (event) => {
       console.error('❌ Speech error:', event.error);
       setSpeakingIndex(null);
-      
+
       // If Web Speech fails for Indian language, try Google TTS
       if (language !== 'en' && event.error !== 'canceled') {
         console.log('🔄 Web Speech failed, trying Google TTS...');
@@ -176,41 +176,41 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
   // Use backend TTS service for high-quality pronunciation
   const speakWithGoogleTTS = async (text, language, index) => {
     setSpeakingIndex(index);
-    
+
     console.log(`🔊 Requesting TTS from backend for ${language}...`);
     console.log(`📝 Full text length: ${text.length} chars`);
-    
+
     // Split text into chunks (200 chars max per chunk due to Google TTS limits)
     const chunks = splitIntoChunks(text, 200, language);
     console.log(`📦 Split into ${chunks.length} chunk(s)`);
-    
+
     try {
       // Play chunks sequentially
       await playChunksSequentially(chunks, language, index);
     } catch (error) {
       console.error('❌ Backend TTS error:', error);
       setSpeakingIndex(null);
-      
+
       // Fallback to Web Speech
       console.log('🔄 Backend TTS failed, trying Web Speech API...');
       tryWebSpeechFallback(text, language, index);
     }
   };
-  
+
   // Helper: Split text into chunks
   const splitIntoChunks = (text, maxLength, language) => {
     if (text.length <= maxLength) {
       return [text];
     }
-    
+
     const chunks = [];
-    
+
     // Split by sentences (Telugu uses । or ., English uses .)
     const sentencePattern = /[^।.!?]+[।.!?]+/g;
     const sentences = text.match(sentencePattern) || [text];
-    
+
     let currentChunk = '';
-    
+
     for (const sentence of sentences) {
       const trimmedSentence = sentence.trim();
       if (currentChunk && (currentChunk.length + trimmedSentence.length + 1) > maxLength) {
@@ -220,14 +220,14 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
         currentChunk += (currentChunk ? ' ' : '') + trimmedSentence;
       }
     }
-    
+
     if (currentChunk.trim()) {
       chunks.push(currentChunk.trim());
     }
-    
+
     return chunks.length > 0 ? chunks : [text.substring(0, maxLength)];
   };
-  
+
   // Helper: Play audio chunks one after another
   const playChunksSequentially = async (chunks, language, index) => {
     for (let i = 0; i < chunks.length; i++) {
@@ -237,71 +237,63 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
         setSpeakingIndex(null);
         return;
       }
-      
+
       const chunk = chunks[i];
       console.log(`🔊 Playing chunk ${i + 1}/${chunks.length} (${chunk.length} chars)`);
-      
+
       try {
-        // Fetch audio from backend
-        const response = await fetch(`${API_URL}/tts/speak`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            text: chunk,
-            language: language
-          })
+        // Fetch audio from backend (Updated to use api client)
+        const response = await api.post('/tts/speak', {
+          text: chunk,
+          language: language
+        }, {
+          responseType: 'blob'
         });
-        
-        if (!response.ok) {
-          throw new Error(`TTS backend error: ${response.status}`);
-        }
-        
-        // Get audio blob
-        const audioBlob = await response.blob();
+
+        // Get audio blob (axios returns it in data when responseType is blob)
+        const audioBlob = response.data;
         const audioUrl = URL.createObjectURL(audioBlob);
-        
+
         // Play audio and wait for it to finish
         await new Promise((resolve, reject) => {
           const audio = new Audio(audioUrl);
           currentAudioRef.current = audio;
-          
+
           audio.onended = () => {
             console.log(`✅ Chunk ${i + 1} finished`);
             URL.revokeObjectURL(audioUrl);
             currentAudioRef.current = null;
             resolve();
           };
-          
+
           audio.onerror = (error) => {
             console.error(`❌ Chunk ${i + 1} playback error:`, error);
             URL.revokeObjectURL(audioUrl);
             currentAudioRef.current = null;
             reject(error);
           };
-          
+
           audio.play().catch(reject);
         });
-        
+
         // Check again after each chunk
         if (isStoppingRef.current) {
           console.log('⏹️ Playback stopped by user');
           setSpeakingIndex(null);
           return;
         }
-        
+
       } catch (error) {
         console.error(`❌ Error playing chunk ${i + 1}:`, error);
         throw error;
       }
     }
-    
+
     // All chunks played successfully
     console.log('✅ All chunks played successfully');
     setSpeakingIndex(null);
   };
-  
+
   const tryWebSpeechFallback = (text, language, index) => {
     if (!synthesisRef.current) {
       setSpeakingIndex(null);
@@ -311,20 +303,20 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
       });
       return;
     }
-    
+
     const utterance = new SpeechSynthesisUtterance(text);
     const ttsLang = ttsLanguageMap[language] || 'en-US';
     utterance.lang = ttsLang;
     utterance.rate = 0.75; // Slower for Indian languages
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
-    
+
     // Try to find a voice for the language
     const voices = synthesisRef.current.getVoices();
-    
+
     // First try: exact language match
     let matchingVoice = voices.find(v => v.lang.startsWith(language));
-    
+
     // Second try: For South Indian languages (te, ta, kn, ml), try Hindi as it's closer than English
     if (!matchingVoice && ['te', 'ta', 'kn', 'ml', 'mr', 'gu', 'bn', 'pa', 'or'].includes(language)) {
       console.log(`💡 No ${language} voice, trying Hindi voice as fallback...`);
@@ -334,7 +326,7 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
         console.log(`🔊 Using Hindi voice for Indian script: ${matchingVoice.name}`);
       }
     }
-    
+
     if (matchingVoice) {
       utterance.voice = matchingVoice;
       console.log(`🔊 Using Web Speech voice: ${matchingVoice.name} (${matchingVoice.lang})`);
@@ -342,21 +334,21 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
       console.warn(`⚠️ No ${language} or hi voice found. Text may be spelled out in English.`);
       console.log(`💡 Available voices:`, voices.map(v => v.lang).join(', '));
     }
-    
+
     utterance.onstart = () => {
       console.log('🔊 Web Speech started');
       setSpeakingIndex(index);
     };
-    
+
     utterance.onend = () => {
       console.log('✅ Web Speech finished');
       setSpeakingIndex(null);
     };
-    
+
     utterance.onerror = (event) => {
       console.error('❌ Web Speech error:', event.error);
       setSpeakingIndex(null);
-      
+
       if (event.error === 'not-allowed') {
         toast.error('Speech blocked by browser. Please allow audio playback and try clicking the speaker icon manually.', {
           duration: 5000,
@@ -371,27 +363,27 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
         });
       }
     };
-    
+
     synthesisRef.current.speak(utterance);
   };
 
   const stopSpeaking = () => {
     isStoppingRef.current = true;
-    
+
     // Stop Web Speech API
     if (synthesisRef.current) {
       synthesisRef.current.cancel();
     }
-    
+
     // Stop audio playback (Google TTS)
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current.currentTime = 0;
       currentAudioRef.current = null;
     }
-    
+
     setSpeakingIndex(null);
-    
+
     // Reset the stopping flag after a short delay
     setTimeout(() => {
       isStoppingRef.current = false;
@@ -408,7 +400,7 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ 
+      messagesEndRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'nearest',
         inline: 'nearest'
@@ -498,35 +490,32 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[80%] rounded-lg px-4 py-3 ${
-                msg.role === 'user'
+              className={`max-w-[80%] rounded-lg px-4 py-3 ${msg.role === 'user'
                   ? 'bg-teal-600 dark:bg-teal-700 text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-              }`}
+                }`}
             >
               <div className="flex items-start gap-2">
                 <div className="flex-1">
                   <div className="whitespace-pre-wrap break-words">{msg.content}</div>
                   {msg.timestamp && (
                     <div
-                      className={`text-xs mt-1 ${
-                        msg.role === 'user' ? 'text-teal-200 dark:text-teal-300' : 'text-gray-500 dark:text-gray-400'
-                      }`}
+                      className={`text-xs mt-1 ${msg.role === 'user' ? 'text-teal-200 dark:text-teal-300' : 'text-gray-500 dark:text-gray-400'
+                        }`}
                     >
                       {new Date(msg.timestamp).toLocaleTimeString()}
                     </div>
                   )}
                 </div>
-                
+
                 {/* Speaker button for assistant messages */}
                 {msg.role === 'assistant' && isSpeechSupported && (
                   <button
                     onClick={() => toggleSpeak(msg.content, index)}
-                    className={`flex-shrink-0 p-1.5 rounded-full transition-all ${
-                      speakingIndex === index
+                    className={`flex-shrink-0 p-1.5 rounded-full transition-all ${speakingIndex === index
                         ? 'bg-red-500 text-white hover:bg-red-600'
                         : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
-                    }`}
+                      }`}
                     title={speakingIndex === index ? 'Stop speaking (click to stop)' : 'Read aloud'}
                   >
                     {speakingIndex === index ? (
@@ -546,7 +535,7 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
             </div>
           </div>
         ))}
-        
+
         {isLoading && (
           <div className="flex justify-start">
             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-3">
@@ -561,7 +550,7 @@ export default function MessageList({ messages, isLoading, selectedLanguage = 'e
             </div>
           </div>
         )}
-        
+
         <div ref={messagesEndRef} />
       </div>
     </div>

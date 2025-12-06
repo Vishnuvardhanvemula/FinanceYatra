@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { API_URL } from '../config/api';
+import api from '../services/api';
 
 function LanguageSelector({ selectedLanguage, onLanguageChange }) {
   const [languages, setLanguages] = useState({});
@@ -10,7 +9,7 @@ function LanguageSelector({ selectedLanguage, onLanguageChange }) {
     // Fetch supported languages from backend
     const fetchLanguages = async () => {
       try {
-        const response = await axios.get(`${API_URL}/chat/languages`);
+        const response = await api.get('/chat/languages');
         setLanguages(response.data);
       } catch (error) {
         console.error('Failed to fetch languages:', error);
@@ -49,10 +48,10 @@ function LanguageSelector({ selectedLanguage, onLanguageChange }) {
         <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
           {currentLanguage.nativeName}
         </span>
-        <svg 
-          className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform ${isOpen ? 'rotate-180' : ''}`} 
-          fill="none" 
-          stroke="currentColor" 
+        <svg
+          className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
           viewBox="0 0 24 24"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -70,11 +69,10 @@ function LanguageSelector({ selectedLanguage, onLanguageChange }) {
               <button
                 key={code}
                 onClick={() => handleLanguageSelect(code)}
-                className={`w-full text-left px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors ${
-                  selectedLanguage === code 
-                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200' 
+                className={`w-full text-left px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors ${selectedLanguage === code
+                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200'
                     : 'text-gray-700 dark:text-gray-200'
-                }`}
+                  }`}
               >
                 <div className="flex flex-col">
                   <span className="font-medium">{lang.nativeName}</span>
@@ -88,8 +86,8 @@ function LanguageSelector({ selectedLanguage, onLanguageChange }) {
 
       {/* Backdrop to close dropdown */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={() => setIsOpen(false)}
         />
       )}
