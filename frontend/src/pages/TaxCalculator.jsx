@@ -2,7 +2,9 @@ import React, { useState, useMemo } from 'react';
 import calculateIndianTax from '../utils/taxCalculator';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, Cell } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calculator, Shield, TrendingUp, AlertCircle, Check, X, ChevronDown, ChevronUp, IndianRupee } from 'lucide-react';
+import { Calculator, Shield, TrendingUp, AlertCircle, Check, X, ChevronDown, ChevronUp, IndianRupee, HelpCircle } from 'lucide-react';
+import { useCalculatorTour } from '../hooks/useCalculatorTour';
+import DemoDataButton from '../components/DemoDataButton';
 
 function rupee(n) { return '₹' + (Number(n) || 0).toLocaleString(); }
 
@@ -46,6 +48,29 @@ export default function TaxCalculator() {
   const [sec80d, setSec80d] = useState(25000);
   const [hra, setHra] = useState(0);
 
+  const { restartTour } = useCalculatorTour('tax_tour_v1', [
+    {
+      element: '#tax-inputs',
+      popover: { title: 'Income & Deductions', description: 'Enter your total income and claimed deductions here.', side: 'right' }
+    },
+    {
+      element: '#tax-comparison',
+      popover: { title: 'Regime Comparison', description: 'See side-by-side which tax regime saves you more money.', side: 'left' }
+    },
+    {
+      element: '#tax-chart',
+      popover: { title: 'Visual Breakdown', description: 'Compare Tax Liability vs Take Home pay visually.', side: 'top' }
+    }
+  ]);
+
+  const onFillDemoData = () => {
+    setGross(1800000);
+    setSec80c(150000);
+    setSec80d(50000);
+    setHra(100000);
+    setShowDeductions(true);
+  };
+
   const result = useMemo(() => calculateIndianTax(Number(gross || 0), { hra: Number(hra || 0), sec80c: Number(sec80c || 0), sec80d: Number(sec80d || 0) }), [gross, hra, sec80c, sec80d]);
 
   const oldTake = Math.max(0, result.grossIncome - result.old.tax);
@@ -70,20 +95,24 @@ export default function TaxCalculator() {
           <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500 mb-4">
             Tax Regime Analyzer
           </h1>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-            Compare Old vs New tax regimes instantly. Find out where you save more for FY 2024-25.
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto flex items-center justify-center gap-2">
+            Compare Old vs New tax regimes instantly.
+            <button onClick={restartTour} className="text-teal-400 hover:text-teal-300 transition-colors" title="Replay Tour">
+              <HelpCircle className="w-4 h-4" />
+            </button>
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left: Inputs */}
-          <div className="lg:col-span-4 space-y-6">
+          <div className="lg:col-span-4 space-y-6" id="tax-inputs">
             <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl">
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center justify-between mb-8 flex-wrap gap-2">
                 <h2 className="text-xl font-semibold text-white flex items-center gap-2">
                   <Calculator className="w-5 h-5 text-teal-400" />
                   Income Details
                 </h2>
+                <DemoDataButton onFill={onFillDemoData} />
               </div>
 
               <div className="space-y-6">
@@ -124,7 +153,7 @@ export default function TaxCalculator() {
           {/* Right: Comparison */}
           <div className="lg:col-span-8 space-y-8">
             {/* Battle Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6" id="tax-comparison">
               {/* Old Regime Card */}
               <div className={`relative overflow-hidden rounded-3xl p-6 border transition-all duration-300 ${winner === 'old' ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.1)]' : 'bg-[#0b101b]/60 border-white/10'}`}>
                 {winner === 'old' && (
@@ -196,7 +225,7 @@ export default function TaxCalculator() {
             </div>
 
             {/* Chart */}
-            <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl">
+            <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl" id="tax-chart">
               <h3 className="text-lg font-semibold text-white mb-6">Comparison</h3>
               <div className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">

@@ -2,7 +2,9 @@
 import { calculateEMI, amortizationSchedule, sumSchedule } from '../utils/emiCalculator';
 import DonutChart from '../components/DonutChart';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calculator, Calendar, Percent, RefreshCw, Download, ChevronDown, ChevronUp, IndianRupee } from 'lucide-react';
+import { Calculator, Calendar, Percent, RefreshCw, Download, ChevronDown, ChevronUp, IndianRupee, HelpCircle } from 'lucide-react';
+import { useCalculatorTour } from '../hooks/useCalculatorTour';
+import DemoDataButton from '../components/DemoDataButton';
 
 export default function EMICalculatorPage() {
   const [principal, setPrincipal] = useState(1000000);
@@ -11,6 +13,27 @@ export default function EMICalculatorPage() {
   const [showAllSchedule, setShowAllSchedule] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
   const [expandedYears, setExpandedYears] = useState({});
+
+  const { restartTour } = useCalculatorTour('emi_tour_v1', [
+    {
+      element: '#emi-inputs',
+      popover: { title: 'Loan Details', description: 'Enter your loan amount, interest rate, and tenure here.', side: 'right' }
+    },
+    {
+      element: '#emi-summary',
+      popover: { title: 'Monthly EMI', description: 'This is your calculated monthly payment.', side: 'left' }
+    },
+    {
+      element: '#emi-charts',
+      popover: { title: 'Breakdown', description: 'Visualize the split between Principal and Total Interest.', side: 'top' }
+    }
+  ]);
+
+  const onFillDemoData = () => {
+    setPrincipal(5000000); // 50 Lakhs
+    setRate(8.5);
+    setMonths(240); // 20 Years
+  };
 
   const emi = useMemo(() => calculateEMI(principal, rate, months), [principal, rate, months]);
   const schedule = useMemo(() => amortizationSchedule(principal, rate, months), [principal, rate, months]);
@@ -59,27 +82,33 @@ export default function EMICalculatorPage() {
           <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500 mb-4">
             EMI Calculator
           </h1>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-            Plan your loans effectively with our advanced EMI calculator. Visualize your repayment schedule and manage your finances better.
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto flex items-center justify-center gap-2">
+            Plan your loans effectively with our advanced EMI calculator.
+            <button onClick={restartTour} className="text-teal-400 hover:text-teal-300 transition-colors" title="Replay Tour">
+              <HelpCircle className="w-4 h-4" />
+            </button>
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column: Inputs */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6" id="emi-inputs">
             <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl">
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-xl font-semibold text-white flex items-center gap-2">
                   <Calculator className="w-5 h-5 text-teal-400" />
                   Loan Details
                 </h2>
-                <button
-                  onClick={reset}
-                  className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  Reset
-                </button>
+                <div className="flex items-center gap-2">
+                  <DemoDataButton onFill={onFillDemoData} />
+                  <button
+                    onClick={reset}
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Reset
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-8">
@@ -165,7 +194,7 @@ export default function EMICalculatorPage() {
             </div>
 
             {/* Charts Section */}
-            <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl">
+            <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl" id="emi-charts">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-white">Breakdown</h3>
                 <div className="flex gap-2">
@@ -215,7 +244,7 @@ export default function EMICalculatorPage() {
 
           {/* Right Column: Summary */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24 space-y-6">
+            <div className="sticky top-24 space-y-6" id="emi-summary">
               {/* Monthly EMI Card */}
               <div className="bg-gradient-to-br from-teal-500/20 to-blue-600/20 backdrop-blur-xl border border-teal-500/30 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/20 rounded-full blur-3xl -mr-16 -mt-16 transition-all group-hover:bg-teal-500/30" />

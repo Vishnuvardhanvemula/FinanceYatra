@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, DollarSign, Calendar, Percent, RefreshCw, ArrowUpRight, Info } from 'lucide-react';
+import { TrendingUp, DollarSign, Calendar, Percent, RefreshCw, ArrowUpRight, Info, HelpCircle } from 'lucide-react';
+import { useCalculatorTour } from '../hooks/useCalculatorTour';
+import DemoDataButton from '../components/DemoDataButton';
 
 function formatCurrency(v) {
   if (!isFinite(v)) return '₹0';
@@ -154,11 +156,49 @@ const SliderInput = ({ label, value, onChange, min, max, step = 1, prefix = '', 
   </div>
 );
 
+
 export default function SIPCalculator() {
   const [monthly, setMonthly] = useState(5000);
   const [rate, setRate] = useState(12);
   const [years, setYears] = useState(10);
   const [inflation, setInflation] = useState(6);
+
+  // Tour Configuration
+  const { restartTour } = useCalculatorTour('sip_tour_v1', [
+    {
+      element: '#sip-controls',
+      popover: {
+        title: 'Adjust Your Inputs',
+        description: 'Set your monthly investment, expected return, and time horizon here.',
+        side: 'right',
+        align: 'start'
+      }
+    },
+    {
+      element: '#sip-summary',
+      popover: {
+        title: 'Quick Summary',
+        description: 'See your total investment vs wealth gained at a glance.',
+        side: 'top'
+      }
+    },
+    {
+      element: '#sip-chart',
+      popover: {
+        title: 'Visual Projection',
+        description: 'This graph shows your projected growth. The dotted line represents "Real Value" adjusted for inflation.',
+        side: 'left',
+        align: 'center'
+      }
+    }
+  ]);
+
+  const onFillDemoData = () => {
+    setMonthly(25000);
+    setRate(15);
+    setYears(20);
+    setInflation(7);
+  };
 
   const series = useMemo(() => computeSIPSeries(monthly, rate, years), [monthly, rate, years]);
   const realSeries = useMemo(() => series.map((p) => ({ month: p.month, value: p.value / Math.pow(1 + inflation / 100, p.month / 12) })), [series, inflation]);
@@ -187,27 +227,32 @@ export default function SIPCalculator() {
           <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500 mb-4">
             SIP Calculator
           </h1>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-            Visualize wealth creation with inflation-adjusted returns. See the real power of compounding.
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto flex items-center justify-center gap-2">
+            Visualize wealth creation with inflation-adjusted returns.
+            <button onClick={restartTour} className="text-teal-400 hover:text-teal-300 transition-colors" title="Replay Tour">
+              <HelpCircle className="w-4 h-4" />
+            </button>
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left: Controls */}
-          <div className="lg:col-span-4 space-y-6">
+          <div className="lg:col-span-4 space-y-6" id="sip-controls">
             <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl">
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center justify-between mb-8 flex-wrap gap-2">
                 <h2 className="text-xl font-semibold text-white flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-teal-400" />
                   Parameters
                 </h2>
-                <button
-                  onClick={reset}
-                  className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  Reset
-                </button>
+                <div className="flex items-center gap-2">
+                  <DemoDataButton onFill={onFillDemoData} />
+                  <button
+                    onClick={reset}
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-8">
@@ -263,7 +308,7 @@ export default function SIPCalculator() {
           {/* Right: Visualization */}
           <div className="lg:col-span-8 space-y-6">
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4" id="sip-summary">
               <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
                 <div className="text-sm text-gray-400 mb-1">Invested Amount</div>
                 <div className="text-2xl font-bold text-white">{formatCurrency(totalInvested)}</div>
@@ -280,7 +325,7 @@ export default function SIPCalculator() {
             </div>
 
             {/* Chart */}
-            <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl">
+            <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl" id="sip-chart">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-white">Wealth Projection</h3>
                 <div className="flex items-center gap-4 text-sm">

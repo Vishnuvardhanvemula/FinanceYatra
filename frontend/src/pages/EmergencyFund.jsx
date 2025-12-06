@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Home, Zap, ShoppingCart, Heart, Coffee, Tv, ShoppingBag, Settings, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { Shield, Home, Zap, ShoppingCart, Heart, Coffee, Tv, ShoppingBag, Settings, AlertTriangle, CheckCircle, Info, HelpCircle } from 'lucide-react';
+import { useCalculatorTour } from '../hooks/useCalculatorTour';
+import DemoDataButton from '../components/DemoDataButton';
 
 function rupee(n) { return '₹' + (Number(n) || 0).toLocaleString(); }
 
@@ -100,6 +102,7 @@ const InputField = ({ label, icon: Icon, value, onChange }) => (
   </div>
 );
 
+
 export default function EmergencyFund() {
   const [rent, setRent] = useState(20000);
   const [utilities, setUtilities] = useState(3000);
@@ -112,6 +115,29 @@ export default function EmergencyFund() {
 
   const [months, setMonths] = useState(6);
   const [savings, setSavings] = useState(50000);
+
+  const { restartTour } = useCalculatorTour('emergency_tour_v1', [
+    {
+      element: '#emergency-inputs',
+      popover: { title: 'Expenses & Lifestyle', description: 'Break down your monthly spending into Essentials (Needs) and Lifestyle (Wants).', side: 'right' }
+    },
+    {
+      element: '#emergency-result',
+      popover: { title: 'Safety Net', description: 'See how long your current savings will last if income stops.', side: 'left' }
+    }
+  ]);
+
+  const onFillDemoData = () => {
+    setRent(25000);
+    setUtilities(4000);
+    setGroceries(6000);
+    setInsurance(3000);
+    setDining(5000);
+    setSubs(1200);
+    setShopping(3000);
+    setMonths(6);
+    setSavings(250000); // Decent emergency fund
+  };
 
   const essentials = useMemo(() => Number(rent) + Number(utilities) + Number(groceries) + Number(insurance), [rent, utilities, groceries, insurance]);
   const lifestyle = useMemo(() => Number(dining) + Number(subs) + Number(shopping), [dining, subs, shopping]);
@@ -139,14 +165,20 @@ export default function EmergencyFund() {
           <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500 mb-4">
             Emergency Fund
           </h1>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-            Calculate the safety net needed for your financial security. Plan for the unexpected.
-          </p>
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto flex items-center justify-center gap-2">
+              Calculate the safety net needed for your financial security.
+              <button onClick={restartTour} className="text-teal-400 hover:text-teal-300 transition-colors" title="Replay Tour">
+                <HelpCircle className="w-4 h-4" />
+              </button>
+            </p>
+            <DemoDataButton onFill={onFillDemoData} />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left: Inputs */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 space-y-6" id="emergency-inputs">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Essentials Card */}
               <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl">
@@ -228,7 +260,7 @@ export default function EmergencyFund() {
           </div>
 
           {/* Right: Visualization */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-5 space-y-6" id="emergency-result">
             {/* Gauge Card */}
             <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-amber-500 to-teal-500 opacity-50" />

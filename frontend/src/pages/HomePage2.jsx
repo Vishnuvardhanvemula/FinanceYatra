@@ -261,7 +261,7 @@ export default function HomePage2() {
               transition={{ duration: 0.8, delay: 1 }}
               className="flex flex-col sm:flex-row gap-6 justify-center items-center"
             >
-              <Link to="/signup">
+              <Link to="/dashboard">
                 <MagneticButton className="group relative px-10 py-5 bg-white text-black rounded-full font-medium text-sm tracking-widest uppercase transition-all duration-300 hover:bg-gray-200">
                   <span className="relative z-10 flex items-center gap-2">
                     Start Learning
@@ -409,7 +409,7 @@ export default function HomePage2() {
               Join a community of forward-thinking investors building their future today.
             </p>
             <div className="relative z-10">
-              <Link to="/signup">
+              <Link to="/dashboard">
                 <MagneticButton className="px-12 py-6 bg-white text-black rounded-full font-medium text-lg tracking-widest uppercase hover:scale-105 transition-transform duration-300 shadow-[0_0_50px_-10px_rgba(255,255,255,0.3)]">
                   Get Started Now
                 </MagneticButton>

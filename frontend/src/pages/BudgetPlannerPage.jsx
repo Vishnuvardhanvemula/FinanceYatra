@@ -3,12 +3,13 @@ import { motion } from 'framer-motion';
 import {
     Wallet, TrendingUp, TrendingDown, Plus,
     DollarSign, PieChart as PieChartIcon, Target,
-    Calendar, Trash2
+    Calendar, Trash2, HelpCircle
 } from 'lucide-react';
 import {
     getTransactions, addTransaction, deleteTransaction,
     getGoals, addGoal
 } from '../services/budgetService';
+import { useCalculatorTour } from '../hooks/useCalculatorTour';
 import BudgetChart from '../components/budget/BudgetChart';
 import GoalCard from '../components/budget/GoalCard';
 import toast from 'react-hot-toast';
@@ -33,6 +34,25 @@ const BudgetPlannerPage = () => {
         targetAmount: '',
         deadline: ''
     });
+
+    const { restartTour } = useCalculatorTour('budget_tour_v1', [
+        {
+            element: '#budget-actions',
+            popover: { title: 'Quick Actions', description: 'Start tracking by adding a new transaction or setting a savings goal.', side: 'bottom' }
+        },
+        {
+            element: '#summary-cards',
+            popover: { title: 'Financial Snapshot', description: 'See your total balance, income, and expenses at a glance.', side: 'bottom' }
+        },
+        {
+            element: '#charts-section',
+            popover: { title: 'Analysis & Goals', description: 'Visualize your spending habits and track progress towards your goals.', side: 'right' }
+        },
+        {
+            element: '#recent-activity',
+            popover: { title: 'Recent Activity', description: 'Review your latest transactions here.', side: 'left' }
+        }
+    ]);
 
     const expenseCategories = ['Food', 'Transport', 'Utilities', 'Entertainment', 'Shopping', 'Health', 'Education', 'Other'];
     const incomeCategories = ['Salary', 'Freelance', 'Investment', 'Gift', 'Other'];
@@ -122,9 +142,14 @@ const BudgetPlannerPage = () => {
                             <Wallet className="text-emerald-400" />
                             Budget Planner
                         </h1>
-                        <p className="text-slate-400 mt-1">Track expenses and reach your savings goals</p>
+                        <p className="text-slate-400 mt-1 flex items-center gap-2">
+                            Track expenses and reach your savings goals
+                            <button onClick={restartTour} className="text-teal-400 hover:text-teal-300 transition-colors" title="Replay Tour">
+                                <HelpCircle className="w-4 h-4" />
+                            </button>
+                        </p>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-3" id="budget-actions">
                         <button
                             onClick={() => setShowAddTx(true)}
                             className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors"
@@ -141,7 +166,7 @@ const BudgetPlannerPage = () => {
                 </div>
 
                 {/* Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6" id="summary-cards">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -197,7 +222,7 @@ const BudgetPlannerPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                     {/* Left Column: Charts & Goals */}
-                    <div className="lg:col-span-2 space-y-8">
+                    <div className="lg:col-span-2 space-y-8" id="charts-section">
 
                         {/* Expense Chart */}
                         <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 p-6 rounded-2xl">
@@ -230,7 +255,7 @@ const BudgetPlannerPage = () => {
                     </div>
 
                     {/* Right Column: Recent Transactions */}
-                    <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 p-6 rounded-2xl h-fit">
+                    <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 p-6 rounded-2xl h-fit" id="recent-activity">
                         <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                             <Calendar className="text-orange-400" size={20} />
                             Recent Activity
@@ -271,7 +296,7 @@ const BudgetPlannerPage = () => {
 
             </div>
 
-            {/* Add Transaction Modal */}
+            {/* Add Transaction Modal & Add Goal Modal (Original content remains below) */}
             {showAddTx && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <motion.div
@@ -350,7 +375,6 @@ const BudgetPlannerPage = () => {
                 </div>
             )}
 
-            {/* Add Goal Modal */}
             {showAddGoal && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <motion.div

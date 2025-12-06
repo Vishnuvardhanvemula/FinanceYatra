@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Briefcase, TrendingUp, AlertTriangle, CheckCircle, Settings, ChevronDown, ChevronUp, DollarSign, Calendar } from 'lucide-react';
+import { User, Briefcase, TrendingUp, AlertTriangle, CheckCircle, Settings, ChevronDown, ChevronUp, DollarSign, Calendar, HelpCircle } from 'lucide-react';
+import { useCalculatorTour } from '../hooks/useCalculatorTour';
+import DemoDataButton from '../components/DemoDataButton';
 
 function formatCurrency(v) {
   if (!isFinite(v)) return '₹0';
@@ -148,6 +150,7 @@ const SliderField = ({ label, value, onChange, min, max, step = 1, prefix = '', 
   </div>
 );
 
+
 export default function RetirementCalculator() {
   const [currentAge, setCurrentAge] = useState(30);
   const [retirementAge, setRetirementAge] = useState(60);
@@ -158,6 +161,31 @@ export default function RetirementCalculator() {
   const [expectedReturn, setExpectedReturn] = useState(10);
   const [inflation, setInflation] = useState(6);
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const { restartTour } = useCalculatorTour('retire_tour_v1', [
+    {
+      element: '#retire-inputs',
+      popover: { title: 'Your Profile', description: 'Enter your age, expenses, and savings details here.', side: 'right' }
+    },
+    {
+      element: '#retire-status',
+      popover: { title: 'Projected Status', description: 'Instantly see if you are "On Track" or "At Risk".', side: 'left' }
+    },
+    {
+      element: '#retire-chart',
+      popover: { title: 'The Gap', description: 'Visualize the difference between your projected corpus and what you actually need.', side: 'top' }
+    }
+  ]);
+
+  const onFillDemoData = () => {
+    setCurrentAge(30);
+    setRetirementAge(55); // Retire early!
+    setLifeExpectancy(90);
+    setMonthlyExpenses(75000);
+    setExistingCorpus(500000);
+    setMonthlySavings(35000);
+    setExpectedReturn(12);
+  };
 
   const yearsToRetire = Math.max(0, retirementAge - currentAge);
   const yearsInRetirement = Math.max(0, lifeExpectancy - retirementAge);
@@ -212,14 +240,20 @@ export default function RetirementCalculator() {
           <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500 mb-4">
             Retirement Planner
           </h1>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-            Analyze the gap between your corpus and retirement goals. Plan your future with confidence.
-          </p>
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto flex items-center justify-center gap-2">
+              Analyze the gap between your corpus and retirement goals.
+              <button onClick={restartTour} className="text-teal-400 hover:text-teal-300 transition-colors" title="Replay Tour">
+                <HelpCircle className="w-4 h-4" />
+              </button>
+            </p>
+            <DemoDataButton onFill={onFillDemoData} />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left Column: Inputs */}
-          <div className="lg:col-span-4 space-y-6">
+          <div className="lg:col-span-4 space-y-6" id="retire-inputs">
             <InputGroup title="Life Stage" icon={User}>
               <SliderField label="Current Age" value={currentAge} onChange={setCurrentAge} min={18} max={70} suffix="Yr" />
               <SliderField label="Retirement Age" value={retirementAge} onChange={setRetirementAge} min={40} max={75} suffix="Yr" />
@@ -263,7 +297,7 @@ export default function RetirementCalculator() {
           {/* Right Column: Visualization */}
           <div className="lg:col-span-8 space-y-6">
             {/* Status Card */}
-            <div className={`rounded-3xl p-8 border ${onTrack ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-rose-500/10 border-rose-500/30'} relative overflow-hidden`}>
+            <div id="retire-status" className={`rounded-3xl p-8 border ${onTrack ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-rose-500/10 border-rose-500/30'} relative overflow-hidden`}>
               <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
@@ -294,7 +328,7 @@ export default function RetirementCalculator() {
             </div>
 
             {/* Chart */}
-            <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl">
+            <div className="bg-[#0b101b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl" id="retire-chart">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-white">Wealth Projection</h3>
                 <div className="flex items-center gap-4 text-sm">
