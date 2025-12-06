@@ -3,15 +3,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { moduleService } from '../services/moduleService';
 import {
-  BookOpen,
-  CheckCircle,
   Lock,
-  Play,
-  Clock,
-  BarChart,
+  CheckCircle,
   Search,
   ChevronRight,
-  Zap,
   Target,
   Landmark,
   Smartphone,
@@ -33,25 +28,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 // Components
 import ParticleBackground from '../components/ParticleBackground';
 import TiltCard from '../components/TiltCard';
-
-// Icon Mapping
-const ICON_MAP = {
-  'module-1': Landmark,
-  'module-2': Smartphone,
-  'module-3': Percent,
-  'module-4': Wallet,
-  'module-5': Shield,
-  'module-6': TrendingUp,
-  'module-7': FileText,
-  'module-8': PieChart,
-  'module-9': Activity,
-  'module-10': Umbrella,
-  'module-11': Home,
-  'module-12': Target,
-  'module-13': CreditCard,
-  'module-14': Briefcase,
-  'module-15': Layers
-};
 
 const ModulesPage = () => {
   const { user } = useAuth();
@@ -117,7 +93,6 @@ const ModulesPage = () => {
       return allPrereqsCompleted ? 'unlocked' : 'locked';
     }
 
-    // Default to unlocked if no prerequisites (though specific logic above handles module-1)
     return 'unlocked';
   };
 
@@ -249,14 +224,15 @@ const ModulesPage = () => {
               const isCompleted = status === 'completed';
               const isInProgress = status === 'in-progress';
 
-              // Dynamic Border Color based on status
+              // Visual styling based on status
+              const containerOpacity = isLocked ? 'opacity-60 grayscale-[0.5] backdrop-blur-sm' : 'opacity-100';
               const borderColor = isCompleted ? 'border-emerald-500/30' :
                 isInProgress ? 'border-indigo-500/50' :
-                  'border-slate-800';
+                  isLocked ? 'border-slate-800' : 'border-slate-700';
 
               const glowColor = isCompleted ? 'shadow-[0_0_30px_rgba(16,185,129,0.1)]' :
                 isInProgress ? 'shadow-[0_0_30px_rgba(99,102,241,0.15)]' :
-                  '';
+                  'shadow-lg shadow-black/50';
 
               return (
                 <motion.div
@@ -270,14 +246,14 @@ const ModulesPage = () => {
                   className="h-full"
                 >
                   <TiltCard
-                    className={`h-full bg-slate-900/40 backdrop-blur-md border ${borderColor} ${glowColor} rounded-3xl overflow-hidden group hover:border-indigo-500/30 transition-all duration-500 flex flex-col`}
+                    className={`h-full bg-slate-900/40 backdrop-blur-md border ${borderColor} ${glowColor} rounded-3xl overflow-hidden group hover:border-indigo-500/30 transition-all duration-500 flex flex-col ${containerOpacity}`}
                   >
                     {/* Progress Bar (Top) */}
                     {isInProgress && (
                       <div className="absolute top-0 left-0 w-full h-1 bg-slate-800/50">
                         <motion.div
                           initial={{ width: 0 }}
-                          animate={{ width: '40%' }} // You could calculate real % if data existed
+                          animate={{ width: '40%' }}
                           className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
                         />
                       </div>
@@ -286,25 +262,25 @@ const ModulesPage = () => {
                     <div className="p-8 flex flex-col h-full relative z-10">
                       {/* Header Row */}
                       <div className="flex justify-between items-start mb-6">
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-inner ${isLocked ? 'bg-slate-900 text-slate-700' :
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-inner ${isLocked ? 'bg-slate-950 text-slate-700' :
                           isCompleted ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20' :
-                            'bg-indigo-500/10 text-indigo-400 ring-1 ring-indigo-500/20 group-hover:bg-indigo-500/20 transition-colors'
+                            'bg-gradient-to-tr from-slate-800 to-slate-900 text-indigo-400 ring-1 ring-white/10 group-hover:bg-indigo-500/10 transition-colors'
                           }`}>
                           {module.icon}
                         </div>
 
-                        {/* Status Badge */}
-                        <div className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border ${isCompleted ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                          isInProgress ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
-                            'bg-slate-800 text-slate-500 border-slate-700'
+                        {/* Minimal Status Badge */}
+                        <div className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${isCompleted ? 'text-emerald-400 bg-emerald-950/30 border border-emerald-500/20' :
+                          isInProgress ? 'text-indigo-400 bg-indigo-950/30 border border-indigo-500/20 animate-pulse' :
+                            'text-slate-600 border border-slate-800'
                           }`}>
-                          {isCompleted ? 'Mission Complete' : isInProgress ? 'Active Mission' : 'Locked'}
+                          {isCompleted ? 'Complete' : isInProgress ? 'Active' : 'Locked'}
                         </div>
                       </div>
 
                       {/* Content */}
-                      <div className="mb-6">
-                        <h3 className={`text-2xl font-bold mb-3 transition-colors ${isLocked ? 'text-slate-600' : 'text-white group-hover:text-indigo-400'
+                      <div className="mb-6 flex-1">
+                        <h3 className={`text-2xl font-bold mb-3 leading-tight transition-colors ${isLocked ? 'text-slate-500' : 'text-white group-hover:text-indigo-400'
                           }`}>
                           {module.title}
                         </h3>
@@ -313,23 +289,17 @@ const ModulesPage = () => {
                         </p>
                       </div>
 
-                      {/* Stats Grid */}
-                      <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-8 pt-6 border-t border-slate-800/50">
-                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                          <BarChart size={14} className={
-                            module.difficulty === 'beginner' ? 'text-emerald-400' :
-                              module.difficulty === 'intermediate' ? 'text-amber-400' : 'text-rose-400'
-                          } />
+                      {/* Clean Meta Bar (Replaces Redundant Icons) */}
+                      <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-8 pt-6 border-t border-slate-800/50">
+                        <span className={`${module.difficulty === 'beginner' ? 'text-emerald-400' :
+                          module.difficulty === 'intermediate' ? 'text-amber-400' : 'text-rose-400'
+                          }`}>
                           {module.difficulty}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                          <Clock size={14} className="text-indigo-400" />
-                          {module.duration}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 col-span-2">
-                          <BookOpen size={14} className="text-cyan-400" />
-                          {module.lessonsCount || module.lessons} Tactical Lessons
-                        </div>
+                        </span>
+                        <span className="w-1 h-1 rounded-full bg-slate-700" />
+                        <span>{module.duration}</span>
+                        <span className="w-1 h-1 rounded-full bg-slate-700" />
+                        <span>{module.lessonsCount || module.lessons} Lessons</span>
                       </div>
 
                       {/* Action Button */}
@@ -337,24 +307,24 @@ const ModulesPage = () => {
                         <button
                           onClick={() => !isLocked && navigate(`/modules/${module.id}`)}
                           disabled={isLocked}
-                          className={`w-full py-4 rounded-xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-3 group/btn relative overflow-hidden ${isLocked
-                            ? 'bg-slate-900 text-slate-700 border border-slate-800 cursor-not-allowed'
+                          className={`w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3 group/btn relative overflow-hidden ${isLocked
+                            ? 'bg-slate-900/50 text-slate-700 border border-slate-800/50 cursor-not-allowed'
                             : isCompleted
-                              ? 'bg-slate-800 text-emerald-400 border border-emerald-500/30 hover:bg-slate-700'
-                              : 'bg-white text-slate-950 hover:bg-indigo-400 hover:text-white shadow-xl shadow-indigo-500/20'
+                              ? 'bg-slate-800/80 text-emerald-400 border border-emerald-500/30 hover:bg-slate-700'
+                              : 'bg-white text-slate-950 hover:bg-indigo-50 shadow-xl shadow-indigo-500/10'
                             }`}
                         >
                           {isLocked ? (
                             <>
-                              <Lock size={16} /> Locked
+                              <Lock size={14} /> Locked
                             </>
                           ) : isCompleted ? (
                             <>
-                              <CheckCircle size={16} /> Review Mission
+                              <CheckCircle size={14} /> Review
                             </>
                           ) : (
                             <>
-                              Start Mission <ChevronRight size={16} className="transition-transform group-hover/btn:translate-x-1" />
+                              Start <ChevronRight size={14} className="transition-transform group-hover/btn:translate-x-1" />
                             </>
                           )}
                         </button>

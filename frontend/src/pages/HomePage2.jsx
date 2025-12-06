@@ -7,11 +7,6 @@ import * as random from 'maath/random';
 import {
   ArrowRight,
   TrendingUp,
-  Shield,
-  Globe,
-  Zap,
-  BarChart3,
-  PieChart,
   ChevronRight,
   Play,
   Mouse,
