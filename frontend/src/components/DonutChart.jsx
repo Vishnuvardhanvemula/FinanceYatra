@@ -8,7 +8,7 @@ function formatINR(n) {
   }
 }
 
-export default function DonutChart({ principal = 0, interest = 0, size = 220, stroke = 18, animate = true }) {
+export default function DonutChart({ principal = 0, interest = 0, size = 220, stroke = 18, animate = true, showLabel = false }) {
   const total = Number(principal) + Number(interest);
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -67,43 +67,45 @@ export default function DonutChart({ principal = 0, interest = 0, size = 220, st
 
           {/* principal segment */}
           {principalLen > 0 && (
-          <circle
-            r={radius}
-            cx="0"
-            cy="0"
-            fill="none"
-            stroke="url(#gPrincipal)"
-            strokeWidth={stroke}
-            strokeLinecap="round"
-            strokeDasharray={`${principalLen} ${circumference - principalLen}`}
-            strokeDashoffset={animated ? 0 : principalLen}
-            style={{ transition: styleTransition, transform: 'rotate(-90deg)' }}
-          />)}
+            <circle
+              r={radius}
+              cx="0"
+              cy="0"
+              fill="none"
+              stroke="url(#gPrincipal)"
+              strokeWidth={stroke}
+              strokeLinecap="round"
+              strokeDasharray={`${principalLen} ${circumference - principalLen}`}
+              strokeDashoffset={animated ? 0 : principalLen}
+              style={{ transition: styleTransition, transform: 'rotate(-90deg)' }}
+            />)}
 
           {/* interest segment */}
           {interestLen > 0 && (
-          <circle
-            r={radius}
-            cx="0"
-            cy="0"
-            fill="none"
-            stroke="url(#gInterest)"
-            strokeWidth={stroke}
-            strokeLinecap="round"
-            strokeDasharray={`${interestLen} ${circumference - interestLen}`}
-            strokeDashoffset={animated ? -principalLen : circumference}
-            style={{ transition: styleTransition, transform: 'rotate(-90deg)' }}
-          />)}
+            <circle
+              r={radius}
+              cx="0"
+              cy="0"
+              fill="none"
+              stroke="url(#gInterest)"
+              strokeWidth={stroke}
+              strokeLinecap="round"
+              strokeDasharray={`${interestLen} ${circumference - interestLen}`}
+              strokeDashoffset={animated ? -principalLen : circumference}
+              style={{ transition: styleTransition, transform: 'rotate(-90deg)' }}
+            />)}
 
           {/* center label */}
-          <foreignObject x={-radius} y={-radius} width={radius * 2} height={radius * 2} className="pointer-events-none">
-            <div xmlns="http://www.w3.org/1999/xhtml" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-              <div style={{ color: 'var(--fy-theme-text, white)', fontSize: 14 }}>
-                <div style={{ fontSize: 12, opacity: 0.85 }}>Total Payable</div>
-                <div style={{ fontSize: 16, fontWeight: 700 }}>{formatINR(total)}</div>
+          {showLabel && (
+            <foreignObject x={-radius} y={-radius} width={radius * 2} height={radius * 2} className="pointer-events-none">
+              <div xmlns="http://www.w3.org/1999/xhtml" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                <div style={{ color: 'var(--fy-theme-text, white)', fontSize: 14 }}>
+                  <div style={{ fontSize: 12, opacity: 0.85 }}>Total Payable</div>
+                  <div style={{ fontSize: 16, fontWeight: 700 }}>{formatINR(total)}</div>
+                </div>
               </div>
-            </div>
-          </foreignObject>
+            </foreignObject>
+          )}
         </g>
       </svg>
       <div className="mt-3 text-sm text-gray-300 flex items-center justify-center gap-3">
