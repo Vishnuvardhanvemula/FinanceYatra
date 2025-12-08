@@ -53,7 +53,13 @@ const ShopPage = () => {
         try {
             const response = await api.post('/shop/purchase', { itemId: item.itemId });
             if (response.data.success) {
-                await refreshUser(); // Update user XP and inventory
+                // Update user state immediately with response data (Optimistic UI)
+                const { remainingXp, inventory } = response.data.data;
+                setUser(prev => ({
+                    ...prev,
+                    xp: remainingXp,
+                    inventory: inventory
+                }));
 
                 if (item.category === 'mystery_box') {
                     setMysteryBoxItem(item);
@@ -271,7 +277,7 @@ const ShopPage = () => {
                                             <div className="relative z-10 p-6 flex justify-between items-start border-b border-white/5 bg-white/5 backdrop-blur-md">
                                                 <div className="flex flex-col">
                                                     <span className={`text-[10px] font-black tracking-[0.2em] uppercase mb-1 ${rc.color}`}>
-                                                        {item.category} // {item.rarity}
+                                                        {item.category} • {item.rarity}
                                                     </span>
                                                     <div className="flex items-center gap-2">
                                                         <div className={`w-1.5 h-1.5 rounded-full ${rc.bg.replace('/10', '')} animate-pulse`} />

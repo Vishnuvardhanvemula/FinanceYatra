@@ -457,7 +457,8 @@ export const AuthProvider = ({ children }) => {
     updateProfile,
     changePassword,
     refreshUser,
-    updateUserProgress
+    updateUserProgress,
+    setUser // Expose setUser for optimistic/direct updates
   };
 
   return (

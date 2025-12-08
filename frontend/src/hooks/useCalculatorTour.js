@@ -18,12 +18,17 @@ export function useCalculatorTour(tourKey, steps) {
             // Initialize driver
             driverObj.current = driver({
                 showProgress: true,
+                allowClose: true,
+                overlayClickNext: false, // Click overlay to close/skip
                 steps: steps,
+                nextBtnText: 'Next →',
+                prevBtnText: '← Back',
+                doneBtnText: 'Finish',
                 onDestroyed: () => {
                     // Mark as seen when tour is finished or skipped
                     localStorage.setItem(tourKey, 'true');
                 },
-                popoverClass: 'finance-tour-theme', // Custom class for styling if needed
+                popoverClass: 'finance-tour-theme', // Custom class for styling
             });
 
             // Simple delay to ensure DOM is ready

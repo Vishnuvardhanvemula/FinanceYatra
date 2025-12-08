@@ -1,12 +1,10 @@
-import React from 'react';
-
 // Logo component shows a center-cropped square of an app artwork.
 // Place your source image at `public/assets/logo-source.png` (or adjust path below).
 // The component crops via CSS (object-fit/object-position) so you don't need to pre-crop.
 
 import logoAsset from '../assets/logo.png';
 
-export default function Logo({ size = 40, alt = 'FinYatra', asLink = true }) {
+export default function Logo({ size = 40, alt = 'Finance Yatra', asLink = true }) {
   // Use the provided raster/SVG asset inside the gradient framed square.
   // Icon fixed to h-10 w-10 and gap reduced to 3 (Tailwind `gap-3`).
   const content = (
@@ -16,7 +14,7 @@ export default function Logo({ size = 40, alt = 'FinYatra', asLink = true }) {
       </div>
 
       <div className="flex items-baseline select-none">
-        <span className="text-white font-bold tracking-tight" style={{ fontFamily: "Plus Jakarta Sans, Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial", fontSize: 20 }}>FinYatra</span>
+        <span className="text-white font-bold tracking-tight" style={{ fontFamily: "Plus Jakarta Sans, Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial", fontSize: 20 }}>Finance Yatra</span>
       </div>
     </div>
   );

@@ -164,7 +164,7 @@ export default function SIPCalculator() {
   const [inflation, setInflation] = useState(6);
 
   // Tour Configuration
-  const { restartTour } = useCalculatorTour('sip_tour_v1', [
+  const { restartTour } = useCalculatorTour('sip_tour_v2', [
     {
       element: '#sip-controls',
       popover: {

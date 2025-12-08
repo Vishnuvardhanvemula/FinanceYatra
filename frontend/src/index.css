@@ -1102,3 +1102,44 @@ body,
 .animate-gradient-x {
   animation: gradient-x 3s ease infinite;
 }
+
+/* Driver.js Custom Theme */
+.driver-popover.finance-tour-theme {
+  background-color: #0f172a;
+  color: #f1f5f9;
+  border: 1px solid rgba(20, 184, 166, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.driver-popover.finance-tour-theme .driver-popover-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2dd4bf;
+  margin-bottom: 8px;
+}
+
+.driver-popover.finance-tour-theme .driver-popover-description {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.driver-popover.finance-tour-theme button {
+  background: #14b8a6;
+  color: white;
+  text-shadow: none;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.driver-popover.finance-tour-theme button:hover {
+  background: #0d9488;
+}
+
+.driver-popover-navigation-btns {
+  gap: 8px;
+}

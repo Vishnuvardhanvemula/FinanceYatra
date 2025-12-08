@@ -73,8 +73,8 @@ const SignupPage = () => {
           transition={{ duration: 0.6 }}
           className="absolute top-8 left-8 md:top-12 md:left-12 flex items-center gap-3"
         >
-          <img src={logo} alt="FinYatra Logo" className="w-12 h-12 rounded-xl shadow-lg shadow-indigo-500/20" />
-          <span className="text-xl font-bold tracking-tight text-white">FinYatra</span>
+          <img src={logo} alt="Finance Yatra Logo" className="w-12 h-12 rounded-xl shadow-lg shadow-indigo-500/20" />
+          <span className="text-xl font-bold tracking-tight text-white">Finance Yatra</span>
         </motion.div>
         <div className="max-w-md w-full mx-auto">
           <motion.div
@@ -231,7 +231,7 @@ const SignupPage = () => {
 
         {/* Footer Links */}
         <div className="absolute bottom-8 left-8 right-8 flex justify-between text-xs text-slate-600 uppercase tracking-wider font-medium">
-          <span>© 2024 FinSight</span>
+          <span>© 2024 Finance Yatra</span>
           <div className="flex gap-4">
             <a href="#" className="hover:text-slate-400 transition-colors">Privacy</a>
             <a href="#" className="hover:text-slate-400 transition-colors">Terms</a>

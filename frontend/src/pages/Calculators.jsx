@@ -61,6 +61,15 @@ export default function Calculators() {
       gradient: 'from-red-500 to-rose-600',
       shadow: 'shadow-red-500/20'
     },
+    {
+      key: 'market',
+      title: 'Market Simulator',
+      subtitle: 'Practice trading strategies in a risk-free virtual environment.',
+      path: '/market-simulator',
+      Icon: TrendingUp,
+      gradient: 'from-cyan-500 to-blue-600',
+      shadow: 'shadow-cyan-500/20'
+    },
   ];
 
   const containerVariants = {
