@@ -15,7 +15,9 @@ import MarketSentimentWidget from '../components/dashboard/MarketSentimentWidget
 import ArsenalWidget from '../components/dashboard/ArsenalWidget';
 import WidgetErrorBoundary from '../components/WidgetErrorBoundary';
 import { dashboardService } from '../services/dashboardService';
+import { getPortfolio } from '../services/marketService';
 import { useRankSystem } from '../hooks/useRankSystem';
+import WealthVerse from '../components/dashboard/WealthVerse';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import {
@@ -67,6 +69,8 @@ const DashboardPage = () => {
   const [achievements, setAchievements] = useState([]);
   const [stats, setStats] = useState(null);
   const [marketData, setMarketData] = useState(null);
+  const [portfolio, setPortfolio] = useState(null);
+  const [sentiment, setSentiment] = useState(null);
 
   const { rank, rankTier } = useRankSystem(user?.xp || 0);
 
@@ -78,27 +82,31 @@ const DashboardPage = () => {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user || !token) {
-      navigate('/login');
-      return;
+    if (user && token) {
+      fetchDashboardData();
+    } else {
+      setLoading(false);
     }
-    fetchDashboardData();
   }, [user, token, authLoading, navigate, userProgressKey]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [analyticsData, achievementsData, statsData, marketRes] = await Promise.all([
+      const [analyticsData, achievementsData, statsData, marketRes, portfolioData, sentimentRes] = await Promise.all([
         dashboardService.getAnalytics(token),
         dashboardService.getAchievements(token),
         dashboardService.getStats(token),
-        dashboardService.getMarketData(token)
+        dashboardService.getMarketData(token),
+        getPortfolio(),
+        dashboardService.getMarketSentiment()
       ]);
 
       if (analyticsData) setAnalytics(analyticsData);
       if (achievementsData) setAchievements(achievementsData);
       if (statsData) setStats(statsData);
       if (marketRes) setMarketData(marketRes);
+      if (portfolioData) setPortfolio(portfolioData);
+      if (sentimentRes) setSentiment(sentimentRes);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       toast.error('Failed to load some dashboard data');
@@ -155,6 +163,9 @@ const DashboardPage = () => {
       <div className="fixed inset-0 z-[9999] pointer-events-none opacity-[0.03] mix-blend-overlay"
         style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}>
       </div>
+
+      {/* WealthVerse 3D Background */}
+      <WealthVerse netWorth={portfolio?.totalValue || 0} sentiment={sentiment?.sentiment || 'Neutral'} />
 
       {/* Background Elements (Evolving) */}
       {rankTier >= 4 && <ParticleBackground />} {/* Legendary Only */}
@@ -277,7 +288,7 @@ const DashboardPage = () => {
                   <RankBadge tier={rankTier} label={rank.label} />
                 </div>
                 <h1 className="text-4xl md:text-6xl font-medium text-white tracking-tighter mb-2">
-                  {t('dashboard.greeting', { name: user?.name?.split(' ')[0] })}
+                  {t('dashboard.greeting', { name: user?.name?.split(' ')[0] || t('dashboard.guest_name', 'Guest') })}
                 </h1>
                 <p className="text-slate-400 text-sm md:text-base font-light max-w-md">
                   {rankTier === 4 ? t('dashboard.welcome_legend') : t('dashboard.welcome')}

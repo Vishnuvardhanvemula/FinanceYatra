@@ -168,8 +168,7 @@ export default function ChallengesPage() {
   // Handlers
   const handleDailySubmit = async () => {
     if (!isAuthenticated) {
-      toast.error('Please login to submit answers');
-      navigate('/login');
+      toast.error('Mission aborted: Authentication required to record results.');
       return;
     }
     if (selectedAnswer === null) { toast.error('Select an answer first'); return; }
@@ -223,7 +222,10 @@ export default function ChallengesPage() {
         toast.success(`Mission Complete! +${task.xp} XP`);
       } else {
         // Backend task claim
-        if (!isAuthenticated) return navigate('/login');
+        if (!isAuthenticated) {
+          toast.error('Mission aborted: Authentication required.');
+          return;
+        }
         await challengeService.claimWeeklyTask(task.id);
         setWeeklyTasks(prev => prev.map(t => t.id === task.id ? { ...t, claimed: true } : t));
         toast.success('Reward Claimed!');

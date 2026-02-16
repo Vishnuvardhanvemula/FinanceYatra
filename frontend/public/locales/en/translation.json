@@ -1,6 +1,7 @@
 {
   "dashboard": {
     "greeting": "Hello, {{name}}",
+    "guest_name": "Guest",
     "welcome": "Welcome back. Your financial command center is ready.",
     "welcome_legend": "Welcome to the Void, Legend.",
     "streak": "Current Streak",

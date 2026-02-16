@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../../contexts/AuthContext';
 import forumService from '../../services/forumService';
 
 const CATEGORIES = ['General', 'Module Help', 'Ask an Expert', 'Challenge'];
 
 const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
+    const { user } = useAuth();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [category, setCategory] = useState('General');
@@ -15,6 +17,11 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!title.trim() || !content.trim()) return;
+
+        if (!user) {
+            toast.error('Sign in required to create posts.');
+            return;
+        }
 
         setLoading(true);
         try {

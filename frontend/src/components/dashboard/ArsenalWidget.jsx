@@ -18,6 +18,8 @@ const ArsenalWidget = () => {
     useEffect(() => {
         if (user) {
             fetchRecommendation();
+        } else {
+            setLoading(false);
         }
     }, [user]);
 

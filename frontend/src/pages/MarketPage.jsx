@@ -4,9 +4,11 @@ import { TrendingUp, TrendingDown, DollarSign, PieChart, Activity, Search, Brief
 import { getMarketPrices, getPortfolio, executeTrade } from '../services/marketService';
 import MarketLeaderboard from '../components/market/MarketLeaderboard';
 import { StockPriceChart, PortfolioPieChart } from '../components/market/StockChart';
+import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 const MarketPage = () => {
+    const { isAuthenticated } = useAuth();
     const [activeTab, setActiveTab] = useState('market'); // 'market' | 'leaderboard'
     const [stocks, setStocks] = useState([]);
     const [portfolio, setPortfolio] = useState(null);
@@ -18,12 +20,15 @@ const MarketPage = () => {
 
     const fetchData = async () => {
         try {
-            const [marketData, portfolioData] = await Promise.all([getMarketPrices(), getPortfolio()]);
+            const marketData = await getMarketPrices();
             setStocks(marketData);
-            setPortfolio(portfolioData);
+
+            if (isAuthenticated) {
+                const portfolioData = await getPortfolio();
+                setPortfolio(portfolioData);
+            }
         } catch (error) {
             console.error(error);
-            // Don't toast on every poll
         } finally {
             setLoading(false);
         }
@@ -37,6 +42,10 @@ const MarketPage = () => {
 
     const handleTrade = async (e) => {
         e.preventDefault();
+        if (!isAuthenticated) {
+            toast.error('Trading suspended: Please sign in to execute trades.');
+            return;
+        }
         try {
             await executeTrade({
                 symbol: selectedStock.symbol,
@@ -101,7 +110,7 @@ const MarketPage = () => {
                         </div>
                         <div>
                             <p className="text-xs text-slate-400 uppercase tracking-wider">Cash Balance</p>
-                            <p className="text-2xl font-bold text-white">${portfolio?.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                            <p className="text-2xl font-bold text-white">${(portfolio?.balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                         </div>
                     </div>
                     <div className="bg-slate-900/50 backdrop-blur-md border border-white/10 p-6 rounded-2xl flex items-center gap-4">
@@ -110,7 +119,7 @@ const MarketPage = () => {
                         </div>
                         <div>
                             <p className="text-xs text-slate-400 uppercase tracking-wider">Net Worth</p>
-                            <p className="text-2xl font-bold text-white">${portfolio?.totalValue?.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                            <p className="text-2xl font-bold text-white">${(portfolio?.totalValue || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                         </div>
                     </div>
                     <div className="bg-slate-900/50 backdrop-blur-md border border-white/10 p-6 rounded-2xl flex items-center gap-4">

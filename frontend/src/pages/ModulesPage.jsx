@@ -97,10 +97,9 @@ const ModulesPage = () => {
   };
 
   const getModuleStatus = (moduleId) => {
-    // ALWAYS unlock the first module
-    if (moduleId === 'module-1') return { status: 'unlocked' };
+    // ALWAYS unlock the first module or if not logged in (to allow viewing)
+    if (moduleId === 'module-1' || !user) return { status: 'unlocked' };
 
-    if (!user) return { status: 'locked', reason: 'Sign in required' };
     const progress = user.moduleProgress?.find(m => m.moduleId === moduleId);
     if (progress?.completedAt) return { status: 'completed' };
     if (progress) return { status: 'in-progress' };

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import challengeService from '../services/challengeService';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function DailyQuizPage() {
   const [question, setQuestion] = useState(null);
@@ -27,8 +28,13 @@ export default function DailyQuizPage() {
 
   useEffect(() => { loadQuestion(); }, []);
 
+  const { isAuthenticated } = useAuth();
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      toast.error('Sign in required to submit daily answers.');
+      return;
+    }
     if (answeredToday) { toast('You have already answered today'); return; }
     if (!selected) { toast('Please select an answer'); return; }
     setSubmitting(true);

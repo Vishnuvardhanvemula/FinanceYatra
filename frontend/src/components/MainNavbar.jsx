@@ -38,7 +38,7 @@ export default function MainNavbar() {
               ) : (
                 <>
                   <Link to="/" className="text-sm font-medium text-slate-400 hover:text-white transition-colors tracking-wide">{t('nav.home')}</Link>
-                  {isAuthenticated && <Link to="/dashboard" className="text-sm font-medium text-slate-400 hover:text-white transition-colors tracking-wide">{t('nav.dashboard')}</Link>}
+                  <Link to="/dashboard" className="text-sm font-medium text-slate-400 hover:text-white transition-colors tracking-wide">{t('nav.dashboard')}</Link>
                   <Link to="/modules" className="text-sm font-medium text-slate-400 hover:text-white transition-colors tracking-wide">{t('nav.modules')}</Link>
                   <Link to="/challenges" className="text-sm font-medium text-slate-400 hover:text-white transition-colors tracking-wide">{t('nav.challenges')}</Link>
                   <Link to="/community" className="text-sm font-medium text-slate-400 hover:text-white transition-colors tracking-wide">{t('nav.community')}</Link>
@@ -200,7 +200,7 @@ export default function MainNavbar() {
                       <>
                         {[
                           { to: "/", label: t('nav.home'), icon: <Home size={18} /> },
-                          isAuthenticated && { to: "/dashboard", label: t('nav.dashboard'), icon: <LayoutDashboard size={18} /> },
+                          { to: "/dashboard", label: t('nav.dashboard'), icon: <LayoutDashboard size={18} /> },
                           { to: "/modules", label: t('nav.modules'), icon: <Layers size={18} /> },
                           { to: "/challenges", label: t('nav.challenges'), icon: <Trophy size={18} /> },
                           { to: "/community", label: t('nav.community'), icon: <Users size={18} /> },

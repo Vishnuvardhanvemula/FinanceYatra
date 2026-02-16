@@ -13,7 +13,7 @@ import MysteryBoxModal from '../components/MysteryBoxModal';
 
 
 const ShopPage = () => {
-    const { user, refreshUser } = useAuth();
+    const { user, setUser, refreshUser } = useAuth();
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('all');
@@ -44,6 +44,10 @@ const ShopPage = () => {
     };
 
     const handlePurchase = async (item) => {
+        if (!user) {
+            toast.error('Sign in required to purchase items.');
+            return;
+        }
         if (user.xp < item.price) {
             toast.error('Not enough XP!');
             return;
@@ -83,6 +87,10 @@ const ShopPage = () => {
     };
 
     const handleEquip = async (item) => {
+        if (!user) {
+            toast.error('Sign in required to equip items.');
+            return;
+        }
         setEquipping(item.itemId);
         try {
             const response = await api.post('/shop/equip', { itemId: item.itemId });

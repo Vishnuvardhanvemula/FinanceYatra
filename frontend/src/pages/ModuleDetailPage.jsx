@@ -221,25 +221,20 @@ const ModuleDetailPage = () => {
     }
   };
 
-  // Function to fetch quiz when needed
-  const fetchQuiz = async () => {
+  // Skip AI quiz generation and use static quiz from lesson
+  const fetchQuiz = () => {
     setLoadingQuiz(true);
-    try {
-      // Token is handled automatically by api interceptor
-      const response = await moduleService.generateQuiz(moduleId, currentLessonIndex);
-
-      if (response.success) {
-        setQuizQuestions(response.data);
+    // Mimic a short decryption delay for aesthetic purposes
+    setTimeout(() => {
+      if (currentLesson?.quiz && currentLesson.quiz.length > 0) {
+        setQuizQuestions(currentLesson.quiz);
       } else {
-        console.warn('AI Quiz failed, using static fallback');
-        setQuizQuestions(currentLesson?.quiz || []);
+        // Fallback for modules that don't have static quizzes yet
+        setQuizQuestions([]);
+        console.warn('No static quiz found for this lesson.');
       }
-    } catch (error) {
-      console.error('Quiz fetch error:', error);
-      setQuizQuestions(currentLesson?.quiz || []);
-    } finally {
       setLoadingQuiz(false);
-    }
+    }, 800);
   };
 
   useEffect(() => {
@@ -442,9 +437,9 @@ const ModuleDetailPage = () => {
 
               {loadingQuiz ? (
                 <div className="flex flex-col items-center justify-center py-20">
-                  <Sparkles className="w-12 h-12 text-amber-400 animate-spin mb-4" />
-                  <p className="text-amber-400 font-mono animate-pulse">GENERATING ADAPTIVE QUIZ...</p>
-                  <p className="text-slate-500 text-sm mt-2">Analyzing your proficiency level</p>
+                  <Terminal className="w-12 h-12 text-amber-400 animate-pulse mb-4" />
+                  <p className="text-amber-400 font-mono tracking-widest">DECRYPTING MISSION BRIEFING...</p>
+                  <p className="text-slate-500 text-sm mt-2 font-light">Loading tactical assessment data</p>
                 </div>
               ) : (
                 <Suspense fallback={<QuizSkeleton />}>

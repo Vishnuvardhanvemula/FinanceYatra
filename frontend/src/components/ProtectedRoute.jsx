@@ -3,7 +3,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function ProtectedRoute() {
-  const { isAuthenticated, loading } = useAuth();
+  const { loading } = useAuth();
 
   // While auth is loading, render nothing (or a spinner)
   if (loading) {
@@ -14,9 +14,6 @@ export default function ProtectedRoute() {
     );
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
+  // Unauthenticated users are now allowed to pass through
   return <Outlet />;
 }

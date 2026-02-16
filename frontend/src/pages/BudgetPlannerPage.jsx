@@ -12,9 +12,11 @@ import {
 import { useCalculatorTour } from '../hooks/useCalculatorTour';
 import BudgetChart from '../components/budget/BudgetChart';
 import GoalCard from '../components/budget/GoalCard';
+import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 const BudgetPlannerPage = () => {
+    const { isAuthenticated } = useAuth();
     const [transactions, setTransactions] = useState([]);
     const [goals, setGoals] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -77,6 +79,10 @@ const BudgetPlannerPage = () => {
 
     const handleAddTransaction = async (e) => {
         e.preventDefault();
+        if (!isAuthenticated) {
+            toast.error('Mission aborted: Please sign in to track your budget.');
+            return;
+        }
         try {
             await addTransaction(txForm);
             toast.success('Transaction added');
@@ -90,6 +96,10 @@ const BudgetPlannerPage = () => {
 
     const handleAddGoal = async (e) => {
         e.preventDefault();
+        if (!isAuthenticated) {
+            toast.error('Mission aborted: Please sign in to set savings goals.');
+            return;
+        }
         try {
             await addGoal(goalForm);
             toast.success('Goal created');
