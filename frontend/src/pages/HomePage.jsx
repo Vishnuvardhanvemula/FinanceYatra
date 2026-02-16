@@ -386,43 +386,65 @@ const RupeeFallback = ({ size = 120 }) => (
 
 const HeroSection = ({ isAuthenticated, loading, navigate }) => (
   <section className="min-h-[90vh] flex flex-col justify-center px-6 md:px-20 relative z-10 pt-20">
-    <div className="max-w-[900px]">
+    <div className="max-w-[950px]">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white text-[10px] font-bold uppercase tracking-[0.2em] mb-8 backdrop-blur-md backdrop-brightness-50">
-          <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
-          AI-Powered Financial Intelligence
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[11px] font-bold uppercase tracking-[0.2em] mb-8 backdrop-blur-md shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+          Mission: Financial Freedom for Bharat
         </div>
 
-        <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-[0.95] mb-8 tracking-tight">
-          Master Money <br />
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-[0.95] mb-6 tracking-tight">
+          Empowering Bharat's <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-200 via-white to-teal-200 animate-gradient-x">
-            Without Fear.
+            Financial Future.
           </span>
         </h1>
 
-        <p className="text-xl md:text-2xl text-slate-400 mb-10 max-w-2xl font-light leading-relaxed">
-          Your personal AI tutor that simulates real-world economies. Learn to invest, save, and grow wealth in a risk-free sandbox.
+        <h2 className="text-2xl md:text-3xl text-teal-400 font-medium mb-8 tracking-wide">
+          Master Money. Break Barriers. Build Wealth.
+        </h2>
+
+        <p className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl font-light leading-relaxed border-l-2 border-teal-500/30 pl-6">
+          "We are on a mission to democratize financial literacy. Experience a <span className="text-white font-medium">risk-free sandbox</span> where you can learn, fail, and grow without losing a single rupee. Because financial freedom is a right, not a privilege."
         </p>
+
+        {/* Impact Ticker */}
+        <div className="flex flex-wrap gap-8 items-center mb-10 text-sm font-mono text-slate-500">
+          <div className="flex items-center gap-2">
+            <span className="text-amber-400 font-bold text-lg">₹10Cr+</span>
+            <span>Virtual Wealth Created</span>
+          </div>
+          <div className="w-1 h-1 bg-slate-700 rounded-full"></div>
+          <div className="flex items-center gap-2">
+            <span className="text-teal-400 font-bold text-lg">50,000+</span>
+            <span>Lives Impacted</span>
+          </div>
+          <div className="w-1 h-1 bg-slate-700 rounded-full"></div>
+          <div className="flex items-center gap-2">
+            <span className="text-blue-400 font-bold text-lg">100%</span>
+            <span>Free & Open Source</span>
+          </div>
+        </div>
 
         <div className="flex flex-col sm:flex-row gap-5">
           <button
             onClick={() => navigate('/dashboard')}
             disabled={loading}
-            className="w-full sm:w-auto group relative px-8 py-4 bg-white text-black rounded-full font-bold text-lg overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_50px_rgba(255,255,255,0.3)] disabled:opacity-70 disabled:cursor-wait"
+            className="w-full sm:w-auto group relative px-8 py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-full font-bold text-lg overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_50px_rgba(20,184,166,0.5)] disabled:opacity-70 disabled:cursor-wait"
           >
             <span className="relative flex items-center gap-2 justify-center">
-              {loading ? 'Connecting...' : (isAuthenticated ? 'Resume Learning' : 'Start Your Journey')}
+              {loading ? 'Connecting...' : (isAuthenticated ? 'Resume Your Journey' : 'Start Your Mission')}
               {!loading && <ArrowRight size={18} />}
             </span>
           </button>
           <button
             onClick={() => navigate('/modules')}
-            className="w-full sm:w-auto px-8 py-4 bg-transparent border border-white/20 hover:bg-white/5 text-white rounded-full font-medium text-lg transition-all backdrop-blur-sm flex items-center gap-2 justify-center"
+            className="w-full sm:w-auto px-8 py-4 bg-transparent border border-white/20 hover:bg-white/5 text-white rounded-full font-medium text-lg transition-all backdrop-blur-sm flex items-center gap-2 justify-center hover:border-teal-500/50"
           >
             {isAuthenticated ? (
               <>
@@ -430,7 +452,7 @@ const HeroSection = ({ isAuthenticated, loading, navigate }) => (
               </>
             ) : (
               <>
-                <LayoutDashboard size={18} /> Explore Modules
+                <LayoutDashboard size={18} /> Explore Curriculum
               </>
             )}
           </button>

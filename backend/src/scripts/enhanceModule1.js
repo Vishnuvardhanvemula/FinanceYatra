@@ -28,6 +28,8 @@ const MODULE_1_CONTENT = [
 
             <h3>Why not just cash?</h3>
             <p>Digital money is easier to track, safer to transport, and helps you build a credit history, which is essential for getting loans later in life.</p>
+            
+            [KYC_DETECTIVE]
         `,
         keyPoints: [
             "Banks provide safety and liquidity.",
@@ -138,6 +140,10 @@ const MODULE_1_CONTENT = [
             <h3>No More Queues</h3>
             <p>Modern banking happens on your phone. You can transfer money, pay bills, and even open accounts without visiting a branch.</p>
 
+            [UPI_SCANNER]
+
+            <h3>Transfer Modes Explained</h3>
+
             <h3>Transfer Modes Explained</h3>
             <ul>
                 <li><strong>NEFT:</strong> For regular transfers. Takes a few hours. Available 24/7.</li>
@@ -178,6 +184,10 @@ const MODULE_1_CONTENT = [
         content: `
             <h3>Using an ATM Safely</h3>
             <p>ATMs are convenient, but they can be targets for skimming devices. Always wiggle the card slot before inserting your card to check for skimmers.</p>
+
+            [SCAM_SPOTTER]
+
+            <h3>Best Practices</h3>
 
             <h3>Best Practices</h3>
             <ul>
