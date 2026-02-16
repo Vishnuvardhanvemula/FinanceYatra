@@ -4,7 +4,7 @@
  */
 
 import express from 'express';
-import { authenticate } from '../middleware/authMiddleware.js';
+import { authenticate, optionalAuth } from '../middleware/authMiddleware.js';
 import User from '../models/User.js';
 import analyticsService from '../services/analyticsService.js';
 import achievementService from '../services/achievementService.js';
@@ -259,7 +259,7 @@ router.post('/activity', authenticate, async (req, res) => {
  * GET /api/dashboard/recommendations
  * Get personalized learning recommendations
  */
-router.get('/recommendations', authenticate, async (req, res) => {
+router.get('/recommendations', optionalAuth, async (req, res) => {
   try {
     const data = await recommendationService.getRecommendations(req.userId);
 

@@ -19,22 +19,21 @@ a platform that helps people understand finance in simple terms. Your role is to
 Keep responses concise (2-3 paragraphs) unless the user asks for more detail.
 Always be encouraging and supportive of their financial learning journey.`;
 
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-    if (apiKey) {
-      this.genAI = new GoogleGenerativeAI(apiKey);
-      this.model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
-    } else {
-      console.warn("⚠️ GEMINI_API_KEY not found. AI fallback will be disabled.");
-    }
+    this.genAI = null;
+    this.model = null;
   }
 
   /**
    * Initialize the LLM service
    */
   async initialize() {
-    if (this.model) {
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    if (apiKey) {
+      this.genAI = new GoogleGenerativeAI(apiKey);
+      this.model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
       console.log('✅ LLM Service initialized with Google Gemini');
     } else {
+      console.warn("⚠️ GEMINI_API_KEY not found. AI fallback will be disabled.");
       console.log('✅ LLM Service initialized (Knowledge Base Only)');
     }
   }

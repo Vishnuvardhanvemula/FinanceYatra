@@ -10,10 +10,17 @@ const API_KEY = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
 let genAI;
 let model;
 
-if (API_KEY) {
-    genAI = new GoogleGenerativeAI(API_KEY);
-    model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-}
+const getModel = () => {
+    if (model) return model;
+
+    const API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    if (API_KEY) {
+        genAI = new GoogleGenerativeAI(API_KEY);
+        model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        return model;
+    }
+    return null;
+};
 
 // In-memory cache
 let cache = {
@@ -125,7 +132,8 @@ export const getMarketNews = async () => {
 };
 
 export const analyzeMarketSentiment = async () => {
-    if (!model) {
+    const aiModel = getModel();
+    if (!aiModel) {
         return {
             sentimentScore: 50,
             sentiment: 'Neutral',
@@ -152,7 +160,7 @@ export const analyzeMarketSentiment = async () => {
     `;
 
     try {
-        const result = await model.generateContent(prompt);
+        const result = await aiModel.generateContent(prompt);
         let text = result.response.text();
         text = text.replace(/```json/g, '').replace(/```/g, '').trim();
         const analysis = JSON.parse(text);

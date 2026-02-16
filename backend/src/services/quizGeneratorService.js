@@ -13,7 +13,7 @@ class QuizGeneratorService {
         if (apiKey) {
             this.genAI = new GoogleGenerativeAI(apiKey);
             // Use flash model for speed
-            this.model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+            this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         } else {
             console.error("❌ QuizGeneratorService: Missing API Key");
         }

@@ -20,7 +20,7 @@ class ChatService {
         if (apiKey) {
             this.genAI = new GoogleGenerativeAI(apiKey);
             // Using gemini-2.5-flash as per available models list
-            this.model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+            this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         } else {
             console.error("❌ ChatService: Missing API Key");
         }

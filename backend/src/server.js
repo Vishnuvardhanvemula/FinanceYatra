@@ -1,14 +1,10 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import compression from 'compression';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit'; // Security: Rate limiting
-
-
-// Load environment variables
-dotenv.config();
 
 import chatRoutes from './routes/chatRoutes.js';
 import ttsRoutes from './routes/ttsRoutes.js';

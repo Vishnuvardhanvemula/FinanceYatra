@@ -33,6 +33,20 @@ const MODULE_1_CONTENT = [
             "Banks provide safety and liquidity.",
             "Savings accounts earn interest; Current accounts are for business.",
             "Bank deposits are insured up to ₹5 Lakhs."
+        ],
+        quiz: [
+            {
+                question: "What is the primary advantage of a Savings Account over keeping cash?",
+                options: ["Higher interest than stocks", "Safety and Liquidity", "No transaction limits", "Free credit card"],
+                correct: 1,
+                explanation: "Savings accounts provide a secure environment for your money while allowing you to withdraw it whenever needed (liquidity)."
+            },
+            {
+                question: "Up to what amount is your bank deposit insured in India?",
+                options: ["₹1 Lakh", "₹2 Lakhs", "₹5 Lakhs", "₹10 Lakhs"],
+                correct: 2,
+                explanation: "The DICGC provides insurance for bank deposits up to ₹5 Lakhs per account holder per bank."
+            }
         ]
     },
     {
@@ -62,6 +76,20 @@ const MODULE_1_CONTENT = [
             "Cheques are valid for 3 months.",
             "Always end amount in words with 'Only'.",
             "Crossing a cheque makes it safer."
+        ],
+        quiz: [
+            {
+                question: "What does 'crossing' a cheque (two parallel lines) signify?",
+                options: ["It's invalid", "It must be paid in cash", "It must be deposited into a bank account", "It's a gift"],
+                correct: 2,
+                explanation: "Crossing a cheque ensures that it is not encashed over the counter and must be credited to a bank account."
+            },
+            {
+                question: "A cheque is valid for how long from its date of issue?",
+                options: ["1 month", "3 months", "6 months", "1 year"],
+                correct: 1,
+                explanation: "In India, most cheques are valid for a period of 3 months from the date written on them."
+            }
         ]
     },
     {
@@ -85,6 +113,20 @@ const MODULE_1_CONTENT = [
             "Inflation reduces the purchasing power of money.",
             "FDs offer higher interest than savings accounts but have lock-in periods.",
             "Compound interest accelerates wealth creation over time."
+        ],
+        quiz: [
+            {
+                question: "Why should you NOT keep a large amount of money as idle cash?",
+                options: ["It's too heavy", "Inflation eats its value", "It's illegal", "Interest rates might drops"],
+                correct: 1,
+                explanation: "Inflation reduces the purchasing power of money over time, making idle cash less valuable."
+            },
+            {
+                question: "What is the primary difference between a Savings Account and a Fixed Deposit?",
+                options: ["FDs have lower interest", "Savings accounts have lock-in periods", "FDs have higher interest but fixed periods", "No difference"],
+                correct: 2,
+                explanation: "Fixed Deposits offer higher interest rates in exchange for keeping the money locked for a specified duration."
+            }
         ]
     },
     {
@@ -112,6 +154,20 @@ const MODULE_1_CONTENT = [
             "Digital banking saves time and offers convenience.",
             "Know the difference between NEFT, RTGS, and IMPS.",
             "UPI is the fastest way to transfer small amounts."
+        ],
+        quiz: [
+            {
+                question: "Which transfer mode is best for sending ₹1 Lakh instantly at 2 AM?",
+                options: ["NEFT", "RTGS", "IMPS/UPI", "Cheque"],
+                correct: 2,
+                explanation: "IMPS and UPI provide instant 24/7 fund transfer capabilities for common amounts."
+            },
+            {
+                question: "What is the minimum amount required for an RTGS transfer?",
+                options: ["No minimum", "₹10,000", "₹1 Lakh", "₹2 Lakhs"],
+                correct: 3,
+                explanation: "RTGS (Real Time Gross Settlement) is intended for high-value transactions, with a minimum limit of ₹2 Lakhs."
+            }
         ]
     },
     {
@@ -137,6 +193,20 @@ const MODULE_1_CONTENT = [
             "Check for skimmers at ATMs.",
             "Shield your PIN while entering it.",
             "Block lost cards immediately."
+        ],
+        quiz: [
+            {
+                question: "What should be your first action if you lose your debit card?",
+                options: ["Wait for a day", "Call friends", "Block the card immediately", "Go to the police station"],
+                correct: 2,
+                explanation: "Blocking the card immediately via net banking or customer care is critical to prevent unauthorized usage."
+            },
+            {
+                question: "How can you prevent a 'skimming' attack at an ATM?",
+                options: ["Check for loose card slots", "Cover the keypad", "Use only credit cards", "Withdraw only small amounts"],
+                correct: 0,
+                explanation: "Skimmers are physical devices attached to the card reader. Wiggling the slot can help detect them."
+            }
         ]
     }
 ];
@@ -158,9 +228,6 @@ const enhanceModule1 = async () => {
         // Update lessons
         module.lessons = MODULE_1_CONTENT;
         module.lessonsCount = MODULE_1_CONTENT.length;
-
-        // Ensure quiz array exists (empty for now, will be generated dynamically)
-        module.lessons.forEach(l => l.quiz = []);
 
         await module.save();
         console.log('✅ Module 1 updated successfully with enhanced content!');

@@ -76,7 +76,6 @@ const moduleSchema = new mongoose.Schema({
 });
 
 // Index for faster queries
-moduleSchema.index({ id: 1 });
 moduleSchema.index({ difficulty: 1 });
 
 const Module = mongoose.model('Module', moduleSchema);

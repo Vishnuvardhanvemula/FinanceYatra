@@ -10,10 +10,17 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 class RecommendationService {
     constructor() {
-        this.apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
-        if (this.apiKey) {
-            this.genAI = new GoogleGenerativeAI(this.apiKey);
-            this.model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
+        this.model = null;
+        this.genAI = null;
+    }
+
+    _init() {
+        if (this.model) return;
+
+        const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+        if (apiKey) {
+            this.genAI = new GoogleGenerativeAI(apiKey);
+            this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         }
     }
 
@@ -23,7 +30,11 @@ class RecommendationService {
      * @returns {Promise<Object>} Recommendations and Daily Goal
      */
     async getRecommendations(userId) {
+        this._init();
         try {
+            if (!userId) {
+                return { recommendations: [], dailyGoal: { message: "Log in to get personalized recommendations!", type: "guest" } };
+            }
             const user = await User.findById(userId).populate('moduleProgress.moduleId');
             if (!user) throw new Error('User not found');
 
